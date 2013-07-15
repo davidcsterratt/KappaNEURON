@@ -1,0 +1,16 @@
+# Simple calcium accumlator
+
+%agent: Ca(x)
+%agent: B(x)
+
+'Ca bindng' Ca(x), B(x) -> Ca(x!1), B(x!1) @ 1
+'Ca release' Ca(x!1), B(x!1) -> B(x) @ 0.1
+
+# Initialise
+%init: 200 Ca(x)
+%init: 200 B(x)
+
+%obs: 'Free Ca' Ca(x)
+%obs: 'Bound Ca' Ca(x!1), B(x!1)
+%obs: 'Free buffer' B(x)
+
