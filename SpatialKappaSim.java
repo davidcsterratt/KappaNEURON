@@ -22,13 +22,25 @@ public class SpatialKappaSim
     private Simulation simulation;
 
     public SpatialKappaSim() {
-        File f = new File("./simpleBinding.ka");
+        File f = new File("caBuffer.ka");
         try {
             kappaModel = Utils.createKappaModel(f);
             simulation = new TransitionMatchingSimulation(kappaModel);
         } catch (Exception e) {
-          System.out.println("ERROR");
-      }
+            System.out.println("loadFile");
+            System.out.println("ERROR");
+        }
+    }
+
+    public void loadFile(String kappaFile) {
+        File f = new File(kappaFile);
+        try {
+            kappaModel = Utils.createKappaModel(f);
+            simulation = new TransitionMatchingSimulation(kappaModel);
+        } catch (Exception e) {
+            System.out.println("loadFile");
+            System.out.println("ERROR");
+        }
     }
 
     public void runByTime(int steps, int stepSize) {
