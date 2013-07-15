@@ -5,13 +5,13 @@ all:
 pid = $(shell /usr/sbin/ss -lp  '( dport = :25333 or sport = :25333 )' | tail -n +2 |  perl -p -e 's/.*java\",([0-9]+),.*/\1/;')
 
 py4j: 
-	javac -cp SpatialKappa-v2.1.1.jar:../py4j/py4j0.7.jar SpatialKappaSim.java SpatialKappaSimEntryPoint.java
+	javac -cp ../SpatialKappa/SpatialKappa-v2.1.1.jar:../py4j/py4j0.7.jar SpatialKappaSim.java SpatialKappaSimEntryPoint.java
   ## Make sure no gateway servers are running
 	echo $(pid)
 	if [ "x$(pid)" != "x" ]; then kill -9 $(pid) ; fi
-	CLASSPATH='./*':../py4j/py4j0.7.jar	java SpatialKappaSimEntryPoint main &
+	CLASSPATH='../SpatialKappa/*':../py4j/py4j0.7.jar	java SpatialKappaSimEntryPoint main &
 	sleep 4
-	@ CLASSPATH='./*':../py4j/py4j0.7.jar python spatialKappa.py
+	@ CLASSPATH='../SpatialKappa/*':../py4j/py4j0.7.jar python2.7 hh_autapse_ca_rxd.py
 
 spatialKappaNeuron: 
 	javac -cp SpatialKappa-v2.1.1.jar:../py4j/py4j0.7.jar SpatialKappaSim.java SpatialKappaSimEntryPoint.java
