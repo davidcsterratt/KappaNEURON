@@ -12,12 +12,18 @@ import scipy.sparse.linalg
 import ctypes
 import atexit
 import options
+from py4j.java_gateway import JavaGateway
 
 def byeworld():
     global _react_matrix_solver
     del _react_matrix_solver
     
 atexit.register(byeworld)
+
+## Run some SpatialKappa stuff
+gateway = JavaGateway()
+print gateway.entry_point
+sks = gateway.entry_point.getSpatialKappaSim()
 
 # Faraday's constant (store to reduce number of lookups)
 FARADAY = h.FARADAY
@@ -224,6 +230,12 @@ def _fixed_step_solve(dt):
     ## into the spatialKappa simulation and (b) run the SK simulation
     ## for dt, and (c) then read out the amount of Ca in it.
     states[:] += _reaction_matrix_solve(dt, dt * b)
+    # sks.loadFile("caBuffer.ka")
+    sks.runByTime(10, 1)
+    ## print sks
+    ## print sks.getObservation("Monomer A")
+    sks.addAgent("Ca", 500);
+
     print states
     # clear the zero-volume "nodes"
     states[_zero_volume_indices] = 0
