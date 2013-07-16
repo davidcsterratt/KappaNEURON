@@ -231,7 +231,8 @@ def _fixed_step_solve(dt):
     ## for dt, and (c) then read out the amount of Ca in it.
     states[:] += _reaction_matrix_solve(dt, dt * b)
     # sks.loadFile("caBuffer.ka")
-    sks.runByTime(10, 1)
+    sks.runByTime(dt, 1)      # Second argument is "time per step",
+                              # i.e. the reporting interval (I think)
     ## print sks
     ## print sks.getObservation("Monomer A")
     sks.addAgent("Ca", 500);

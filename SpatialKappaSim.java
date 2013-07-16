@@ -43,14 +43,12 @@ public class SpatialKappaSim
         }
     }
 
-    public void runByTime(int steps, int stepSize) {
-        // int steps = 10;
-        // int stepSize = 1;
-        simulation.runByTime(steps, stepSize);
+    public void runByTime(float totalTime, int timePerStep) {
+        simulation.runByTime(totalTime, timePerStep);
         Observation observation = simulation.getCurrentObservation();
         System.out.println(observation.toString());
         // This allows us to get the value of a particular observable
-        System.out.println(observation.observables.get("Monomer A"));
+        System.out.println(observation.observables.get("Ca"));
     }
 
     public double getObservation(String key) {
