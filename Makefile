@@ -11,7 +11,7 @@ py4j:
 	if [ "x$(pid)" != "x" ]; then kill -9 $(pid) ; fi
 	CLASSPATH=.:'../SpatialKappa/*':../py4j/py4j0.7.jar	java SpatialKappaSimEntryPoint main &
 	sleep 4
-	@ CLASSPATH=.:'../SpatialKappa/*':../py4j/py4j0.7.jar python2.7 hh_autapse_ca_rxd.py
+	@ CLASSPATH=.:'../SpatialKappa/*':../py4j/py4j0.7.jar python2.7 -i hh_autapse_ca_rxd.py
 
 spatialKappaNeuron: 
 	javac -cp SpatialKappa-v2.1.1.jar:../py4j/py4j0.7.jar SpatialKappaSim.java SpatialKappaSimEntryPoint.java
