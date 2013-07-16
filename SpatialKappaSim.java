@@ -43,7 +43,7 @@ public class SpatialKappaSim
         }
     }
 
-    public void runByTime(float totalTime, int timePerStep) {
+    public void runByTime(float totalTime, float timePerStep) {
         simulation.runByTime(totalTime, timePerStep);
         Observation observation = simulation.getCurrentObservation();
         System.out.println(observation.toString());
