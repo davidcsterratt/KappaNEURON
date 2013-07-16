@@ -64,7 +64,7 @@ public class SpatialKappaSim
     }
     
     // value can be negative
-    public void addAgent(String key, int value) {
+    public void addAgent(String key, float value) {
         List<Agent> agents = new ArrayList<Agent>();
         SimulationState state = (SimulationState) simulation;                
         for (Complex complex : kappaModel.getFixedLocatedInitialValuesMap().keySet()) {
@@ -73,7 +73,7 @@ public class SpatialKappaSim
                 if (key.equals(currentAgent.name)) {
                     System.out.println("ADD STUFF");
                     agents.add(currentAgent);
-                    state.addComplexInstances(agents, value);
+                    state.addComplexInstances(agents, (int)value);
                     agents.clear();
                 }
             }
