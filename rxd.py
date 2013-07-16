@@ -231,11 +231,18 @@ def _fixed_step_solve(dt):
     ## for dt, and (c) then read out the amount of Ca in it.
     states[:] += _reaction_matrix_solve(dt, dt * b)
     # sks.loadFile("caBuffer.ka")
-    sks.runByTime(dt, 0.0001)      # Second argument is "time per step",
-                              # i.e. the reporting interval (I think)
-    ## print sks
-    ## print sks.getObservation("Ca")
-    sks.addAgent("Ca", 500);
+    sks.runByTime(dt, 0.0001)      # Second argument is "time per
+                                   # step", i.e. the reporting
+                                   # interval (I think)
+    volumes = node._get_data()[0]
+    print "VOLUMES"
+    print volumes[1]
+    print b[1]
+    ## Number of Ca ions
+    nca = round(-dt * b[1] * _conversion_factor * volumes[1])
+    print nca
+    sks.addAgent("Ca", nca)
+    states[1] = sks.getObservation("Free Ca") / (_conversion_factor * volumes[1])
 
     print states
     # clear the zero-volume "nodes"
@@ -258,7 +265,8 @@ def _rxd_reaction(states):
     if _curr_ptr_vector is not None:
         _curr_ptr_vector.gather(_curr_ptr_storage_nrn)
         b[_curr_indices] = _curr_scales * _curr_ptr_storage
-    
+        print "_CURR_SCALES"
+        print _curr_scales
     #b[_curr_indices] = _curr_scales * [ptr[0] for ptr in _curr_ptrs]
     print b
     for rptr in _all_reactions:
