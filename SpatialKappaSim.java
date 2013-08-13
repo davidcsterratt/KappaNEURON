@@ -51,6 +51,13 @@ public class SpatialKappaSim
         System.out.println(observation.observables.get("Ca"));
     }
 
+    public void runByTime2(float stepEndTime) {
+        simulation.runByTime2(stepEndTime);
+        Observation observation = simulation.getCurrentObservation();
+        System.out.println(observation.toString());
+        // This allows us to get the value of a particular observable
+    }
+
     public double getObservation(String key) {
         Observation observation = simulation.getCurrentObservation();
         return(observation.observables.get(key).value);

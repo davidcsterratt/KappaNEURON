@@ -214,11 +214,13 @@ def _fixed_step_currents(rhs):
 preconditioner = None
 def _fixed_step_solve(dt):
     global preconditioner
-    print "Fixed step solve2"
+    print "FIXED STEP SOLVE"
+    print "STATES"
     # TODO: use linear approx not constant approx
     states = node._get_states()[:]
     print states
 
+    print "FLUX b"
     ## DCS: This gets ICa and computes changes due to reactions
     b = _rxd_reaction(states)
     print b
@@ -231,7 +233,10 @@ def _fixed_step_solve(dt):
     ## for dt, and (c) then read out the amount of Ca in it.
     states[:] += _reaction_matrix_solve(dt, dt * b)
     # sks.loadFile("caBuffer.ka")
-    sks.runByTime(dt, 0.0001)      # Second argument is "time per
+    print "NEURON TIME"
+    print h.t
+    print "SpatialKappa.runByTime()"
+    sks.runByTime2(h.t + dt)      # Second argument is "time per
                                    # step", i.e. the reporting
                                    # interval (I think)
     volumes = node._get_data()[0]
@@ -239,10 +244,12 @@ def _fixed_step_solve(dt):
     print volumes[1]
     print b[1]
     ## Number of Ca ions
-    nca = round(-dt * b[1] * _conversion_factor * volumes[1])
-    print nca
+    nca = round(dt * b[1] \
+                    * _conversion_factor * volumes[1])
+    print ("NCa: %s" % (nca))
     sks.addAgent("Ca", nca)
-    states[1] = sks.getObservation("Free Ca") / (_conversion_factor * volumes[1])
+    states[1] = sks.getObservation("Free Ca") \
+        /(_conversion_factor * volumes[1])
 
     print states
     # clear the zero-volume "nodes"
@@ -256,22 +263,19 @@ def _rxd_reaction(states):
     # TODO: this was included in the 3d, probably shouldn't be there either
     if _diffusion_matrix is None: _setup_matrices()
 
-    b = numpy.zeros(len(states))
-    # TODO: this isn't yet (2013-03-14) in 3D, but needs to be
+    b = numpy.zeros(len(states))    # TODO: this isn't yet (2013-03-14) in 3D, but needs to be
     # membrane fluxes from classic NEURON
-    print 'indices:', _curr_indices
-    print 'ptrs:', _curr_ptrs
+    # print 'indices:', _curr_indices
+    # print 'ptrs:', _curr_ptrs
     
     if _curr_ptr_vector is not None:
         _curr_ptr_vector.gather(_curr_ptr_storage_nrn)
         b[_curr_indices] = _curr_scales * _curr_ptr_storage
-        print "_CURR_SCALES"
-        print _curr_scales
+        ## print "_CURR_SCALES" # DCS
+        ## print _curr_scales   # DCS
     #b[_curr_indices] = _curr_scales * [ptr[0] for ptr in _curr_ptrs]
-    print b
     for rptr in _all_reactions:
         r = rptr()
-        print r #DCS
         if r:
             indices, mult, rate = r._evaluate(states)
             # print "%s %s %s" % (indices, mult, rate)  ## DCS
