@@ -22,14 +22,10 @@ public class SpatialKappaSim
     private Simulation simulation;
 
     public SpatialKappaSim() {
-        File f = new File("caBuffer.ka");
-        try {
-            kappaModel = Utils.createKappaModel(f);
-            simulation = new TransitionMatchingSimulation(kappaModel);
-        } catch (Exception e) {
-            System.out.println("loadFile");
-            System.out.println("ERROR");
-        }
+    }
+
+    public boolean simulationLoaded() {
+        return(simulation != null);
     }
 
     public void loadFile(String kappaFile) {

@@ -232,26 +232,27 @@ def _fixed_step_solve(dt):
     ## into the spatialKappa simulation and (b) run the SK simulation
     ## for dt, and (c) then read out the amount of Ca in it.
     states[:] += _reaction_matrix_solve(dt, dt * b)
-    # sks.loadFile("caBuffer.ka")
+
     print "NEURON TIME"
     print h.t
-    print "SpatialKappa.runByTime()"
-    sks.runByTime2(h.t + dt)      # Second argument is "time per
-                                   # step", i.e. the reporting
-                                   # interval (I think)
-    volumes = node._get_data()[0]
-    print "VOLUMES"
-    print volumes[1]
-    print b[1]
-    ## Number of Ca ions
-    nca = round(dt * b[1] \
-                    * _conversion_factor * volumes[1])
-    print ("NCa: %s" % (nca))
-    sks.addAgent("Ca", nca)
-    states[1] = sks.getObservation("Free Ca") \
-        /(_conversion_factor * volumes[1])
+    if sks.simulationLoaded():
+        print "SpatialKappa.runByTime()"
+        sks.runByTime2(h.t + dt)      # Second argument is "time per
+        # step", i.e. the reporting
+        # interval (I think)
+        volumes = node._get_data()[0]
+        print "VOLUMES"
+        print volumes[1]
+        print b[1]
+        ## Number of Ca ions
+        nca = round(dt * b[1] \
+                        * _conversion_factor * volumes[1])
+        print ("NCa: %s" % (nca))
+        sks.addAgent("Ca", nca)
+        states[1] = sks.getObservation("Free Ca") \
+            /(_conversion_factor * volumes[1])
+        print states
 
-    print states
     # clear the zero-volume "nodes"
     states[_zero_volume_indices] = 0
 
