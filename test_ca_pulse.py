@@ -20,6 +20,7 @@ r = rxd.Region([sh], nrn_region='i')
 
 # WHO are the actors
 ca = rxd.Species(r, name='ca', charge=2, initial=0.01)
+kappa = rxd.Kappa(ca, "caBuffer.ka", r)
 
 ## Current clamp stimulus
 stim = h.VClamp(sh(0.5))
