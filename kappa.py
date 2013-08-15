@@ -4,11 +4,16 @@ import rxdmath
 import rxd
 import numpy
 from generalizedReaction import GeneralizedReaction
+from py4j.java_gateway import JavaGateway
+
+gateway = None
 
 class Kappa(GeneralizedReaction):
     def __init__(self, species, kappa_file, regions=None, membrane_flux=False):
         """create a kappa mechanism linked to a species on a given region or set of regions
         if regions is None, then does it on all regions"""
+        global gateway
+        self._kappa_sims = []
         self._species = weakref.ref(species)
         self._involved_species = [self._species]
         if not hasattr(regions, '__len__'):
@@ -23,6 +28,18 @@ class Kappa(GeneralizedReaction):
             # TODO: rename regions to region?
             raise Exception('if membrane_flux then must specify the (unique) membrane regions')
         ## rxd._register_reaction(self)
+        if not gateway:
+            gateway = JavaGateway()
+            print gateway.entry_point
+
+        for i in self._indices[0]:
+            print "Creating Kappa Simulation index", i
+            kappa_sim = gateway.entry_point.getSpatialKappaSim()
+            kappa_sim.loadFile(kappa_file)
+            self._kappa_sims.append(kappa_sim)
+            ## Should we check if we are inserting two kappa schemes
+            ## in the same place?
+
         rxd._register_kappa_scheme(self)
     
     def __repr__(self):

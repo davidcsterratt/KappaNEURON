@@ -20,11 +20,6 @@ def byeworld():
     
 atexit.register(byeworld)
 
-## Run some SpatialKappa stuff
-gateway = JavaGateway()
-print gateway.entry_point
-sks = gateway.entry_point.getSpatialKappaSim()
-
 # Faraday's constant (store to reduce number of lookups)
 FARADAY = h.FARADAY
 
@@ -244,28 +239,27 @@ def _fixed_step_solve(dt):
 
     for kptr in _kappa_schemes:
         k = kptr()
-        for i in k._indices: 
-            print i
-        
-    print "NEURON TIME"
-    print h.t
-    if sks.simulationLoaded():
-        print "SpatialKappa.runByTime()"
-        sks.runByTime2(h.t + dt)      # Second argument is "time per
-        # step", i.e. the reporting
-        # interval (I think)
-        volumes = node._get_data()[0]
-        print "VOLUMES"
-        print volumes[1]
-        print b[1]
-        ## Number of Ca ions
-        nca = round(dt * b[1] \
-                        * _conversion_factor * volumes[1])
-        print ("NCa: %s" % (nca))
-        sks.addAgent("Ca", nca)
-        states[1] = sks.getObservation("Free Ca") \
-            /(_conversion_factor * volumes[1])
-        print states
+        for kappa_sim, i in zip(k._kappa_sims, k._indices[0]):
+            print "KAPPA_SIM ON INDEX ", i
+            print "NEURON TIME"
+            print h.t
+            print "SpatialKappa.runByTime()"
+            kappa_sim.runByTime2(h.t + dt)      # Second argument is "time per
+            # step", i.e. the reporting
+            # interval (I think)
+            volumes = node._get_data()[0]
+            print "VOLUMES"
+            print volumes[i]
+            print b[i]
+            ## Number of Ca ions
+            nca = round(dt * b[i] \
+                        * _conversion_factor * volumes[i])
+            print ("NCa: %s" % (nca))
+            kappa_sim.addAgent("Ca", nca)
+            states[i] = kappa_sim.getObservation("Free Ca") \
+                /(_conversion_factor * volumes[i])
+            
+    print states
 
     # clear the zero-volume "nodes"
     states[_zero_volume_indices] = 0
