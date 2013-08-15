@@ -255,8 +255,8 @@ def _fixed_step_solve(dt):
             nca = round(dt * b[i] \
                         * _conversion_factor * volumes[i])
             print ("NCa: %s" % (nca))
-            kappa_sim.addAgent("Ca", nca)
-            states[i] = kappa_sim.getObservation("Free Ca") \
+            kappa_sim.addAgent("ca", nca)
+            states[i] = kappa_sim.getObservation("ca") \
                 /(_conversion_factor * volumes[i])
             
     print states

@@ -1,16 +1,16 @@
 # Simple calcium pump
 
-%agent: Ca(x)
+%agent: ca(x)
 %agent: B(x)
 
-'Ca bindng' Ca(x), B(x) -> Ca(x!1), B(x!1) @ 1
-'Ca release' Ca(x!1), B(x!1) -> B(x) @ 1
+'ca bindng' ca(x), B(x) -> ca(x!1), B(x!1) @ 1
+'ca release' ca(x!1), B(x!1) -> B(x) @ 1
 
 # Initialise
-%init: 1 Ca(x)
+%init: 1 ca(x)
 %init: 10000 B(x)
 
-%obs: 'Free Ca' Ca(x)
-%obs: 'Bound Ca' Ca(x!1), B(x!1)
+%obs: 'ca' ca(x)
+%obs: 'Bound ca' ca(x!1), B(x!1)
 %obs: 'Free buffer' B(x)
 
