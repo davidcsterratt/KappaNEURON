@@ -16,6 +16,7 @@ class Kappa(GeneralizedReaction):
         self._kappa_sims = []
         self._species = weakref.ref(species)
         self._involved_species = [self._species]
+        self._kappa_file = kappa_file
         if not hasattr(regions, '__len__'):
             regions = [regions]
         self._regions = regions
@@ -27,7 +28,7 @@ class Kappa(GeneralizedReaction):
         if membrane_flux and regions is None:
             # TODO: rename regions to region?
             raise Exception('if membrane_flux then must specify the (unique) membrane regions')
-        ## rxd._register_reaction(self)
+
         if not gateway:
             gateway = JavaGateway()
             print gateway.entry_point
@@ -37,13 +38,13 @@ class Kappa(GeneralizedReaction):
             kappa_sim = gateway.entry_point.getSpatialKappaSim()
             kappa_sim.loadFile(kappa_file)
             self._kappa_sims.append(kappa_sim)
-            ## Should we check if we are inserting two kappa schemes
+            ## TODO: Should we check if we are inserting two kappa schemes
             ## in the same place?
 
         rxd._register_kappa_scheme(self)
     
     def __repr__(self):
-        return 'Rate(%r, %r, regions=%r, membrane_flux=%r)' % (self._species, self._original_rate, self._regions, self._membrane_flux)
+        return 'Kappa(%r, kappa_file=%r, regions=%r, membrane_flux=%r)' % (self._species, self._kappa_file, self._regions, self._membrane_flux)
     
     def _update_indices(self):
         # this is called anytime the geometry changes as well as at init
