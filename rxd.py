@@ -239,6 +239,13 @@ def _fixed_step_solve(dt):
 
     for kptr in _kappa_schemes:
         k = kptr()
+        ## TODO: At present this only works when one species is
+        ## defined. To get multiple species working, we will need to
+        ## look through _involved_species and _indices
+        sptr = k._involved_species[0]
+        s = sptr()
+        name = s.name
+        print "ION: ", name
         for kappa_sim, i in zip(k._kappa_sims, k._indices[0]):
             print "KAPPA_SIM ON INDEX ", i
             print "NEURON TIME"
@@ -251,12 +258,12 @@ def _fixed_step_solve(dt):
             print "VOLUMES"
             print volumes[i]
             print b[i]
-            ## Number of Ca ions
-            nca = round(dt * b[i] \
+            ## Number of ions
+            nions = round(dt * b[i] \
                         * _conversion_factor * volumes[i])
-            print ("NCa: %s" % (nca))
-            kappa_sim.addAgent("ca", nca)
-            states[i] = kappa_sim.getObservation("ca") \
+            print ("# of ions: %s" % (nions))
+            kappa_sim.addAgent(name, nions)
+            states[i] = kappa_sim.getObservation(name) \
                 /(_conversion_factor * volumes[i])
             
     print states
