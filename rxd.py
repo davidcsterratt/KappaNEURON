@@ -57,6 +57,7 @@ _cur_sec_list = None
 _cur_x_list = None
 
 _all_reactions = []
+_kappa_schemes = []
 
 _zero_volume_indices = []
 _nonzero_volume_indices = []
@@ -82,6 +83,12 @@ def _register_reaction(r):
     # TODO: should we search to make sure that (a weakref to) r hasn't already been added?
     global _all_reactions
     _all_reactions.append(weakref.ref(r))
+
+def _register_kappa_scheme(r):
+    # TODO: should we search to make sure that (a weakref to) r hasn't already been added?
+    global _kappa_schemes
+    _kappa_schemes.append(weakref.ref(r))
+
 
 def _after_advance():
     global last_diam_change_cnt
@@ -214,6 +221,8 @@ def _fixed_step_currents(rhs):
 preconditioner = None
 def _fixed_step_solve(dt):
     global preconditioner
+    global _kappa_schemes
+
     print "FIXED STEP SOLVE"
     print "STATES"
     # TODO: use linear approx not constant approx
@@ -233,6 +242,11 @@ def _fixed_step_solve(dt):
     ## for dt, and (c) then read out the amount of Ca in it.
     states[:] += _reaction_matrix_solve(dt, dt * b)
 
+    for kptr in _kappa_schemes:
+        k = kptr()
+        for i in k._indices: 
+            print i
+        
     print "NEURON TIME"
     print h.t
     if sks.simulationLoaded():

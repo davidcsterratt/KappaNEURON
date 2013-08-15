@@ -6,12 +6,11 @@ import numpy
 from generalizedReaction import GeneralizedReaction
 
 class Kappa(GeneralizedReaction):
-    def __init__(self, species, rate, regions=None, membrane_flux=False):
-        """create a rate of change for a species on a given region or set of regions
+    def __init__(self, species, kappa_file, regions=None, membrane_flux=False):
+        """create a kappa mechanism linked to a species on a given region or set of regions
         if regions is None, then does it on all regions"""
         self._species = weakref.ref(species)
-        self._original_rate = rate
-        self._rate, self._involved_species = rxdmath._compile(rate)
+        self._involved_species = [self._species]
         if not hasattr(regions, '__len__'):
             regions = [regions]
         self._regions = regions
@@ -23,7 +22,8 @@ class Kappa(GeneralizedReaction):
         if membrane_flux and regions is None:
             # TODO: rename regions to region?
             raise Exception('if membrane_flux then must specify the (unique) membrane regions')
-        rxd._register_reaction(self)
+        ## rxd._register_reaction(self)
+        rxd._register_kappa_scheme(self)
     
     def __repr__(self):
         return 'Rate(%r, %r, regions=%r, membrane_flux=%r)' % (self._species, self._original_rate, self._regions, self._membrane_flux)
@@ -34,6 +34,7 @@ class Kappa(GeneralizedReaction):
         self._indices_dict = {}
         
         # locate the regions containing all species (including the one that changes)
+        print self._species()
         if self._species():
             active_regions = [r for r in self._regions if self._species().indices(r)]
         else:
@@ -54,7 +55,6 @@ class Kappa(GeneralizedReaction):
         
         self._indices = [sum([self._species().indices(r) for r in active_regions], [])]
         self._mult = [1]
-        self._update_jac_cache()
 
     def _do_memb_scales(self):
         # TODO: does anyone still call this?
