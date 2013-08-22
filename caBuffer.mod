@@ -32,7 +32,7 @@ PARAMETER {
 
 ASSIGNED {
 	  ica (mA/cm2)
-    k1 (/mM/ms)
+    k1 (/mM-ms)
     k2 (/ms)
     vol  (micrometer3)
     area (micrometer2)
@@ -59,6 +59,6 @@ BREAKPOINT {
 }
 
 DERIVATIVE integrate {
-	  cai' = -ica/diam/PI/F/2 * (1e4) -k1*cai*B
+	  cai' = -2*ica/diam/F * (1e4) -k1*cai*B
     B' = -k1*cai*B + k2*(B0 - B)
 }
