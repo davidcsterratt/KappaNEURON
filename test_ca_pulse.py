@@ -20,7 +20,8 @@ r = rxd.Region([sh], nrn_region='i')
 
 # WHO are the actors
 ca = rxd.Species(r, name='ca', charge=2, initial=0.01)
-kappa = rxd.Kappa(ca, "caBuffer.ka", r)
+B  = rxd.Species(r, name='B',  charge=0, initial=0.2)
+kappa = rxd.Kappa([ca, B], "caBuffer.ka", r)
 
 ## Current clamp stimulus
 stim = h.VClamp(sh(0.5))
@@ -44,9 +45,8 @@ rec_cai.record(sh(0.5)._ref_cai)
 rec_ica = h.Vector()
 rec_ica.record(sh(0.5)._ref_ica)
 ## Record B from spine head
-## rec_B = h.Vector()
-## rec_B.record(sh(0.5)._ref_B_caBuffer)
-## rec_B.record(sh(0.5)._ref_pump_capr)
+rec_Bi = h.Vector()
+rec_Bi.record(sh(0.5)._ref_Bi)
 
 ## Run
 init()
@@ -72,12 +72,12 @@ times = [] # Use list to add another trace later.
 voltages = []
 cai = []
 ica = []
-B = []
+Bi = []
 times.append(list(rec_t)) # alternativ to `list(rec_t)`: `numpy.array(rec_t)`
 voltages.append(list(rec_v))
 cai.append(list(rec_cai))
 ica.append(list(rec_ica))
-# B.append(list(rec_B))
+Bi.append(list(rec_Bi))
 # check types by:
 # >>> type(rec_t)
 # >>> type(time[0])
@@ -98,7 +98,7 @@ ax3.set_xlabel("Time [ms]")
 ax3.set_ylabel("ICa [mA/cm2]")
 ax3.axis(ymin=-20, ymax=1)
 
-#ax4.plot(times[0], B[0])
+ax4.plot(times[0], Bi[0])
 ax4.set_xlabel("Time [ms]")
 ax4.set_ylabel("B [mM]")
 ax4.axis(ymin=-0.1, ymax=0.5)

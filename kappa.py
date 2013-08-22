@@ -14,12 +14,16 @@ class Kappa(GeneralizedReaction):
         if regions is None, then does it on all regions"""
         global gateway
         self._kappa_sims = []
-        self._species = weakref.ref(species)
-        self._involved_species = [self._species]
+        self._species = []
+        for s in species:
+            self._species.append(weakref.ref(s))
+        ## self._species = weakref.ref(species)
+        self._involved_species = self._species
         self._kappa_file = kappa_file
         if not hasattr(regions, '__len__'):
             regions = [regions]
         self._regions = regions
+        self._active_regions = []
         self._trans_membrane = False
         self._update_indices()
         self._membrane_flux = membrane_flux
@@ -33,8 +37,9 @@ class Kappa(GeneralizedReaction):
             gateway = JavaGateway()
             print gateway.entry_point
 
-        for i in self._indices[0]:
-            print "Creating Kappa Simulation index", i
+        ## FIXME: should this go in _update_indices()?
+        for r in self._active_regions:
+            print "Creating Kappa Simulation in region", r
             kappa_sim = gateway.entry_point.getSpatialKappaSim()
             kappa_sim.loadFile(kappa_file)
             self._kappa_sims.append(kappa_sim)
@@ -44,19 +49,17 @@ class Kappa(GeneralizedReaction):
         rxd._register_kappa_scheme(self)
     
     def __repr__(self):
-        return 'Kappa(%r, kappa_file=%r, regions=%r, membrane_flux=%r)' % (self._species, self._kappa_file, self._regions, self._membrane_flux)
+        return 'Kappa(%r, kappa_file=%r, regions=%r, membrane_flux=%r)' % (self._involved_species, self._kappa_file, self._regions, self._membrane_flux)
     
     def _update_indices(self):
         # this is called anytime the geometry changes as well as at init
         
         self._indices_dict = {}
         
-        # locate the regions containing all species (including the one that changes)
-        print self._species()
-        if self._species():
-            active_regions = [r for r in self._regions if self._species().indices(r)]
-        else:
-            active_regions = []
+        # locate the regions containing all species (including the one
+        # that channges)
+
+        active_regions = self._regions
         for sptr in self._involved_species:
             s = sptr()
             if s:
@@ -71,7 +74,7 @@ class Kappa(GeneralizedReaction):
             s = sptr()
             self._indices_dict[s] = sum([s.indices(r) for r in active_regions], [])
         
-        self._indices = [sum([self._species().indices(r) for r in active_regions], [])]
+        self._active_regions = active_regions
         self._mult = [1]
 
     def _do_memb_scales(self):

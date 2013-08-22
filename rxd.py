@@ -237,37 +237,44 @@ def _fixed_step_solve(dt):
     ## for dt, and (c) then read out the amount of Ca in it.
     states[:] += _reaction_matrix_solve(dt, dt * b)
 
+    ## Go through each kappa scheme. The region belonging to each
+    ## kappa scheme should not overlap with any other kappa scheme's
+    ## region.
+    volumes = node._get_data()[0]
     for kptr in _kappa_schemes:
         k = kptr()
-        ## TODO: At present this only works when one species is
-        ## defined. To get multiple species working, we will need to
-        ## look through _involved_species and _indices
-        sptr = k._involved_species[0]
-        s = sptr()
-        name = s.name
-        print "ION: ", name
-        for kappa_sim, i in zip(k._kappa_sims, k._indices[0]):
-            print "KAPPA_SIM ON INDEX ", i
+        ## There is one kappa_sim for each active region in the kappa
+        ## scheme.
+        for kappa_sim in k._kappa_sims:
             print "NEURON TIME"
             print h.t
             print "SpatialKappa.runByTime()"
             kappa_sim.runByTime2(h.t + dt)      # Second argument is "time per
-            # step", i.e. the reporting
-            # interval (I think)
-            volumes = node._get_data()[0]
-            print "VOLUMES"
-            print volumes[i]
-            print b[i]
-            ## Number of ions
-            ## Flux b has units of mM/ms
-            ## Volumes has units of um3
-            ## _converstion factor has units of molecules mM^-1 um^-3
-            nions = round(dt * b[i] \
-                        * _conversion_factor * volumes[i])
-            print ("# of ions: %s" % (nions))
-            kappa_sim.addAgent(name, nions)
-            states[i] = kappa_sim.getObservation(name) \
-                /(_conversion_factor * volumes[i])
+
+        ## Now we want add any fluxes to the kappa sims and update the
+        ## quantities seen in NEURON.
+        
+        ## TODO: At present this only works when one species is
+        ## defined. To get multiple species working, we will need to
+        ## look through _involved_species and _indices
+        for  sptr in k._involved_species:
+            s = sptr()
+            name = s.name
+            print "ION: ", name
+
+            for kappa_sim, i in zip(k._kappa_sims, k._indices_dict[s]):
+                print "volume ", volumes[i]
+                print "flux", b[i]
+                ## Number of ions
+                ## Flux b has units of mM/ms
+                ## Volumes has units of um3
+                ## _converstion factor has units of molecules mM^-1 um^-3
+                nions = round(dt * b[i] \
+                                  * _conversion_factor * volumes[i])
+                print ("# of ions: %s" % (nions))
+                kappa_sim.addAgent(name, nions)
+                states[i] = kappa_sim.getObservation(name) \
+                    /(_conversion_factor * volumes[i])
             
     print states
 
