@@ -56,6 +56,7 @@ ASSIGNED {
 BREAKPOINT {
 	SOLVE pmp METHOD sparse
 	ipump_last = ipump
+  : DCS: could we comment out the next line?
 	ica = ipump
 }
 
@@ -73,6 +74,8 @@ KINETIC pmp {
 
         : ipump_last vs ipump needed because of STEADYSTATE calculation
         ~ cai << (-(ica - ipump_last)*area1/(2*FARADAY)*(1e4))
+        : DCS: could we replace this line with:
+        : ~ cai << (-(ica - 0*ipump_last)*area1/(2*FARADAY)*(1e4))
 
 	CONSERVE pump + pumpca = (1e10)*area1*pumpdens
 }
