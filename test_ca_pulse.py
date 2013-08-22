@@ -10,6 +10,7 @@ from neuron import rxd
 sh = h.Section()
 sh.insert("pas")                # Passive channel
 sh.insert("capulse")            # Code to give Ca pulse
+sh.gcalbar_capulse = 0.05
 sh.L = 0.1
 sh.diam = 1
 
@@ -91,23 +92,23 @@ ax1.axis(ymin=-80, ymax=50)
 ax2.plot(times[0], cai[0])
 ax2.set_xlabel("Time [ms]")
 ax2.set_ylabel("Ca [mM]")
-ax2.axis(ymin=-1E-5, ymax=2E-1)
+ax2.axis(ymin=-1E-2, ymax=0.5E-1)
 
 ax3.plot(times[0], ica[0])
 ax3.set_xlabel("Time [ms]")
 ax3.set_ylabel("ICa [mA/cm2]")
-ax3.axis(ymin=-20, ymax=1)
+ax3.axis(ymin=-1, ymax=0.1)
 
 ax4.plot(times[0], Bi[0])
 ax4.set_xlabel("Time [ms]")
 ax4.set_ylabel("B [mM]")
-ax4.axis(ymin=-0.1, ymax=0.5)
+ax4.axis(ymin=-1E-5, ymax=2.5E-1)
 
 
 
 fig.show() # If the interpreter stops now: close the figure.
 # For interactive plotting, see `Part 1` -> `ipython`
 
-
+fig.savefig("doc/test_ca_pulse.pdf", format='pdf')
 
 
