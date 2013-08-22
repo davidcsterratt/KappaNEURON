@@ -40,6 +40,13 @@ rec_v.record(sh(0.5)._ref_v)
 ## Record Ca from spine head
 rec_cai = h.Vector()
 rec_cai.record(sh(0.5)._ref_cai)
+## Record ica from spine head
+rec_ica = h.Vector()
+rec_ica.record(sh(0.5)._ref_ica)
+## Record B from spine head
+## rec_B = h.Vector()
+## rec_B.record(sh(0.5)._ref_B_caBuffer)
+## rec_B.record(sh(0.5)._ref_pump_capr)
 
 ## Run
 init()
@@ -64,14 +71,18 @@ import matplotlib.pyplot as plt
 times = [] # Use list to add another trace later.
 voltages = []
 cai = []
+ica = []
+B = []
 times.append(list(rec_t)) # alternativ to `list(rec_t)`: `numpy.array(rec_t)`
 voltages.append(list(rec_v))
 cai.append(list(rec_cai))
+ica.append(list(rec_ica))
+# B.append(list(rec_B))
 # check types by:
 # >>> type(rec_t)
 # >>> type(time[0])
 
-fig, (ax1, ax2) = plt.subplots(nrows=2, ncols=1)
+fig, (ax1, ax2, ax3, ax4) = plt.subplots(nrows=4, ncols=1)
 ax1.plot(times[0], voltages[0])
 ax1.set_xlabel("Time [ms]")
 ax1.set_ylabel("Voltage [mV]")
@@ -80,7 +91,18 @@ ax1.axis(ymin=-80, ymax=50)
 ax2.plot(times[0], cai[0])
 ax2.set_xlabel("Time [ms]")
 ax2.set_ylabel("Ca [mM]")
-ax2.axis(ymin=0, ymax=0.5)
+ax2.axis(ymin=-1E-5, ymax=2E-1)
+
+ax3.plot(times[0], ica[0])
+ax3.set_xlabel("Time [ms]")
+ax3.set_ylabel("ICa [mA/cm2]")
+ax3.axis(ymin=-20, ymax=1)
+
+#ax4.plot(times[0], B[0])
+ax4.set_xlabel("Time [ms]")
+ax4.set_ylabel("B [mM]")
+ax4.axis(ymin=-0.1, ymax=0.5)
+
 
 
 fig.show() # If the interpreter stops now: close the figure.
