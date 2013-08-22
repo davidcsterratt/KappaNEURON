@@ -245,10 +245,9 @@ def _fixed_step_solve(dt):
         k = kptr()
         ## There is one kappa_sim for each active region in the kappa
         ## scheme.
+        print "SpatialKappa.runByTime2()"
+        print "NEURON time", h.t
         for kappa_sim in k._kappa_sims:
-            print "NEURON TIME"
-            print h.t
-            print "SpatialKappa.runByTime()"
             kappa_sim.runByTime2(h.t + dt)      # Second argument is "time per
 
         ## Now we want add any fluxes to the kappa sims and update the
@@ -257,6 +256,7 @@ def _fixed_step_solve(dt):
         ## TODO: At present this only works when one species is
         ## defined. To get multiple species working, we will need to
         ## look through _involved_species and _indices
+        print "Adding fluxes to Kappa"
         for  sptr in k._involved_species:
             s = sptr()
             name = s.name
@@ -268,7 +268,8 @@ def _fixed_step_solve(dt):
                 ## Number of ions
                 ## Flux b has units of mM/ms
                 ## Volumes has units of um3
-                ## _converstion factor has units of molecules mM^-1 um^-3
+                ## _conversion factor has units of molecules mM^-1 um^-3
+                ## FIXME: perhaps make this a Poission variable?
                 nions = round(dt * b[i] \
                                   * _conversion_factor * volumes[i])
                 print ("# of ions: %s" % (nions))
