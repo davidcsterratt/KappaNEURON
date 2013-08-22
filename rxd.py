@@ -24,7 +24,7 @@ atexit.register(byeworld)
 FARADAY = h.FARADAY
 
 # converting from mM um^3 to molecules
-# = 6.02214129e23 * 1000. / 1.e18 / 1000
+# = 6.02214129e23 * 1000. / 1.e-18 / 1000
 # = avogadro * (L / m^3) * (m^3 / um^3) * (mM / M)
 # value for avogardro's constant from NIST webpage, accessed 25 April 2012:
 # http://physics.nist.gov/cgi-bin/cuu/Value?na
@@ -259,6 +259,9 @@ def _fixed_step_solve(dt):
             print volumes[i]
             print b[i]
             ## Number of ions
+            ## Flux b has units of mM/ms
+            ## Volumes has units of um3
+            ## _converstion factor has units of molecules mM^-1 um^-3
             nions = round(dt * b[i] \
                         * _conversion_factor * volumes[i])
             print ("# of ions: %s" % (nions))
