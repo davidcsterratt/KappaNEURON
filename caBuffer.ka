@@ -3,8 +3,8 @@
 %agent: ca(x)
 %agent: B(x)
 
-'ca bindng' ca(x), B(x) -> ca(x!1), B(x!1) @ 1
-'ca release' ca(x!1), B(x!1) -> B(x) @ 1
+'ca bindng' ca(x), B(x) -> ca(x!1), B(x!1) @ 0.013
+'ca release' ca(x!1), B(x!1) -> B(x) @ 13
 
 # Initialise
 %init: 1 ca(x)
@@ -12,5 +12,5 @@
 
 %obs: 'ca' ca(x)
 %obs: 'Bound ca' ca(x!1), B(x!1)
-%obs: 'Free buffer' B(x)
+%obs: 'B' B(x)
 
