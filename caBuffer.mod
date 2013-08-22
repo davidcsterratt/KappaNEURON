@@ -48,6 +48,7 @@ STATE {
 INITIAL {
 	  cai = cai0
     B = B0
+    L = area/(PI*diam)
     vol = L*PI*(diam/2)^2
     k1 = (1e-18)*gamma1*N_A*vol
     k2 = gamma2
