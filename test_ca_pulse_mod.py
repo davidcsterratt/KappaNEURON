@@ -14,7 +14,7 @@ sh.insert("caBuffer")            # My own calcium buffer
 ## sh.insert("capr")            # Standard NEURON Ca pump
 ## k1_capr = 1
 ## sh.pumpdens_capr = 100
-sh.gamma1_caBuffer = 1E-4
+sh.gamma1_caBuffer = 1E-3
 sh.gamma2_caBuffer = 1
 sh.L = 0.1
 sh.diam = 1
