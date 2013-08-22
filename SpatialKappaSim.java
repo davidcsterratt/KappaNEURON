@@ -20,8 +20,10 @@ public class SpatialKappaSim
 {
     private IKappaModel kappaModel;
     private Simulation simulation;
+    private boolean verbose;
 
     public SpatialKappaSim() {
+        verbose = true;
     }
 
     public boolean simulationLoaded() {
@@ -49,9 +51,11 @@ public class SpatialKappaSim
 
     public void runByTime2(float stepEndTime) {
         simulation.runByTime2(stepEndTime);
-        Observation observation = simulation.getCurrentObservation();
-        System.out.println(observation.toString());
-        // This allows us to get the value of a particular observable
+        if (verbose) {
+            // This allows us to get the value of a particular observable
+            Observation observation = simulation.getCurrentObservation();
+            System.out.println(observation.toString());
+        }
     }
 
     public double getObservation(String key) {
@@ -72,9 +76,13 @@ public class SpatialKappaSim
         SimulationState state = (SimulationState) simulation;                
         for (Complex complex : kappaModel.getFixedLocatedInitialValuesMap().keySet()) {
             for (Agent currentAgent : complex.agents) {
-                System.out.println(currentAgent.name);
+                if (verbose) {
+                    System.out.println(currentAgent.name);
+                }
                 if (key.equals(currentAgent.name)) {
-                    System.out.println("ADD STUFF");
+                    if (verbose) {
+                        System.out.println("ADD STUFF");
+                    }
                     agents.add(currentAgent);
                     state.addComplexInstances(agents, (int)value);
                     agents.clear();
