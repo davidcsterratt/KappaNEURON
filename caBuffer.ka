@@ -3,8 +3,8 @@
 %agent: ca(x)
 %agent: B(x)
 
-'ca bindng' ca(x), B(x) -> ca(x!1), B(x!1) @ 0.013
-'ca release' ca(x!1), B(x!1) -> B(x) @ 13
+'ca bindng' ca(x), B(x) -> ca(x!1), B(x!1) @ 0.001
+'ca release' ca(x!1), B(x!1) -> B(x) @ 1
 
 # Initialise
 %init: 1 ca(x)
