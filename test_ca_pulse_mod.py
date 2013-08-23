@@ -11,12 +11,12 @@ sh = h.Section()
 sh.insert("pas")                # Passive channel
 sh.insert("capulse")            # Code to give Ca pulse
 sh.gcalbar_capulse = 0.05
-sh.insert("caBuffer")            # My own calcium buffer
+sh.insert("caPump")            # My own calcium buffer
 ## sh.insert("capr")            # Standard NEURON Ca pump
 ## k1_capr = 1
 ## sh.pumpdens_capr = 100
-sh.gamma1_caBuffer = 1E-3
-sh.gamma2_caBuffer = 1
+sh.gamma1_caPump = 1E-3
+sh.gamma2_caPump = 1
 sh.L = 0.1
 sh.diam = 1
 
@@ -51,7 +51,7 @@ rec_ica = h.Vector()
 rec_ica.record(sh(0.5)._ref_ica)
 ## Record P from spine head
 rec_P = h.Vector()
-rec_P.record(sh(0.5)._ref_P_caBuffer)
+rec_P.record(sh(0.5)._ref_P_caPump)
 #rec_P.record(sh(0.5)._ref_pump_capr)
 
 ## Run

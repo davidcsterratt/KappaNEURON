@@ -12,7 +12,7 @@ UNITS {
 }
 
 NEURON {
-	SUFFIX caBuffer
+	SUFFIX caPump
 	USEION ca READ cai, ica WRITE cai
 	RANGE cai0, P0, gamma1, gamma2, k1, k2, vol
 }
