@@ -49,10 +49,10 @@ rec_cai.record(sh(0.5)._ref_cai)
 ## Record ica from spine head
 rec_ica = h.Vector()
 rec_ica.record(sh(0.5)._ref_ica)
-## Record B from spine head
-rec_B = h.Vector()
-rec_B.record(sh(0.5)._ref_B_caBuffer)
-#rec_B.record(sh(0.5)._ref_pump_capr)
+## Record P from spine head
+rec_P = h.Vector()
+rec_P.record(sh(0.5)._ref_P_caBuffer)
+#rec_P.record(sh(0.5)._ref_pump_capr)
 
 ## Run
 init()
@@ -78,12 +78,12 @@ times = [] # Use list to add another trace later.
 voltages = []
 cai = []
 ica = []
-B = []
+P = []
 times.append(list(rec_t)) # alternativ to `list(rec_t)`: `numpy.array(rec_t)`
 voltages.append(list(rec_v))
 cai.append(list(rec_cai))
 ica.append(list(rec_ica))
-B.append(list(rec_B))
+P.append(list(rec_P))
 # check types by:
 # >>> type(rec_t)
 # >>> type(time[0])
@@ -104,9 +104,9 @@ ax3.set_xlabel("Time [ms]")
 ax3.set_ylabel("ICa [mA/cm2]")
 ax3.axis(ymin=-1, ymax=0.1)
 
-ax4.plot(times[0], B[0])
+ax4.plot(times[0], P[0])
 ax4.set_xlabel("Time [ms]")
-ax4.set_ylabel("B [mM]")
+ax4.set_ylabel("P [mM]")
 ax4.axis(ymin=-1E-5, ymax=2.5E-1)
 
 
