@@ -10,15 +10,20 @@ from neuron import *
 sh = h.Section()
 sh.insert("pas")                # Passive channel
 sh.insert("capulse")            # Code to give Ca pulse
-sh.gcalbar_capulse = 0.05
 sh.insert("caPump")            # My own calcium buffer
 ## sh.insert("capr")            # Standard NEURON Ca pump
 ## k1_capr = 1
 ## sh.pumpdens_capr = 100
-sh.gamma1_caPump = 1E-3
-sh.gamma2_caPump = 1
 sh.L = 0.1
 sh.diam = 1
+
+## This setting of parameters gives a calcium influx and pump
+## activation that is more-or-less scale-independent
+sh.gcalbar_capulse = 0.05*sh.diam
+vol = sh.L*numpy.pi*(sh.diam/2)**2
+sh.gamma1_caPump = 1E-3*0.1*numpy.pi*0.5**2/vol
+sh.gamma2_caPump = 1
+
 
 ## Reaction-diffusion mechanism
 ## This appears to integrate the incoming Ca
