@@ -7,6 +7,8 @@ import org.demonsoft.spatialkappa.model.Agent;
 import org.demonsoft.spatialkappa.model.AgentDeclaration;
 import org.demonsoft.spatialkappa.model.Observation;
 import org.demonsoft.spatialkappa.model.Complex;
+import org.demonsoft.spatialkappa.model.Variable;
+import org.demonsoft.spatialkappa.model.VariableExpression;
 
 // import org.antlr.runtime.CharStream;
 import org.demonsoft.spatialkappa.model.Utils;
@@ -34,10 +36,18 @@ public class SpatialKappaSim
         File f = new File(kappaFile);
         try {
             kappaModel = Utils.createKappaModel(f);
+        } catch (Exception e) {
+            System.out.println("Error in loadFile()");
+        }
+        initialiseSim();
+    }
+
+    public void initialiseSim() {
+        try {
+            System.out.println("initialiseSim()");
             simulation = new TransitionMatchingSimulation(kappaModel);
         } catch (Exception e) {
-            System.out.println("loadFile");
-            System.out.println("ERROR");
+            System.out.println("Error in initialiseSim()");
         }
     }
 
@@ -56,6 +66,19 @@ public class SpatialKappaSim
             Observation observation = simulation.getCurrentObservation();
             System.out.println(observation.toString());
         }
+    }
+
+    public Map<String, Variable> getVariables() {
+        Map<String, Variable> variables = kappaModel.getVariables();
+        for (Map.Entry<String, Variable> variable : variables.entrySet()) {
+            System.out.println("Key = " + variable.getKey() + ", Value = " + variable.getValue());
+        }
+        return(variables);
+    }
+
+    public void setVariable(float input, String label) {
+        kappaModel.addVariable(new VariableExpression(input), label);
+        initialiseSim();
     }
 
     public double getObservation(String key) {

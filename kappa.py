@@ -93,3 +93,6 @@ class Kappa(GeneralizedReaction):
         else:
             return []
 
+    def setVariable(self, variable, value):
+        for kappa_sim in self._kappa_sims:
+            kappa_sim.setVariable(float(value), variable)

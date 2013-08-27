@@ -23,6 +23,7 @@ r = rxd.Region([sh], nrn_region='i')
 ca = rxd.Species(r, name='ca', charge=2, initial=0.01)
 P  = rxd.Species(r, name='P',  charge=0, initial=0.2)
 kappa = rxd.Kappa([ca, P], "caPump.ka", r)
+kappa.setVariable('gamma1', 1E-3)
 
 ## Current clamp stimulus
 stim = h.VClamp(sh(0.5))
