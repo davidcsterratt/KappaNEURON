@@ -139,10 +139,6 @@ public class SpatialKappaSim
         }
     }
 
-    // public void setAgent(String key, double value) {
-    //     addAgent(key, value - getObservation(key));
-    // }
-
     @Override
     public String toString() {
         return(kappaModel.toString());
