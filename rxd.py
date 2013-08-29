@@ -589,6 +589,7 @@ def _setup_matrices():
 
 
 def _init():
+    global _kappa_schemes
     # TODO: check about the 0<x<1 problem alluded to in the documentation
     h.define_shape()
     
@@ -600,6 +601,11 @@ def _init():
             s._register_cptrs()
             s._finitialize()
     _setup_matrices()
+
+    # update Kappa schemes
+    for kptr in _kappa_schemes:
+        k = kptr()
+        if k is not None: k.re_init()
 
 #
 # register the initialization handler and the advance handler

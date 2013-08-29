@@ -3,6 +3,7 @@ import species
 import rxdmath
 import rxd
 import numpy
+import node
 from generalizedReaction import GeneralizedReaction
 from py4j.java_gateway import JavaGateway
 
@@ -33,25 +34,14 @@ class Kappa(GeneralizedReaction):
             # TODO: rename regions to region?
             raise Exception('if membrane_flux then must specify the (unique) membrane regions')
 
-        if not gateway:
-            gateway = JavaGateway()
-            print gateway.entry_point
-
-        ## FIXME: should this go in _update_indices()?
-        for r in self._active_regions:
-            print "Creating Kappa Simulation in region", r
-            kappa_sim = gateway.entry_point.getSpatialKappaSim()
-            kappa_sim.loadFile(kappa_file)
-            self._kappa_sims.append(kappa_sim)
-            ## TODO: Should we check if we are inserting two kappa schemes
-            ## in the same place?
-
         rxd._register_kappa_scheme(self)
     
     def __repr__(self):
         return 'Kappa(%r, kappa_file=%r, regions=%r, membrane_flux=%r)' % (self._involved_species, self._kappa_file, self._regions, self._membrane_flux)
     
     def _update_indices(self):
+        global gateway
+
         # this is called anytime the geometry changes as well as at init
         
         self._indices_dict = {}
@@ -73,8 +63,25 @@ class Kappa(GeneralizedReaction):
         for sptr in self._involved_species:
             s = sptr()
             self._indices_dict[s] = sum([s.indices(r) for r in active_regions], [])
-        
+        ## Check that each species has the same number of elements
+        if (len(set([len(self._indices_dict[s()]) for s in self._involved_species])) != 1):
+            raise Exception('Different numbers of indices for various species') 
         self._active_regions = active_regions
+
+        ## Create the kappa simulations
+        if not gateway:
+            gateway = JavaGateway()
+            print gateway.entry_point
+
+        self._kappa_sims = []   # Will this destroy things properly?
+        for index in self._indices_dict[self._involved_species[0]()]:
+            print "Creating Kappa Simulation in region", r
+            kappa_sim = gateway.entry_point.getSpatialKappaSim()
+            kappa_sim.loadFile(self._kappa_file)
+            self._kappa_sims.append(kappa_sim)
+            ## TODO: Should we check if we are inserting two kappa schemes
+            ## in the same place?
+
         self._mult = [1]
 
     def _do_memb_scales(self):
@@ -96,3 +103,17 @@ class Kappa(GeneralizedReaction):
     def setVariable(self, variable, value):
         for kappa_sim in self._kappa_sims:
             kappa_sim.setVariable(float(value), variable)
+
+    ## This is perhaps an abuse of this function, but it is called at
+    ## init() time
+    def re_init(self):
+        volumes = node._get_data()[0]
+        states = node._get_states()[:]
+        for sptr in self._involved_species:
+            s = sptr()
+            if s:
+                for kappa_sim, i in zip(self._kappa_sims, self._indices_dict[s]):
+                    nions = round(states[i] \
+                                  * rxd._conversion_factor * volumes[i])
+                    ## print "Species ", s.name, " conc ", states[i], " nions ", nions
+                    kappa_sim.setAgentInitialValue(s.name, nions)

@@ -1,3 +1,4 @@
+import static org.demonsoft.spatialkappa.model.Location.NOT_LOCATED;
 import org.demonsoft.spatialkappa.model.KappaModel;
 import org.demonsoft.spatialkappa.model.IKappaModel;
 import org.demonsoft.spatialkappa.tools.TransitionMatchingSimulation;
@@ -94,7 +95,7 @@ public class SpatialKappaSim
     }
     
     // value can be negative
-    public void addAgent(String key, float value) {
+    public void addAgent(String key, double value) {
         List<Agent> agents = new ArrayList<Agent>();
         SimulationState state = (SimulationState) simulation;                
         for (Complex complex : kappaModel.getFixedLocatedInitialValuesMap().keySet()) {
@@ -112,6 +113,39 @@ public class SpatialKappaSim
                 }
             }
         }
+    }
+
+    public void setAgentInitialValue(String key, double value) {
+        List<Agent> agents = new ArrayList<Agent>();
+        for (Complex complex : kappaModel.getFixedLocatedInitialValuesMap().keySet()) {
+            for (Agent currentAgent : complex.agents) {
+                if (key.equals(currentAgent.name)) {
+                    if (verbose) {
+                        System.out.println("Set number of " + currentAgent.name + " to " + value);
+                    }
+                    agents.add(currentAgent);
+                    kappaModel.overrideInitialValue(agents, Integer.toString((int)value), NOT_LOCATED);
+                    agents.clear();
+                }
+            }
+        }
+        initialiseSim();
+        System.out.println("Number of " + key + " is " +  getObservation(key));
+    }
+    
+    public void getFixedLocatedInitialValuesMap() {
+        for (Map.Entry<Complex, Integer> result : kappaModel.getFixedLocatedInitialValuesMap().entrySet()) {
+            System.out.println("Key = " + result.getKey() + ", Value = " + result.getValue());
+        }
+    }
+
+    // public void setAgent(String key, double value) {
+    //     addAgent(key, value - getObservation(key));
+    // }
+
+    @Override
+    public String toString() {
+        return(kappaModel.toString());
     }
 
     public static void main(String[] args)
