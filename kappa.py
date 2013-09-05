@@ -1,3 +1,4 @@
+import os
 import weakref
 import species
 import rxdmath
@@ -20,7 +21,8 @@ class Kappa(GeneralizedReaction):
             self._species.append(weakref.ref(s))
         ## self._species = weakref.ref(species)
         self._involved_species = self._species
-        self._kappa_file = kappa_file
+        self._kappa_file = os.path.join(os.getcwd(), kappa_file)
+        print(os.getcwd())
         if not hasattr(regions, '__len__'):
             regions = [regions]
         self._regions = regions
