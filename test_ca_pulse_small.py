@@ -3,6 +3,11 @@
 ## reaction-diffusion (rxd) mechanism.
 from neuron import *
 from neuron import rxd
+#import unittest
+
+#class TestSequenceFuctions(unittest.TestCase):
+
+#    def test_small(self):
 
 ## Neuron
 
@@ -14,8 +19,8 @@ sh.L = 0.1
 sh.diam = 0.2
 sh.gcalbar_capulse = 0.05 * sh.diam
 
-## Reaction-diffusion mechanism
-## This appears to integrate the incoming Ca
+# Reaction-diffusion mechanism
+# This appears to integrate the incoming Ca
 # WHERE the dynamics will take place
 r = rxd.Region([sh], nrn_region='i')
 
@@ -61,7 +66,7 @@ import matplotlib.pyplot as plt
 times = [] # Use list to add another trace later.
 voltages = []
 times.append(list(rec_t)) # alternative to `list(rec_t)`:
-                          # `numpy.array(rec_t)`
+# `numpy.array(rec_t)`
 voltages.append(list(rec_v))
 
 # Plot the recordings with matplotlib
@@ -111,3 +116,5 @@ fig.show() # If the interpreter stops now: close the figure.
 fig.savefig("doc/test_ca_pulse.pdf", format='pdf')
 
 
+# if __name__ == '__main__':
+#     unittest.main()
