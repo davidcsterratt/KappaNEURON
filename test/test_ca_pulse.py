@@ -108,6 +108,6 @@ ax4.axis(ymin=-1E-5, ymax=2.5E-1)
 fig.show() # If the interpreter stops now: close the figure.
 # For interactive plotting, see `Part 1` -> `ipython`
 
-fig.savefig("doc/test_ca_pulse.pdf", format='pdf')
+fig.savefig("../doc/test_ca_pulse.pdf", format='pdf')
 
 

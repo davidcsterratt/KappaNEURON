@@ -39,6 +39,7 @@ public class SpatialKappaSim
             kappaModel = Utils.createKappaModel(f);
         } catch (Exception e) {
             System.out.println("Error in loadFile()");
+            System.out.println(e);
         }
         initialiseSim();
     }
