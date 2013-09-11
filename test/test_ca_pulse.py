@@ -10,9 +10,12 @@ from neuron import rxd
 sh = h.Section()
 sh.insert("pas")                # Passive channel
 sh.insert("capulse")            # Code to give Ca pulse
-sh.gcalbar_capulse = 0.05
 sh.L = 0.1
-sh.diam = 1
+sh.diam = 4
+
+## This setting of parameters gives a calcium influx and pump
+## activation that is more-or-less scale-independent
+sh.gcalbar_capulse = 0.05*sh.diam
 
 ## Reaction-diffusion mechanism
 ## This appears to integrate the incoming Ca
@@ -23,7 +26,8 @@ r = rxd.Region([sh], nrn_region='i')
 ca = rxd.Species(r, name='ca', charge=2, initial=0.01)
 P  = rxd.Species(r, name='P',  charge=0, initial=0.2)
 kappa = rxd.Kappa([ca, P], "caPump.ka", r)
-kappa.setVariable('gamma1', 1E-3)
+vol = sh.L*numpy.pi*(sh.diam/2)**2
+kappa.setVariable('gamma1', 1E-3*0.1*numpy.pi*0.5**2/vol)
 
 ## Current clamp stimulus
 stim = h.VClamp(sh(0.5))
@@ -110,4 +114,4 @@ fig.show() # If the interpreter stops now: close the figure.
 
 fig.savefig("../doc/test_ca_pulse.pdf", format='pdf')
 
-
+numpy.savez("test_ca_pulse", t=times[0], cai=cai[0])

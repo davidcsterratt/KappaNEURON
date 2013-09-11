@@ -2,6 +2,8 @@
 ## channel on the spine head, calcium accumulation and an
 ## reaction-diffusion (rxd) mechanism.
 from neuron import *
+import numpy
+
 #from neuron import rxd
 
 ## Neuron
@@ -11,11 +13,8 @@ sh = h.Section()
 sh.insert("pas")                # Passive channel
 sh.insert("capulse")            # Code to give Ca pulse
 sh.insert("caPump")            # My own calcium buffer
-## sh.insert("capr")            # Standard NEURON Ca pump
-## k1_capr = 1
-## sh.pumpdens_capr = 100
 sh.L = 0.1
-sh.diam = 1
+sh.diam = 4
 
 ## This setting of parameters gives a calcium influx and pump
 ## activation that is more-or-less scale-independent
@@ -117,4 +116,6 @@ ax4.axis(ymin=-1E-5, ymax=2.5E-1)
 fig.show() # If the interpreter stops now: close the figure.
 # For interactive plotting, see `Part 1` -> `ipython`
 
-fig.savefig("doc/test_ca_pulse_mod.pdf", format='pdf')
+fig.savefig("../doc/test_ca_pulse_mod.pdf", format='pdf')
+
+numpy.savez("test_ca_pulse_mod", t=times[0], cai=cai[0])
