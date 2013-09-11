@@ -245,12 +245,6 @@ def _fixed_step_solve(dt):
     volumes = node._get_data()[0]
     for kptr in _kappa_schemes:
         k = kptr()
-        ## There is one kappa_sim for each active region in the kappa
-        ## scheme.
-        print "SpatialKappa.runByTime2()"
-        print "NEURON time", h.t
-        for kappa_sim in k._kappa_sims:
-            kappa_sim.runByTime2(h.t + dt)      # Second argument is "time per
 
         ## Now we want add any fluxes to the kappa sims and update the
         ## quantities seen in NEURON.
@@ -280,6 +274,13 @@ def _fixed_step_solve(dt):
                 kappa_sim.addAgent(name, nions)
                 states[i] = kappa_sim.getObservation(name) \
                     /(_conversion_factor * volumes[i])
+
+        ## There is one kappa_sim for each active region in the kappa
+        ## scheme.
+        print "SpatialKappa.runByTime2()"
+        print "NEURON time", h.t
+        for kappa_sim in k._kappa_sims:
+            kappa_sim.runByTime2(h.t + dt)      # Second argument is "time per
             
     print states
 
