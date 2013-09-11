@@ -9,6 +9,8 @@ import numpy
 from neuron import nonvint_block_supervisor as nbs
 import scipy.sparse
 import scipy.sparse.linalg
+from scipy.stats import poisson
+import math
 import ctypes
 import atexit
 import options
@@ -270,8 +272,10 @@ def _fixed_step_solve(dt):
                 ## Volumes has units of um3
                 ## _conversion factor has units of molecules mM^-1 um^-3
                 ## FIXME: perhaps make this a Poission variable?
-                nions = round(dt * b[i] \
-                                  * _conversion_factor * volumes[i])
+                mu = dt * b[i]* _conversion_factor * volumes[i]
+                nions = 0.0
+                if mu!=0:
+                    nions = math.copysign(1, mu)*poisson.rvs(abs(mu))
                 print ("# of ions: %s" % (nions))
                 kappa_sim.addAgent(name, nions)
                 states[i] = kappa_sim.getObservation(name) \
