@@ -4,11 +4,11 @@ all:
 
 pid = $(shell /usr/sbin/ss -lp  '( dport = :25333 or sport = :25333 )' | tail -n +2 |  perl -p -e 's/.*java\",([0-9]+),.*/\1/;')
 
-CLASSFILES = SpatialKappaSim.class SpatialKappaEntryPoint.class
+CLASSFILES = SpatialKappaSim.class SpatialKappaSimEntryPoint.class
 JAVAFILES := $(CLASSFILES:.class=.java)
 
-$(CLASSFILES): SpatialKappaSim.java SpatialKappaSimEntryPoint.java
-	javac -cp /home/sterratt/projects/mlm/SpatialKappa/SpatialKappa-v2.1.1.jar:../py4j/py4j0.7.jar SpatialKappaSim.java SpatialKappaSimEntryPoint.java
+$(CLASSFILES): $(JAVAFILES)
+	javac -cp /home/sterratt/projects/mlm/SpatialKappa/SpatialKappa-v2.1.1.jar:../py4j/py4j0.7.jar $(JAVAFILES)
 
 .PHONY test: $(CLASSFILES)
 	make -C test test
