@@ -78,7 +78,7 @@ class Kappa(GeneralizedReaction):
         self._kappa_sims = []   # Will this destroy things properly?
         for index in self._indices_dict[self._involved_species[0]()]:
             print "Creating Kappa Simulation in region", r
-            kappa_sim = gateway.entry_point.getSpatialKappaSim()
+            kappa_sim = gateway.entry_point.newSpatialKappaSim()
             kappa_sim.loadFile(self._kappa_file)
             self._kappa_sims.append(kappa_sim)
             ## TODO: Should we check if we are inserting two kappa schemes
