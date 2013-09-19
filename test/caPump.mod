@@ -24,7 +24,7 @@ PARAMETER {
 		: from this default.
     : P0 = 10000 molecules/(_conversion_factor*volume)
     : = 10000/(602214.129 * 0.0785398163397)
-    P0 = 0.2114264 (mM)
+    P0 = 0.20 (mM)
     gamma1 = 1 (/ms)
     gamma2 = 1 (/ms)
     N_A = 6.02205E23
