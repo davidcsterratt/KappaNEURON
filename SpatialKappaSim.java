@@ -101,13 +101,9 @@ public class SpatialKappaSim
         SimulationState state = (SimulationState) simulation;                
         for (Complex complex : kappaModel.getFixedLocatedInitialValuesMap().keySet()) {
             for (Agent currentAgent : complex.agents) {
-                if (verbose) {
-                    System.out.println(currentAgent.name);
-                }
+                // if (verbose) { System.out.println(currentAgent.name); }
                 if (key.equals(currentAgent.name)) {
-                    if (verbose) {
-                        System.out.println("ADD STUFF");
-                    }
+                    // if (verbose) { System.out.println("ADD STUFF"); }
                     agents.add(currentAgent);
                     state.addComplexInstances(agents, (int)value);
                     agents.clear();
