@@ -219,14 +219,15 @@ preconditioner = None
 def _fixed_step_solve(dt):
     global preconditioner
     global _kappa_schemes
-
-    print "FIXED STEP SOLVE"
-    print "STATES"
+    
+    print("---------------------------------------------------------------------------")
+    print("FIXED STEP SOLVE. NEURON time %f" % h.t)
+    print "states"
     # TODO: use linear approx not constant approx
     states = node._get_states()[:]
     print states
 
-    print "FLUX b"
+    print "flux b"
     ## DCS: This gets ICa and computes changes due to reactions
     b = _rxd_reaction(states)
     print b
@@ -248,40 +249,48 @@ def _fixed_step_solve(dt):
 
         ## Now we want add any fluxes to the kappa sims and update the
         ## quantities seen in NEURON.
+
+        ## There is one kappa_sim for each active region in the kappa
+        ## scheme.
+
+        print "\nRUN 0.5 KAPPA STEP"
+        for kappa_sim in k._kappa_sims:
+            kappa_sim.runByTime2(h.t - dt/2)      # Second argument is "time per
         
         ## TODO: At present this only works when one species is
         ## defined. To get multiple species working, we will need to
         ## look through _involved_species and _indices
-        print "Adding fluxes to Kappa"
+        print "\nADDING FLUXES TO KAPPA"
         for  sptr in k._involved_species:
             s = sptr()
             name = s.name
             print "ION: ", name
-
             for kappa_sim, i in zip(k._kappa_sims, k._indices_dict[s]):
-                print "volume ", volumes[i]
-                print "flux", b[i]
                 ## Number of ions
                 ## Flux b has units of mM/ms
                 ## Volumes has units of um3
                 ## _conversion factor has units of molecules mM^-1 um^-3
                 ## FIXME: perhaps make this a Poission variable?
-                mu = dt * b[i]* _conversion_factor * volumes[i]
+                mu = dt * b[i] * _conversion_factor * volumes[i]
                 nions = 0.0
                 if mu!=0:
                     nions = math.copysign(1, mu)*poisson.rvs(abs(mu))
-                print ("# of ions: %s" % (nions))
+                print ("index %d; volume: %f ; flux %f ; # of ions: %s" % (i, volumes[i], b[i], nions))
                 kappa_sim.addAgent(name, nions)
+
+        print "\nRUN 0.5 KAPPA STEP"                
+        for kappa_sim in k._kappa_sims:
+            kappa_sim.runByTime2(h.t)      # Second argument is "time per
+
+        ## Update states
+        for  sptr in k._involved_species:
+            s = sptr()
+            name = s.name
+            for kappa_sim, i in zip(k._kappa_sims, k._indices_dict[s]):
                 states[i] = kappa_sim.getObservation(name) \
                     /(_conversion_factor * volumes[i])
 
-        ## There is one kappa_sim for each active region in the kappa
-        ## scheme.
-        print "SpatialKappa.runByTime2()"
-        print "NEURON time", h.t
-        for kappa_sim in k._kappa_sims:
-            kappa_sim.runByTime2(h.t + dt)      # Second argument is "time per
-            
+    print "Updated states"                
     print states
 
     # clear the zero-volume "nodes"
