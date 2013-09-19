@@ -11,7 +11,7 @@ sh = h.Section()
 sh.insert("pas")                # Passive channel
 sh.insert("capulse")            # Code to give Ca pulse
 sh.L = 0.1
-sh.diam = 4
+sh.diam = 0.2
 #h.dt = 0.001
 
 ## This setting of parameters gives a calcium influx and pump
@@ -115,7 +115,7 @@ fig.show() # If the interpreter stops now: close the figure.
 
 fig.savefig("../doc/test_ca_pulse.pdf", format='pdf')
 
-numpy.savez("test_ca_pulse", t=times[0], cai=cai[0], Pi=Pi[0])
+numpy.savez("test_ca_pulse", t=times[0], cai=cai[0], Pi=Pi[0], ica=ica[0], voltages=voltages[0], diam=sh.diam)
 
 print('sh.diam = %2.2f' % (sh.diam))
 import compare_output
