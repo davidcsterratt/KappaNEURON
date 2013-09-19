@@ -12,6 +12,7 @@ sh.insert("pas")                # Passive channel
 sh.insert("capulse")            # Code to give Ca pulse
 sh.L = 0.1
 sh.diam = 4
+#h.dt = 0.001
 
 ## This setting of parameters gives a calcium influx and pump
 ## activation that is more-or-less scale-independent
@@ -23,7 +24,7 @@ sh.gcalbar_capulse = 0.05*sh.diam
 r = rxd.Region([sh], nrn_region='i')
 
 # WHO are the actors
-ca = rxd.Species(r, name='ca', charge=2, initial=0.01)
+ca = rxd.Species(r, name='ca', charge=2, initial=0.001)
 P  = rxd.Species(r, name='P',  charge=0, initial=0.2)
 kappa = rxd.Kappa([ca, P], "caPump.ka", r)
 vol = sh.L*numpy.pi*(sh.diam/2)**2
@@ -114,4 +115,7 @@ fig.show() # If the interpreter stops now: close the figure.
 
 fig.savefig("../doc/test_ca_pulse.pdf", format='pdf')
 
-numpy.savez("test_ca_pulse", t=times[0], cai=cai[0])
+numpy.savez("test_ca_pulse", t=times[0], cai=cai[0], Pi=Pi[0])
+
+print('sh.diam = %2.2f' % (sh.diam))
+import compare_output
