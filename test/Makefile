@@ -5,4 +5,4 @@ reference:
 	python2.7 test_ca_pulse_mod.py
 
 test: reference
-	@ CLASSPATH=..:/home/sterratt/projects/mlm/SpatialKappa/SpatialKappa-v2.1.1.jar:'../../SpatialKappa/*':../../py4j/py4j0.7.jar python2.7 test_ca_pulse.py
+	@ CLASSPATH=..:/home/sterratt/projects/mlm/SpatialKappa/SpatialKappa-v2.1.1.jar:'../../SpatialKappa/*':../../py4j/py4j0.7.jar python2.7 -i test_ca_pulse.py
