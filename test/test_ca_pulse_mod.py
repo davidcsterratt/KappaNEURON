@@ -15,12 +15,13 @@ sh.insert("capulse")            # Code to give Ca pulse
 sh.insert("caPump")            # My own calcium buffer
 sh.L = 0.1
 sh.diam = 4
+#h.dt = 0.001
 
 ## This setting of parameters gives a calcium influx and pump
 ## activation that is more-or-less scale-independent
 sh.gcalbar_capulse = 0.05*sh.diam
 vol = sh.L*numpy.pi*(sh.diam/2)**2
-sh.gamma1_caPump = 1E-3*0.1*numpy.pi*0.5**2/vol
+sh.gamma1_caPump = 1E-3*(0.1*numpy.pi*((1./2)**2))/vol
 sh.gamma2_caPump = 1
 
 
@@ -118,4 +119,5 @@ fig.show() # If the interpreter stops now: close the figure.
 
 fig.savefig("../doc/test_ca_pulse_mod.pdf", format='pdf')
 
-numpy.savez("test_ca_pulse_mod", t=times[0], cai=cai[0])
+numpy.savez("test_ca_pulse_mod", t=times[0], cai=cai[0], Pi=Pi[0])
+
