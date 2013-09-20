@@ -22,7 +22,7 @@ import java.util.Map;
 public class SpatialKappaSim
 {
     private IKappaModel kappaModel;
-    private Simulation simulation;
+    private TransitionMatchingSimulation simulation;
     private boolean verbose;
 
     public SpatialKappaSim() {
@@ -81,6 +81,10 @@ public class SpatialKappaSim
     public void setVariable(float input, String label) {
         kappaModel.addVariable(new VariableExpression(input), label);
         initialiseSim();
+    }
+
+    public float getTime() {
+        return(simulation.getTime());
     }
 
     public double getObservation(String key) {
