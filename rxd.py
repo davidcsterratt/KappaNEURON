@@ -277,10 +277,19 @@ def _fixed_step_solve(dt):
                     nions = math.copysign(1, mu)*poisson.rvs(abs(mu))
                 print ("index %d; volume: %f ; flux %f ; # of ions: %s" % (i, volumes[i], b[i], nions))
                 kappa_sim.addAgent(name, nions)
+                t_kappa = kappa_sim.getTime()
+                discrepancy = h.t - t_kappa
+                print('Kappa Time %f; NEURON time %f; Discrepancy %f' % (t_kappa, h.t, discrepancy))
+
 
         print "\nRUN 0.5 KAPPA STEP"                
         for kappa_sim in k._kappa_sims:
             kappa_sim.runByTime2(h.t)      # Second argument is "time per
+            t_kappa = kappa_sim.getTime()
+            discrepancy = h.t - t_kappa
+            print('Kappa Time %f; NEURON time %f; Discrepancy %f' % (t_kappa, h.t, discrepancy))
+            if (abs(discrepancy) > 1e-6):
+                raise NameError('NEURON time (%f) does not match Kappa time (%f). Discrepancy = %f ' % (h.t, t_kappa, h.t - t_kappa))
 
         ## Update states
         for  sptr in k._involved_species:
