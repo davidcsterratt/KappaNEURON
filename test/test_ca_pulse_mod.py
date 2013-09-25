@@ -1,10 +1,7 @@
-## HH cell with spine and excitatory autapase, along with an L-type Ca
-## channel on the spine head, calcium accumulation and an
-## reaction-diffusion (rxd) mechanism.
+## Spine head into which Ca flows via a very simple channel and is
+## pumped out.  Voltage clamp ensures almost constant Ca flow.
 from neuron import *
 import numpy
-
-#from neuron import rxd
 
 ## Neuron
 
