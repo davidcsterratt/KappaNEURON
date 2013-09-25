@@ -1,0 +1,32 @@
+PREFIX=${HOME}
+
+sudo apt-get install hg bison
+
+cd ${PREFIX}/src
+mkdir neuron
+cd neuron
+# Install neuron
+if [ -d iv ] ; then
+   cd iv
+   hg pull
+else
+   hg clone http://www.neuron.yale.edu/hg/neuron/iv # skip this if you don't want the GUI
+fi
+if [ -d nrn ] ; then
+   cd nrn
+   hg pull
+else 
+   hg clone http://www.neuron.yale.edu/hg/neuron/nrn
+fi
+cd iv/
+./build.sh 
+./configure --prefix=$PREFIX
+make 
+make install
+cd ../nrn
+./build.sh
+./configure --prefix=$PREFIX --with-iv=$PREFIX  --with-nrnpython=/usr/bin/python2.7
+make
+make install
+
+# Python packages are installed in ${PREFIX}/lib/python

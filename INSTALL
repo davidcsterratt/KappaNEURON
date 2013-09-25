@@ -1,0 +1,12 @@
+# 0. Decide on ${PREFIX} directory
+PREFIX=${HOME}
+
+# 1. Install NEURON with python2.7 - see INSTALL-neuron for details
+
+# 2. Install modified version of SpatialKappa
+
+# 3. Copy rxd.py and kappa.py into the python library directory
+
+cp rxd.py ${PREFIX}/lib/python/neuron/rxd/
+cp kappa.py ${PREFIX}/lib/python/neuron/rxd/
+echo "from kappa import Kappa" >> ${PREFIX}/lib/python/neuron/rxd/__init__.py
