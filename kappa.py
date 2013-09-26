@@ -37,10 +37,17 @@ class Kappa(GeneralizedReaction):
             raise Exception('if membrane_flux then must specify the (unique) membrane regions')
 
         rxd._register_kappa_scheme(self)
+        self._weakref = weakref.ref(self) # Seems to be needed for the destructor
     
     def __repr__(self):
         return 'Kappa(%r, kappa_file=%r, regions=%r, membrane_flux=%r)' % (self._involved_species, self._kappa_file, self._regions, self._membrane_flux)
     
+    def __del__(self):
+        ## A similar idiom to rxd._register_kappa_scheme() doesn't seem to work
+        rxd._unregister_kappa_scheme(self._weakref)
+        for kappa_sim in self._kappa_sims:
+            del(kappa_sim)
+
     def _update_indices(self):
         global gateway
 
@@ -119,3 +126,4 @@ class Kappa(GeneralizedReaction):
                                   * rxd._conversion_factor * volumes[i])
                     ## print "Species ", s.name, " conc ", states[i], " nions ", nions
                     kappa_sim.setAgentInitialValue(s.name, nions)
+

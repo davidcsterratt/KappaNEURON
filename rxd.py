@@ -86,6 +86,9 @@ def _register_kappa_scheme(r):
     global _kappa_schemes
     _kappa_schemes.append(weakref.ref(r))
 
+def _unregister_kappa_scheme(weakref_r):
+    global _kappa_schemes
+    _kappa_schemes.remove(weakref_r)
 
 def _after_advance():
     global last_diam_change_cnt
