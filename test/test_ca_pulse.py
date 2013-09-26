@@ -29,7 +29,7 @@ kappa = rxd.Kappa([ca, P], "caPump.ka", r)
 vol = sh.L*numpy.pi*(sh.diam/2)**2
 kappa.setVariable('gamma1', 1E-3*0.1*numpy.pi*0.5**2/vol)
 
-## Current clamp stimulus
+## Voltage clamp stimulus
 stim = h.VClamp(sh(0.5))
 stim.dur[0] = 10
 stim.dur[1] = 10

@@ -30,7 +30,7 @@ sh.gamma2_caPump = 1
 # WHO are the actors
 #ca = rxd.Species(r, name='ca', charge=2, initial=0.01)
 
-## Current clamp stimulus
+## Voltage clamp stimulus
 stim = h.VClamp(sh(0.5))
 stim.dur[0] = 10
 stim.dur[1] = 10
