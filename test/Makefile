@@ -1,6 +1,5 @@
-PREFIX = /home/dcs
-# PREFIX = /disk/scratch/sterratt
-PYTHONPATH = $(PREFIX)/lib/python
+# PREFIX = /home/dcs
+PREFIX = /disk/scratch/sterratt
 
 MODFILES = *.mod *.inc
 
