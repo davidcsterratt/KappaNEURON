@@ -1,12 +1,14 @@
 #!/bin/sh
 
-PREFIX=/home/dcs
+# PREFIX=/home/dcs
+PREFIX=/disk/scratch/sterratt
 SKPATH=${HOME}/projects/mlm/SpatialKappa
 SKJAR=${SKPATH}/SpatialKappa-v2.1.1.jar
 PY4JJAR=${HOME}/projects/mlm/py4j/py4j0.7.jar
 NRNKAPPAPATH=${HOME}/projects/mlm/rxd-SpatialKappa
+# Needed for ss on some sytems
+export PATH=${PATH}:/usr/sbin
 SS=ss
-# SS=/usr/sbin/ss
 
 ## Kill gateway process if it is running 
 pid=$(${SS} -lp  '( dport = :25333 or sport = :25333 )' | tail -n +2 |  perl -p -e 's/.*java\",([0-9]+),.*/\1/;')
@@ -20,4 +22,4 @@ java SpatialKappaSimEntryPoint main &
 sleep 1
 
 ## Start NEURON
-PYTHONPATH=${PREFIX}/lib/python python2.7 $*
+PYTHONPATH=${PREFIX}/lib/python:${PYTHONPATH} python2.7 $*
