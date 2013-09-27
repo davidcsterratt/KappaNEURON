@@ -3,9 +3,12 @@
 from test_ca_pulse_common import *
 from neuron import rxd
 
-def run(diam=0.2):
+def run(diam=0.2, 
+        gcalbar=0.05,
+        gamma2=1,
+        P0=0.2):
     # Neuron spine head
-    sh = make_spine_head(diam=diam)
+    sh = make_spine_head(diam=diam, gcalbar=gcalbar)
 
     ## Reaction-diffusion mechanism
     ## This appears to integrate the incoming Ca
@@ -13,11 +16,12 @@ def run(diam=0.2):
     r = rxd.Region([sh], nrn_region='i')
 
     # WHO are the actors
-    ca = rxd.Species(r, name='ca', charge=2, initial=0.001)
-    P  = rxd.Species(r, name='P',  charge=0, initial=0.2)
+    ca = rxd.Species(r, name='ca', charge=2, initial=0.0)
+    P  = rxd.Species(r, name='P',  charge=0, initial=P0)
     kappa = rxd.Kappa([ca, P], "caPump.ka", r)
     vol = sh.L*numpy.pi*(sh.diam/2)**2
     kappa.setVariable('gamma1', 1E-3*0.1*numpy.pi*0.5**2/vol)
+    kappa.setVariable('gamma2', gamma2)
 
     stim = insert_vclamp(sh)
 

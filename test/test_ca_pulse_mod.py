@@ -3,16 +3,20 @@
 from test_ca_pulse_common import *
 import numpy
 
-def run(diam=0.2):
+def run(diam=0.2, 
+        gcalbar=0.05,
+        gamma2=1,
+        P0=0.2):
     # Neuron spine Head
-    sh = make_spine_head(diam=diam)
+    sh = make_spine_head(diam=diam, gcalbar=gcalbar)
     sh.insert("caPump")            # My own calcium buffer
 
     ## This setting of parameters gives a calcium influx and pump
     ## activation that is more-or-less scale-independent
     vol = sh.L*numpy.pi*(sh.diam/2)**2
     sh.gamma1_caPump = 1E-3*(0.1*numpy.pi*((1./2)**2))/vol
-    sh.gamma2_caPump = 1
+    sh.gamma2_caPump = gamma2
+    sh.P0_caPump = P0
 
     stim = insert_vclamp(sh)
 

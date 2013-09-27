@@ -95,18 +95,25 @@ def plot_records(tcp_mod, tcp):
     
     return fig, ax
 
-def compare_traces(diam=0.2, gcalbar=0.05):
+def compare_traces(diam=0.2, gcalbar=0.05, 
+                   gamma2=1, P0=0.2):
     import test_ca_pulse_mod
-    test_ca_pulse_mod.run(diam=diam)
+    test_ca_pulse_mod.run(diam=diam, 
+                          gcalbar=gcalbar,
+                          gamma2=gamma2,
+                          P0=P0)
     import test_ca_pulse
-    test_ca_pulse.run(diam=diam)
+    test_ca_pulse.run(diam=diam, 
+                      gcalbar=gcalbar,
+                      gamma2=gamma2,
+                      P0=P0)
     
     tcp     = numpy.load("test_ca_pulse.npz")
     tcp_mod = numpy.load("test_ca_pulse_mod.npz")
 
     fig, ax = plot_records(tcp_mod, tcp)
 
-    filename = re.sub('\.', '_', 'compare_ca_pulse-diam%1.1f' % diam) + '.pdf'
+    filename = re.sub('\.', '_', 'compare_ca_pulse-diam:%1.1f-gcalbar:%1.3f-gamma2:%1.3f-P0:%1.3f' % (diam, gcalbar, gamma2, P0)) + '.pdf'
     fig.savefig('../doc/%s' % filename, format='pdf')
 
     print('Ca Discrepancy: ' + str(max(abs(tcp_mod['cai'] - tcp['cai']))))
