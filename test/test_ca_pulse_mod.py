@@ -3,11 +3,9 @@
 from test_ca_pulse_common import *
 import numpy
 
-def run():
-    ## Neuron
-
-    # Spine Head
-    sh = make_spine_head()
+def run(diam=0.2):
+    # Neuron spine Head
+    sh = make_spine_head(diam=diam)
     sh.insert("caPump")            # My own calcium buffer
 
     ## This setting of parameters gives a calcium influx and pump

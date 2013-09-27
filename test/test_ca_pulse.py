@@ -3,9 +3,9 @@
 from test_ca_pulse_common import *
 from neuron import rxd
 
-def run():
-    ## Neuron
-    sh = make_spine_head()
+def run(diam=0.2):
+    # Neuron spine head
+    sh = make_spine_head(diam=diam)
 
     ## Reaction-diffusion mechanism
     ## This appears to integrate the incoming Ca

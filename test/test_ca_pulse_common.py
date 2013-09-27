@@ -4,6 +4,7 @@ from neuron import *
 from subprocess import call
 import re
 import matplotlib.pyplot as plt
+import numpy
 
 
 def make_spine_head(L=0.1, diam=0.2, gcalbar=0.05):
@@ -63,16 +64,7 @@ def run_and_save(sh, rec_Pi, dataname='test_ca_pulse_mod'):
 
     numpy.savez(dataname, t=times[0], cai=cai[0], Pi=Pi[0], ica=ica[0], voltages=voltages[0], diam=sh.diam)
 
-
-def compare_traces():
-    import test_ca_pulse_mod
-    test_ca_pulse_mod.run()
-    import test_ca_pulse
-    test_ca_pulse.run()
-    
-    tcp     = numpy.load("test_ca_pulse.npz")
-    tcp_mod = numpy.load("test_ca_pulse_mod.npz")
-
+def plot_records(tcp_mod, tcp):
     fig, ax = plt.subplots(nrows=4, ncols=1)
 
     ax[0].plot(tcp_mod['t'], tcp_mod['voltages'])
@@ -87,17 +79,11 @@ def compare_traces():
     ax[1].set_ylabel("ICa [mA/cm2]")
     ax[1].axis(ymin=-1, ymax=0.1)
 
-
     ax[2].plot(tcp_mod['t'], tcp_mod['cai'])
     ax[2].plot(tcp['t'], tcp['cai'], 'r')
     ax[2].set_xlabel("Time [ms]")
     ax[2].set_ylabel("Ca [mM]")
     ax[2].axis(ymin=-1E-2, ymax=0.5E-1)
-
-    # ax[1][0].plot(tcp_mod['t'], tcp_mod['cai'] - tcp['cai'])
-    # ax[1][0].set_xlabel("Time [ms]")
-    # ax[1][0].set_ylabel("Ca [mM]")
-    # ax[1][0].axis(ymin=-3E-2, ymax=3E-2)
 
     ax[3].plot(tcp_mod['t'], tcp_mod['Pi'])
     ax[3].plot(tcp['t'], tcp['Pi'], 'r')
@@ -105,20 +91,26 @@ def compare_traces():
     ax[3].set_ylabel("P [mM]")
     ax[3].axis(ymin=-1E-2, ymax=3E-1)
 
-    # ax[1][1].plot(tcp_mod['t'], tcp_mod['Pi'] - tcp['Pi'])
-    # ax[1][1].set_xlabel("Time [ms]")
-    # ax[1][1].set_ylabel("P [mM]")
-    # ax[1][1].axis(ymin=-3E-2, ymax=3E-2)
-
-
     fig.show()
-    filename = re.sub('\.', '_', 'compare_ca_pulse-diam%1.1f' % tcp['diam']) + '.pdf'
+    
+    return fig, ax
+
+def compare_traces(diam=0.2, gcalbar=0.05):
+    import test_ca_pulse_mod
+    test_ca_pulse_mod.run(diam=diam)
+    import test_ca_pulse
+    test_ca_pulse.run(diam=diam)
+    
+    tcp     = numpy.load("test_ca_pulse.npz")
+    tcp_mod = numpy.load("test_ca_pulse_mod.npz")
+
+    fig, ax = plot_records(tcp_mod, tcp)
+
+    filename = re.sub('\.', '_', 'compare_ca_pulse-diam%1.1f' % diam) + '.pdf'
     fig.savefig('../doc/%s' % filename, format='pdf')
 
     print('Ca Discrepancy: ' + str(max(abs(tcp_mod['cai'] - tcp['cai']))))
     print('Ca Pc Discrepancy: %2.2f' % (100*max(abs(tcp['cai'] - tcp_mod['cai']))/max(tcp_mod['cai'])))
-
-
 
     print('P Discrepancy: ' + str(max(abs(tcp['Pi'] - tcp_mod['Pi']))))
     print('P Pc Discrepancy: %2.2f' % (100*max(abs(tcp['Pi'] - tcp_mod['Pi']))/max(tcp_mod['Pi'])))
@@ -129,3 +121,82 @@ def compare_traces():
     # Pimodsig = numpy.array(tcp_mod['Pi'][sigmask])
     # print('Mean P disparity in signal: %2.4f' % numpy.mean(Pisig - Pimodsig))
     # print('Mean Ca disparity in signal: %2.4f' % numpy.mean(tcp['Cai'][sigmask] - tcp_mod['Cai'][sigmask]))
+
+def animate_traces():
+    tcp     = numpy.load("test_ca_pulse.npz")
+    tcp_mod = numpy.load("test_ca_pulse_mod.npz")
+
+    fig, ax = plot_records(tcp_mod, tcp)
+    Tmax = int(numpy.floor(max(tcp['t'])));
+    Vlim = [-80, 50]
+    Ilim = [-0.2, 0.01]
+    cailim = [-1E-2, 0.5E-1]
+    Pilim = [-1E-2, 3E-1]
+    for T in numpy.nditer(numpy.arange(0, Tmax, 0.5)):
+        inds = numpy.array(tcp_mod['t']) <= T
+        ax[0].cla()
+        ax[0].set_xlim([0, Tmax])
+        ax[0].set_ylim(Vlim)
+        ax[0].plot(tcp_mod['t'][inds], tcp_mod['voltages'][inds])
+        ax[0].set_ylabel("V [mV]")
+
+        ax[1].cla()
+        ax[1].set_xlim([0, Tmax])
+        ax[1].set_ylim(Ilim)
+        ax[1].plot(tcp_mod['t'][inds], tcp_mod['ica'][inds])
+        ax[1].set_ylabel("ICa [mA/cm2]")
+
+        ax[2].cla()
+        ax[2].set_xlim([0, Tmax])
+        ax[2].set_ylim(cailim)
+        ax[2].plot(tcp_mod['t'][inds], tcp_mod['cai'][inds])
+        ax[2].set_ylabel("Ca [mM]")
+
+        ax[3].cla()
+        ax[3].set_xlim([0, Tmax])
+        ax[3].set_ylim(Pilim)
+        ax[3].plot(tcp_mod['t'][inds], tcp_mod['Pi'][inds])
+        ax[3].set_ylabel("P [mM]")
+
+        print(T)
+        filename = 'animation/test_ca_pulse%04d.png' % (T*10)
+        print(filename)
+        fig.savefig(filename)
+
+    for T in numpy.nditer(numpy.arange(0, Tmax, 0.5)):
+        inds = numpy.array(tcp_mod['t']) <= T
+        ax[0].cla()
+        ax[0].set_xlim([0, Tmax])
+        ax[0].set_ylim(Vlim)
+        ax[0].plot(tcp_mod['t'], tcp_mod['voltages'])
+        ax[0].plot(tcp['t'][inds], tcp['voltages'][inds], 'r')
+        ax[0].set_ylabel("V [mV]")
+
+        ax[1].cla()
+        ax[1].set_xlim([0, Tmax])
+        ax[1].set_ylim(Ilim)
+        ax[1].plot(tcp_mod['t'], tcp_mod['ica'])
+        ax[1].plot(tcp['t'][inds], tcp['ica'][inds], 'r')
+        ax[1].set_ylabel("ICa [mA/cm2]")
+
+        ax[2].cla()
+        ax[2].set_xlim([0, Tmax])
+        ax[2].set_ylim(cailim)
+        ax[2].plot(tcp_mod['t'], tcp_mod['cai'])
+        ax[2].plot(tcp['t'][inds], tcp['cai'][inds], 'r')
+        ax[2].set_ylabel("Ca [mM]")
+
+        ax[3].cla()
+        ax[3].set_xlim([0, Tmax])
+        ax[3].set_ylim(Pilim)
+        ax[3].plot(tcp_mod['t'], tcp_mod['Pi'])
+        ax[3].plot(tcp['t'][inds], tcp['Pi'][inds], 'r')
+        ax[3].set_ylabel("P [mM]")
+
+        fig.savefig('animation/test_ca_pulse%04d.png' % ((T + Tmax)*10))
+
+    os.system("mencoder 'mf://animation/*.png' -mf type=png:fps=10 -ovc lavc -lavcopts vcodec=wmv2 -oac copy -o animation.mpg")
+
+        
+
+
