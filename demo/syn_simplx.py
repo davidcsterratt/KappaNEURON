@@ -31,9 +31,9 @@ sh.g_pas = 0.01
 r = rxd.Region([sh], nrn_region='i')
 
 # WHO are the actors
-ca  = rxd.Species(r, name='ca', charge=2, initial=0.1)
+ca  = rxd.Species(r, name='ca', charge=2, initial=0.001)
 cam = rxd.Species(r, name='CaM', charge=0)
-kappa = rxd.Kappa([ca, cam], "simplx-single.ka", r)
+kappa = rxd.Kappa([ca, cam], "simplx-single.ka", r, time_units="s")
 
 ## This setting of parameters gives a calcium influx and pump
 ## activation that is more-or-less scale-independent
