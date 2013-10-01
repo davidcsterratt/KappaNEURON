@@ -5,9 +5,13 @@ public class SpatialKappaSimEntryPoint {
     public SpatialKappaSimEntryPoint() {
     }
 
-    public SpatialKappaSim newSpatialKappaSim() {
-        SpatialKappaSim sks = new SpatialKappaSim();
+    public SpatialKappaSim newSpatialKappaSim(String timeUnits) {
+        SpatialKappaSim sks = new SpatialKappaSim(timeUnits);
         return sks;
+    }
+
+    public SpatialKappaSim newSpatialKappaSim() {
+        return this.newSpatialKappaSim("ms");
     }
 
     public static void main(String[] args) {

@@ -291,7 +291,7 @@ def _fixed_step_solve(dt):
             t_kappa = kappa_sim.getTime()
             discrepancy = h.t - t_kappa
             print('Kappa Time %f; NEURON time %f; Discrepancy %f' % (t_kappa, h.t, discrepancy))
-            if (abs(discrepancy) > 1e-6):
+            if (abs(discrepancy) > 1e-3):
                 raise NameError('NEURON time (%f) does not match Kappa time (%f). Discrepancy = %f ' % (h.t, t_kappa, h.t - t_kappa))
 
         ## Update states

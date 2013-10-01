@@ -18,15 +18,30 @@ import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
+import java.lang.IllegalArgumentException;
 
 public class SpatialKappaSim
 {
     private IKappaModel kappaModel;
     private TransitionMatchingSimulation simulation;
     private boolean verbose;
+    public double timeMult;
+
+    public SpatialKappaSim(String timeUnits) {
+        verbose = true;
+        Map allowedTimeUnits = new HashMap();
+        allowedTimeUnits.put("s" , new Double(1E-3));
+        allowedTimeUnits.put("ms", new Double(1.0));
+        if (!allowedTimeUnits.containsKey(timeUnits)) {
+            String error = "timeUnits must be one of " + allowedTimeUnits.keySet().toString();
+            throw(new IllegalArgumentException(error));
+        }
+        timeMult = (double)allowedTimeUnits.get(timeUnits);
+    }
 
     public SpatialKappaSim() {
-        verbose = true;
+        this("ms");
     }
 
     public boolean simulationLoaded() {
@@ -62,7 +77,7 @@ public class SpatialKappaSim
     }
 
     public void runByTime2(float stepEndTime) {
-        simulation.runByTime2(stepEndTime);
+        simulation.runByTime2(stepEndTime*(float)timeMult);
         if (verbose) {
             // This allows us to get the value of a particular observable
             Observation observation = simulation.getCurrentObservation();
@@ -84,7 +99,7 @@ public class SpatialKappaSim
     }
 
     public float getTime() {
-        return(simulation.getTime());
+        return(simulation.getTime()/(float)timeMult);
     }
 
     public double getObservation(String key) {
