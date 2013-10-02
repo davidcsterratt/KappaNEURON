@@ -51,11 +51,15 @@ iclamp.dur = 0.3
 r = rxd.Region([sh], nrn_region='i')
 
 # WHO are the actors
-ca  = rxd.Species(r, name='ca', charge=2, initial=0.001)
-cam = rxd.Species(r, name='CaM', charge=0, initial=0.5)
-PSD95NR2 = rxd.Species(r, name='PSD95NR2', charge=0)
-CaMKII_CaM = rxd.Species(r, name='CaMKII_CaM', charge=0)
-kappa = rxd.Kappa([ca, cam, PSD95NR2, CaMKII_CaM], "simplx-bhalla.ka", r, time_units="s")
+ca         = rxd.Species(r, name='ca'         , charge=2, initial=0.001)
+cam        = rxd.Species(r, name='CaM'        , charge=0, initial=0.5)
+PSD95NR2   = rxd.Species(r, name='PSD95NR2'   , charge=0)
+CaMKII_CaM = rxd.Species(r, name='CaMKII_CaM' , charge=0)
+stargazin  = rxd.Species(r, name='stargazin'  , charge=0)
+SAP97GluR1 = rxd.Species(r, name='SAP97GluR1' , charge=0)
+SAP97NR2   = rxd.Species(r, name='SAP97NR2'   , charge=0)
+
+kappa = rxd.Kappa([ca, cam, PSD95NR2, CaMKII_CaM, stargazin, SAP97GluR1, SAP97NR2], "simplx-bhalla.ka", r, time_units="s")
 
 
 ## This setting of parameters gives a calcium influx and pump
@@ -86,12 +90,14 @@ rec_ica.record(sh(0.5)._ref_ica)
 rec_cami = h.Vector()
 rec_cami.record(sh(0.5)._ref_CaMi)
 
+rec_stargazini = h.Vector()
+rec_stargazini.record(sh(0.5)._ref_stargazini)
+rec_SAP97GluR1i = h.Vector()
+rec_SAP97GluR1i.record(sh(0.5)._ref_SAP97GluR1i)
 rec_PSD95NR2i = h.Vector()
 rec_PSD95NR2i.record(sh(0.5)._ref_PSD95NR2i)
 rec_CaMKII_CaMi = h.Vector()
 rec_CaMKII_CaMi.record(sh(0.5)._ref_CaMKII_CaMi)
-
-
 
 ## Run
 init()
@@ -151,17 +157,20 @@ ax2.set_ylabel("ICa [mA/cm2]")
 
 ax3.plot(times[0], cai[0])
 ax3.plot(times[0], cami[0])
+ax3.plot(times[0], rec_CaMKII_CaMi)
 ax3.set_xlabel("Time [ms]")
-ax3.set_ylabel("Ca, CaM [mM]")
+ax3.set_ylabel("[mM]")
+plt.axes(ax3)
+plt.legend(('Ca', 'CaM', 'CaMKII_CaM'))
 ## ax3.axis(ymin=-1E-2, ymax=0.5E-1)
 
-ax4.plot(times[0], rec_PSD95NR2i)
-ax4.plot(times[0], rec_CaMKII_CaMi)
+ax4.plot(times[0], rec_SAP97GluR1i)
+ax4.plot(times[0], rec_stargazini)
 ax4.set_xlabel("Time [ms]")
-ax4.set_ylabel("PSD95NR2, CaMKII_CaM [mM]")
-## ax4.axis(ymin=-1E-5, ymax=2.5E-1)
-
-
+ax4.set_ylabel("[mM]")
+plt.axes(ax4)
+plt.legend(('SAP97GluR2', 'stargazin'))
+ax4.axis(ymin=-1E-5, ymax=1E-2)
 
 fig.show() # If the interpreter stops now: close the figure.
 # For interactive plotting, see `Part 1` -> `ipython`
