@@ -95,7 +95,16 @@ rec_CaMKII_CaMi.record(sh(0.5)._ref_CaMKII_CaMi)
 
 ## Run
 init()
-run(60)
+print("Running kappa-only to initialise")
+kappa.run_free(500)
+print("Running NEURON-kappa")
+run(2000)
+for i in range(1,60):
+    print("Running kappa-only")
+    kappa.run_free(990)
+    print("Running NEURON-kappa and trying to trick NEURON")
+    h.t = h.t + 990
+    run(h.t + 10)
 
 ## Plot
 import matplotlib.pyplot as plt
