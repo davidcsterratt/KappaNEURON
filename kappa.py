@@ -128,3 +128,10 @@ class Kappa(GeneralizedReaction):
                     ## print "Species ", s.name, " conc ", states[i], " nions ", nions
                     kappa_sim.setAgentInitialValue(s.name, nions)
 
+    def run_free(self, t_run):
+        # Run free of neuron
+        for kptr in rxd._kappa_schemes:
+            k = kptr()
+            for kappa_sim in k._kappa_sims:
+                t_kappa = kappa_sim.getTime()
+                kappa_sim.runByTime2(t_kappa + t_run)

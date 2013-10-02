@@ -264,7 +264,8 @@ def _fixed_step_solve(dt):
 
         report("\nRUN 0.5 KAPPA STEP")
         for kappa_sim in k._kappa_sims:
-            kappa_sim.runByTime2(h.t - dt/2)      # Second argument is "time per
+            ## kappa_sim.runByTime2(h.t - dt/2)      # Second argument is "time per
+            kappa_sim.runByTime3(dt/2)      # Second argument is "time per
         
         ## TODO: At present this only works when one species is
         ## defined. To get multiple species working, we will need to
@@ -293,12 +294,13 @@ def _fixed_step_solve(dt):
 
         report("\nRUN 0.5 KAPPA STEP")  
         for kappa_sim in k._kappa_sims:
-            kappa_sim.runByTime2(h.t)      # Second argument is "time per
+            ## kappa_sim.runByTime2(h.t)      # Second argument is "time per
+            kappa_sim.runByTime3(dt/2)      # Second argument is "time per
             t_kappa = kappa_sim.getTime()
             discrepancy = h.t - t_kappa
             report('Kappa Time %f; NEURON time %f; Discrepancy %f' % (t_kappa, h.t, discrepancy))
-            if (abs(discrepancy) > 1e-3):
-                raise NameError('NEURON time (%f) does not match Kappa time (%f). Discrepancy = %f ' % (h.t, t_kappa, h.t - t_kappa))
+            ## if (abs(discrepancy) > 1e-3):
+            ##    raise NameError('NEURON time (%f) does not match Kappa time (%f). Discrepancy = %f ' % (h.t, t_kappa, h.t - t_kappa))
 
         ## Update states
         for  sptr in k._involved_species:

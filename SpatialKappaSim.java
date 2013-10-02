@@ -85,6 +85,11 @@ public class SpatialKappaSim
         }
     }
 
+    public void runByTime3(float dt) {
+        float stepEndTime = getTime() + dt;
+        runByTime2(stepEndTime);
+    }
+
     public Map<String, Variable> getVariables() {
         Map<String, Variable> variables = kappaModel.getVariables();
         for (Map.Entry<String, Variable> variable : variables.entrySet()) {
