@@ -1,4 +1,20 @@
+# Simple calcium pump
+%agent: P(cam)
 %agent: ca(cam)
+
+%var: 'gamma1' 0.001
+%var: 'gamma2' 1
+
+%init: 10000 P(cam)
+
+'ca binding' ca(cam), P(cam) -> ca(cam!1), P(cam!1) @ 'gamma1'
+'ca release' ca(cam!1), P(cam!1) -> P(cam) @ 'gamma2'
+
+%obs: 'P-Ca' ca(cam!1), P(cam!1)
+%obs: 'P' P(cam)
+
+# The rest of the mechanism
+
 %agent: PSD95(NH2,PDZ1,PDZ2,PDZ3,GK,SH3,H)
 %agent: SAP97(L27,PDZ1,PDZ2,PDZ3,GK,SH3,H)
 %agent: SAP93(SH3,GK,H)
