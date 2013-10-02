@@ -73,23 +73,27 @@ def plot_records(tcp_mod, tcp):
     ax[0].set_ylabel("V [mV]")
     ax[0].axis(ymin=-80, ymax=50)
 
+    icamin = min(numpy.concatenate([tcp_mod['ica'], tcp['ica']]))
     ax[1].plot(tcp_mod['t'], tcp_mod['ica'])
     ax[1].plot(tcp['t'],     tcp['ica'],   'r')
     ax[1].set_xlabel("Time [ms]")
     ax[1].set_ylabel("ICa [mA/cm2]")
-    ax[1].axis(ymin=-1, ymax=0.1)
+    ax[1].axis(ymin=icamin*1.1,
+               ymax=-0.1*icamin)
 
+    caimax = max(numpy.concatenate([tcp_mod['cai'], tcp['cai']]))
     ax[2].plot(tcp_mod['t'], tcp_mod['cai'])
     ax[2].plot(tcp['t'], tcp['cai'], 'r')
     ax[2].set_xlabel("Time [ms]")
     ax[2].set_ylabel("Ca [mM]")
-    ax[2].axis(ymin=-1E-2, ymax=0.5E-1)
+    ax[2].axis(ymin=-0.1*caimax, ymax=caimax*1.1)
 
+    Pimax = max(numpy.concatenate([tcp_mod['Pi'], tcp['Pi']]))
     ax[3].plot(tcp_mod['t'], tcp_mod['Pi'])
     ax[3].plot(tcp['t'], tcp['Pi'], 'r')
     ax[3].set_xlabel("Time [ms]")
     ax[3].set_ylabel("P [mM]")
-    ax[3].axis(ymin=-1E-2, ymax=3E-1)
+    ax[3].axis(ymin=0, ymax=Pimax*1.1)
 
     fig.show()
     
