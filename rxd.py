@@ -16,6 +16,12 @@ import atexit
 import options
 from py4j.java_gateway import JavaGateway
 
+verbose = False
+def report(mess):
+    global verbose
+    if (verbose):
+        print(mess)
+
 def byeworld():
     global _react_matrix_solver
     del _react_matrix_solver
@@ -223,17 +229,17 @@ def _fixed_step_solve(dt):
     global preconditioner
     global _kappa_schemes
     
-    print("---------------------------------------------------------------------------")
-    print("FIXED STEP SOLVE. NEURON time %f" % h.t)
-    print "states"
+    report("---------------------------------------------------------------------------")
+    report("FIXED STEP SOLVE. NEURON time %f" % h.t)
+    report("states")
     # TODO: use linear approx not constant approx
     states = node._get_states()[:]
-    print states
+    report(states)
 
-    print "flux b"
+    report("flux b")
     ## DCS: This gets ICa and computes changes due to reactions
     b = _rxd_reaction(states)
-    print b
+    report(b)
 
     # the solve is logically equivalent to the commented out line, but simpler
     #states[:] += _diffusion_matrix_solve(dt, -dt * _diffusion_matrix * states)
@@ -256,18 +262,18 @@ def _fixed_step_solve(dt):
         ## There is one kappa_sim for each active region in the kappa
         ## scheme.
 
-        print "\nRUN 0.5 KAPPA STEP"
+        report("\nRUN 0.5 KAPPA STEP")
         for kappa_sim in k._kappa_sims:
             kappa_sim.runByTime2(h.t - dt/2)      # Second argument is "time per
         
         ## TODO: At present this only works when one species is
         ## defined. To get multiple species working, we will need to
         ## look through _involved_species and _indices
-        print "\nADDING FLUXES TO KAPPA"
+        report("\nADDING FLUXES TO KAPPA")
         for  sptr in k._involved_species:
             s = sptr()
             name = s.name
-            print "ION: ", name
+            report("ION: %s" % (name))
             for kappa_sim, i in zip(k._kappa_sims, k._indices_dict[s]):
                 ## Number of ions
                 ## Flux b has units of mM/ms
@@ -278,19 +284,19 @@ def _fixed_step_solve(dt):
                 nions = 0.0
                 if mu!=0:
                     nions = math.copysign(1, mu)*poisson.rvs(abs(mu))
-                print ("index %d; volume: %f ; flux %f ; # of ions: %s" % (i, volumes[i], b[i], nions))
+                report("index %d; volume: %f ; flux %f ; # of ions: %s" % (i, volumes[i], b[i], nions))
                 kappa_sim.addAgent(name, nions)
                 t_kappa = kappa_sim.getTime()
                 discrepancy = h.t - t_kappa
-                print('Kappa Time %f; NEURON time %f; Discrepancy %f' % (t_kappa, h.t, discrepancy))
+                report('Kappa Time %f; NEURON time %f; Discrepancy %f' % (t_kappa, h.t, discrepancy))
 
 
-        print "\nRUN 0.5 KAPPA STEP"                
+        report("\nRUN 0.5 KAPPA STEP")  
         for kappa_sim in k._kappa_sims:
             kappa_sim.runByTime2(h.t)      # Second argument is "time per
             t_kappa = kappa_sim.getTime()
             discrepancy = h.t - t_kappa
-            print('Kappa Time %f; NEURON time %f; Discrepancy %f' % (t_kappa, h.t, discrepancy))
+            report('Kappa Time %f; NEURON time %f; Discrepancy %f' % (t_kappa, h.t, discrepancy))
             if (abs(discrepancy) > 1e-3):
                 raise NameError('NEURON time (%f) does not match Kappa time (%f). Discrepancy = %f ' % (h.t, t_kappa, h.t - t_kappa))
 
@@ -302,8 +308,8 @@ def _fixed_step_solve(dt):
                 states[i] = kappa_sim.getObservation(name) \
                     /(_conversion_factor * volumes[i])
 
-    print "Updated states"                
-    print states
+    report("Updated states")
+    report(states)
 
     # clear the zero-volume "nodes"
     states[_zero_volume_indices] = 0
