@@ -7,6 +7,8 @@ PREFIX=${HOME}
 
 # 3. Copy rxd.py and kappa.py into the python library directory
 
-cp rxd.py ${PREFIX}/lib/python/neuron/rxd/
-cp kappa.py ${PREFIX}/lib/python/neuron/rxd/
+rm -f ${PREFIX}/lib/python/neuron/rxd/rxd.py
+ln -s $(pwd)/rxd.py ${PREFIX}/lib/python/neuron/rxd/rxd.py 
+rm -f ${PREFIX}/lib/python/neuron/rxd/kappa.py
+ln -s $(pwd)/kappa.py ${PREFIX}/lib/python/neuron/rxd/kappa.py
 echo "from kappa import Kappa" >> ${PREFIX}/lib/python/neuron/rxd/__init__.py
