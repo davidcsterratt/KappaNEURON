@@ -144,36 +144,44 @@ cami.append(list(rec_cami))
 # >>> type(rec_t)
 # >>> type(time[0])
 
-fig, (ax1, ax2, ax3, ax4) = plt.subplots(nrows=4, ncols=1)
-ax1.plot(times[0], voltages[0])
-ax1.set_xlabel("Time [ms]")
-ax1.set_ylabel("V [mV]")
-ax1.axis(ymin=-80, ymax=50)
+def plot_data(tmax=None):
+    if (tmax == None): 
+        tmax = max(times[0])
+    
+    fig, (ax1, ax2, ax3, ax4) = plt.subplots(nrows=4, ncols=1)
+    ax1.plot(times[0], voltages[0])
+    ax1.set_xlabel("Time [ms]")
+    ax1.set_ylabel("V [mV]")
+    ax1.axis(ymin=-80, ymax=50)
+    ax1.axis(xmin=0, xmax=tmax)
 
-ax2.plot(times[0], ica[0])
-ax2.set_xlabel("Time [ms]")
-ax2.set_ylabel("ICa [mA/cm2]")
-## ax2.axis(ymin=-1, ymax=0.1)
+    ax2.plot(times[0], ica[0])
+    ax2.set_xlabel("Time [ms]")
+    ax2.set_ylabel("ICa [mA/cm2]")
+    ## ax2.axis(ymin=-1, ymax=0.1)
+    ax2.axis(xmin=0, xmax=tmax)
 
-ax3.plot(times[0], cai[0])
-ax3.plot(times[0], cami[0])
-ax3.plot(times[0], rec_CaMKII_CaMi)
-ax3.set_xlabel("Time [ms]")
-ax3.set_ylabel("[mM]")
-plt.axes(ax3)
-plt.legend(('Ca', 'CaM', 'CaMKII_CaM'))
-## ax3.axis(ymin=-1E-2, ymax=0.5E-1)
+    ax3.plot(times[0], cai[0])
+    ax3.plot(times[0], cami[0])
+    ax3.plot(times[0], rec_CaMKII_CaMi)
+    ax3.set_xlabel("Time [ms]")
+    ax3.set_ylabel("[mM]")
+    plt.axes(ax3)
+    plt.legend(('Ca', 'CaM', 'CaMKII_CaM'))
+    ## ax3.axis(ymin=-1E-2, ymax=0.5E-1)
+    ax3.axis(xmin=0, xmax=tmax)
 
-ax4.plot(times[0], rec_SAP97GluR1i)
-ax4.plot(times[0], rec_stargazini)
-ax4.set_xlabel("Time [ms]")
-ax4.set_ylabel("[mM]")
-plt.axes(ax4)
-plt.legend(('SAP97GluR2', 'stargazin'))
-ax4.axis(ymin=-1E-5, ymax=1E-2)
+    ax4.plot(times[0], rec_SAP97GluR1i)
+    ax4.plot(times[0], rec_stargazini)
+    ax4.set_xlabel("Time [ms]")
+    ax4.set_ylabel("[mM]")
+    plt.axes(ax4)
+    plt.legend(('SAP97GluR2', 'stargazin'))
+    ax4.axis(ymin=-1E-5, ymax=1E-2)
+    ax4.axis(xmin=0, xmax=tmax)
 
-fig.show() # If the interpreter stops now: close the figure.
-# For interactive plotting, see `Part 1` -> `ipython`
+    fig.show() # If the interpreter stops now: close the figure.
+    # For interactive plotting, see `Part 1` -> `ipython`
 
 fig.savefig("../doc/syn_simplx.pdf", format='pdf')
 
