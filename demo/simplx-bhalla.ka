@@ -2,8 +2,8 @@
 %agent: P(cam)
 %agent: ca(cam)
 
-%var: 'gamma1' 0.001
-%var: 'gamma2' 1
+%var: 'gamma1' 0.1
+%var: 'gamma2' 100
 
 %init: 10000 P(cam)
 
