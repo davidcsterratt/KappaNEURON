@@ -140,9 +140,9 @@ def animate_traces():
     fig, ax = plot_records(tcp_mod, tcp)
     Tmax = int(numpy.floor(max(tcp['t'])));
     Vlim = [-80, 50]
-    Ilim = [-0.2, 0.01]
-    cailim = [-1E-2, 0.5E-1]
-    Pilim = [-1E-2, 3E-1]
+    Ilim = [-0.02, 0.001]
+    cailim = [-1E-2, 0.2E-1]
+    Pilim = [-1E-2, 1E-1]
     for T in numpy.nditer(numpy.arange(0, Tmax, 0.5)):
         inds = numpy.array(tcp_mod['t']) <= T
         ax[0].cla()
