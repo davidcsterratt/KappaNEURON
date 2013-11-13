@@ -40,6 +40,7 @@ h.K0_NmdaSyn =  2.57
 h.delta_NmdaSyn = 0.96
 ## netcon.weight[0] = 0
 
+## Used to initiate action potential
 iclamp = h.IClamp(0.5, sec=dend)
 iclamp.delay = 17
 iclamp.amp = 0.4
@@ -52,14 +53,14 @@ r = rxd.Region([sh], nrn_region='i')
 
 # WHO are the actors
 ca         = rxd.Species(r, name='ca'         , charge=2, initial=0.001)
-cam        = rxd.Species(r, name='CaM'        , charge=0, initial=0.5)
+cam        = rxd.Species(r, name='CaM'        , charge=0, initial=0.5) # Check this
 PSD95NR2   = rxd.Species(r, name='PSD95NR2'   , charge=0)
 CaMKII_CaM = rxd.Species(r, name='CaMKII_CaM' , charge=0)
 stargazin  = rxd.Species(r, name='stargazin'  , charge=0)
 SAP97GluR1 = rxd.Species(r, name='SAP97GluR1' , charge=0)
 SAP97NR2   = rxd.Species(r, name='SAP97NR2'   , charge=0)
 
-kappa = rxd.Kappa([ca, cam, PSD95NR2, CaMKII_CaM, stargazin, SAP97GluR1, SAP97NR2], "simplx-bhalla.ka", r, time_units="s")
+kappa = rxd.Kappa([ca, cam, PSD95NR2, CaMKII_CaM, stargazin, SAP97GluR1, SAP97NR2], "simplx-demo.ka", r, time_units="s")
 
 
 ## This setting of parameters gives a calcium influx and pump
@@ -102,7 +103,8 @@ rec_CaMKII_CaMi.record(sh(0.5)._ref_CaMKII_CaMi)
 ## Run
 init()
 print("Running kappa-only to initialise")
-kappa.run_free(500)
+## FIXME: put in some read-out to check when system has equilibriated.
+kappa.run_free(120*1000)
 print("Running NEURON-kappa")
 run(2000)
 for i in range(1,60):
