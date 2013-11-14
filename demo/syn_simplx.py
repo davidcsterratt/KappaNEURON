@@ -4,6 +4,8 @@ from neuron import *
 from neuron import rxd
 import numpy
 
+## Time for equilibriation in seconds
+t_equil = 1
 
 ## Neuron
 
@@ -28,12 +30,14 @@ sh.connect(dend, 0.5, 0)
 
 # Synapse
 syn     = h.NmdaSyn(sh(0.5))
-netstim = h.NetStim()
+synstim = h.NetStim()
 h.celsius = 34
-netstim.start = 10
-netstim.noise = 0
-netstim.number = 1
-netcon  = h.NetCon(netstim, syn)
+synstim.start = 1001
+#synstim.start = t_equil*1000 + 10
+synstim.noise = 0
+synstim.number = 10
+synstim.interval = 25
+netcon  = h.NetCon(synstim, syn)
 netcon.weight[0] = 0.045E-3     # From the ddsp work
 ## netcon.weight[0] = 0     # From the ddsp work
 h.K0_NmdaSyn =  2.57                   
@@ -41,10 +45,17 @@ h.delta_NmdaSyn = 0.96
 ## netcon.weight[0] = 0
 
 ## Used to initiate action potential
-iclamp = h.IClamp(0.5, sec=dend)
-iclamp.delay = 17
-iclamp.amp = 0.4
-iclamp.dur = 0.3
+apinit = h.ExpSyn(dend(0))
+apinit.tau = 0.3/3
+apinit.e = 0
+apinitcon = h.NetCon(synstim, apinit)
+apinitcon.weight[0] = 3*0.4/70 # 0.4nA/70mV = 0.4/70 uS
+apinitcon.delay = 16
+# iclamp = h.IClamp(0.5, sec=dend)
+#iclamp.delay = 17 
+# iclamp.amp = 0.4 # nA
+# iclamp.dur = 0.3
+# Hence 0.3*0.4 = 0.12pC of charge
 
 ## Reaction-diffusion mechanism
 ## This appears to integrate the incoming Ca
@@ -105,8 +116,12 @@ init()
 print("Running kappa-only to initialise")
 ## FIXME: put in some read-out to check when system has equilibriated.
 kappa.run_free(120*1000)
+# for i in range(1,t_equil):
+#     run(h.t + 10)
+#     kappa.run_free(990)
+#     h.t = h.t + 990
 print("Running NEURON-kappa")
-run(2000)
+run(3000)
 for i in range(1,60):
     print("Running kappa-only")
     kappa.run_free(990)
@@ -185,7 +200,7 @@ def plot_data(tmax=None):
     fig.show() # If the interpreter stops now: close the figure.
     # For interactive plotting, see `Part 1` -> `ipython`
 
-fig.savefig("../doc/syn_simplx.pdf", format='pdf')
+    fig.savefig("../doc/syn_simplx.pdf", format='pdf')
 
 numpy.savez("syn_simplx", t=times[0], cai=cai[0], cami=cami[0], ica=ica[0], voltages=voltages[0], diam=sh.diam)
 
