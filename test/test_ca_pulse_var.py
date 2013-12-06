@@ -20,8 +20,10 @@ def run(diam=0.2,
     P  = rxd.Species(r, name='P',  charge=0, initial=P0)
     kappa = rxd.Kappa([ca, P], "caPump.ka", r)
     vol = sh.L*numpy.pi*(sh.diam/2)**2
-    kappa.setVariable('gamma1', 1E-3*0.1*numpy.pi*0.5**2/vol)
-    kappa.setVariable('gamma2', gamma2)
+    ## kappa.setVariable('gamma1', 1E-3*0.1*numpy.pi*0.5**2/vol)
+    ## kappa.setVariable('gamma2', gamma2)
+    kappa.setVariable('k1', 47.3)
+    kappa.setVariable('k2', gamma2)
 
     stim = insert_vclamp(sh)
 
@@ -29,4 +31,4 @@ def run(diam=0.2,
     rec_Pi = h.Vector()
     rec_Pi.record(sh(0.5)._ref_Pi)
 
-    run_and_save(sh, rec_Pi, 'test_ca_pulse')
+    run_and_save(sh, rec_Pi, 'test_ca_pulse_var')

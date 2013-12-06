@@ -7,14 +7,13 @@ ENDCOMMENT
 UNITS {
 	(mM) = (milli/liter)
 	(mA) = (milliamp)
-  PI = (pi) (1)
 	F = (faraday) (coulombs)
 }
 
 NEURON {
-	SUFFIX caPump
+	SUFFIX caPump_var
 	USEION ca READ cai, ica WRITE cai
-	RANGE cai0, P0, gamma1, gamma2, k1, k2, vol
+	RANGE cai0, P0, k1, k2
 }
 
 PARAMETER {
@@ -25,19 +24,12 @@ PARAMETER {
     : P0 = 10000 molecules/(_conversion_factor*volume)
     : = 10000/(602214.129 * 0.0785398163397)
     P0 = 0.20 (mM)
-    gamma1 = 1 (/ms)
-    gamma2 = 1 (/ms)
-    N_A = 6.02205E23
+    k1 = 47.3 (/mM-ms)
+    k2 = 1    (/ms)
 }
 
 ASSIGNED {
-	  ica (mA/cm2)
-    k1 (/mM-ms)
-    k2 (/ms)
-    vol  (micrometer3)
-    area (micrometer2)
-    diam (micrometer)
-    L    (micrometer)
+	  ica  (mA/cm2)
 }
 
 STATE {
@@ -48,10 +40,6 @@ STATE {
 INITIAL {
 	  cai = cai0
     P = P0
-    L = area/(PI*diam)
-    vol = L*PI*(diam/2)^2
-    k1 = (1e-18)*gamma1*N_A*vol
-    k2 = gamma2
 }
 
 BREAKPOINT {
@@ -59,6 +47,6 @@ BREAKPOINT {
 }
 
 DERIVATIVE integrate {
-	  cai' = -2*ica/diam/F * (1e4) -k1*cai*P
-    P' = -k1*cai*P + k2*(P0 - P)
+	  cai' = -2*ica/diam/F*(1e4) - k1*cai*P
+    P'   = -k1*cai*P + k2*(P0 - P)
 }
