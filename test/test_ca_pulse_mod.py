@@ -13,7 +13,7 @@ def run(diam=0.2,
 
     ## This setting of parameters gives a calcium influx and pump
     ## activation that is more-or-less scale-independent
-    vol = sh.L*numpy.pi*(sh.diam/2)**2
+    vol = sh.L*numpy.pi*(sh.diam/2)**2 # Volume in um3
     sh.gamma1_caPump = 1E-3*(0.1*numpy.pi*((1./2)**2))/vol
     sh.gamma2_caPump = gamma2
     sh.P0_caPump = P0
