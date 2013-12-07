@@ -169,10 +169,11 @@
 'PDZ3_IRSp53_PSD93_diss' PSD93(PDZ3!1),IRSp53(c!1) -> PSD93(PDZ3),IRSp53(c) @ 0.0682257698774338
 'PDZ1_SynGAP_PSD95' PSD95(PDZ1),SynGAP(c) -> PSD95(PDZ1!1),SynGAP(c!1) @ 0.00255390325543199
 'PDZ1_SynGAP_PSD95_diss' PSD95(PDZ1!1),SynGAP(c!1) -> PSD95(PDZ1),SynGAP(c) @ 0.0381606323421001
-'PDZ1_stargazin_PSD95' PSD95(PDZ1,PDZ2!_),stargazin(c~u) -> PSD95(PDZ1!0,PDZ2!_),stargazin(c~u!0) @ 0.00255390325543199
-'PDZ1_stargazin_PSD95_diss' PSD95(PDZ1!0,PDZ2!_),stargazin(c~u!0) -> PSD95(PDZ1,PDZ2!_),stargazin(c~u) @ 0.0381606323421001
-'PDZ2_stargazin_PSD95' PSD95(PDZ2,PDZ1!_),stargazin(c~u) -> PSD95(PDZ2!0,PDZ1!_),stargazin(c~u!0) @ 0.00255390325543199
-'PDZ2_stargazin_PSD95_diss' PSD95(PDZ2!0,PDZ1!_),stargazin(c~u!0) -> PSD95(PDZ2,PDZ1!_),stargazin(c~u) @ 0.0381606323421001
+'stargazin-P' CaMKII(k2~p!_,k),stargazin(c~u) -> CaMKII(k2~p!_,k!1),stargazin(c~u!1) @ 1
+'PDZ1_stargazin_PSD95' PSD95(PDZ1,PDZ2!_),stargazin(c~p) -> PSD95(PDZ1!0,PDZ2!_),stargazin(c~p!0) @ 0.00255390325543199
+'PDZ1_stargazin_PSD95_diss' PSD95(PDZ1!0,PDZ2!_),stargazin(c~p!0) -> PSD95(PDZ1,PDZ2!_),stargazin(c~p) @ 0.0381606323421001
+'PDZ2_stargazin_PSD95' PSD95(PDZ2,PDZ1!_),stargazin(c~p) -> PSD95(PDZ2!0,PDZ1!_),stargazin(c~p!0) @ 0.00255390325543199
+'PDZ2_stargazin_PSD95_diss' PSD95(PDZ2!0,PDZ1!_),stargazin(c~p!0) -> PSD95(PDZ2,PDZ1!_),stargazin(c~p) @ 0.0381606323421001
 'PDZ3_SynGAP_PSD93' PSD93(PDZ3),SynGAP(c) -> PSD93(PDZ3!1),SynGAP(c!1) @ 0.00179028566719886
 'PDZ3_SynGAP_PSD93_diss' PSD93(PDZ3!1),SynGAP(c!1) -> PSD93(PDZ3),SynGAP(c) @ 0.0682257698774338
 'PDZ3_SynGAP_SAP97' SAP97(PDZ3),SynGAP(c) -> SAP97(PDZ3!1),SynGAP(c!1) @ 0.00179028566719886
