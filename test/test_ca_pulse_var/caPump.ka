@@ -9,7 +9,7 @@
 # Avagadro's constant
 %var: 'NA'  6.02205E23
 # Concentration of one agent in the volume in mM 
-%var: 'agconc' 10E18/('NA' * 'vol')
+%var: 'agconc' 1E18/('NA' * 'vol')
 
 # Rate constants in /mM-ms or /ms, depending on the number of reactants
 %var: 'k1' 0.001

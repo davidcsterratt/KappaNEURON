@@ -32,7 +32,7 @@ def insert_vclamp(sh):
     stim.amp[2] = -70
     return(stim)
 
-def run_and_save(sh, rec_Pi, dataname='test_ca_pulse_mod_var'):
+def run_and_save(sh, rec_Pi, dataname='test_ca_pulse_mod'):
     ## Record Time from NEURON (neuron.h._ref_t)
     rec_t = h.Vector()
     rec_t.record(h._ref_t)
@@ -101,24 +101,24 @@ def plot_records(tcp_mod, tcp):
 
 def compare_traces(diam=0.2, gcalbar=0.05, 
                    gamma2=1, P0=0.2):
-    import test_ca_pulse_mod_var
-    test_ca_pulse_mod_var.run(diam=diam, 
+    import test_ca_pulse_mod
+    test_ca_pulse_mod.run(diam=diam, 
                           gcalbar=gcalbar,
                           gamma2=gamma2,
                           P0=P0)
-    import test_ca_pulse_var
-    test_ca_pulse_var.run(diam=diam, 
+    import test_ca_pulse
+    test_ca_pulse.run(diam=diam, 
                       gcalbar=gcalbar,
                       gamma2=gamma2,
                       P0=P0)
     
-    tcp     = numpy.load("test_ca_pulse_var.npz")
-    tcp_mod = numpy.load("test_ca_pulse_mod_var.npz")
+    tcp     = numpy.load("test_ca_pulse.npz")
+    tcp_mod = numpy.load("test_ca_pulse_mod.npz")
 
     fig, ax = plot_records(tcp_mod, tcp)
 
     filename = re.sub('\.', '_', 'compare_ca_pulse-diam:%1.1f-gcalbar:%1.3f-gamma2:%1.3f-P0:%1.3f' % (diam, gcalbar, gamma2, P0)) + '.pdf'
-    fig.savefig('../doc/%s' % filename, format='pdf')
+    fig.savefig('%s' % filename, format='pdf')
 
     print('Ca Discrepancy: ' + str(max(abs(tcp_mod['cai'] - tcp['cai']))))
     print('Ca Pc Discrepancy: %2.2f' % (100*max(abs(tcp['cai'] - tcp_mod['cai']))/max(tcp_mod['cai'])))

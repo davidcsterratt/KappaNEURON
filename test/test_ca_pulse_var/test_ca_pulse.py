@@ -24,6 +24,7 @@ def run(diam=0.2,
     ## kappa.setVariable('gamma2', gamma2)
     kappa.setVariable('k1', 47.3)
     kappa.setVariable('k2', gamma2)
+    kappa.setVariable('vol', vol)
 
     stim = insert_vclamp(sh)
 
@@ -31,4 +32,4 @@ def run(diam=0.2,
     rec_Pi = h.Vector()
     rec_Pi.record(sh(0.5)._ref_Pi)
 
-    run_and_save(sh, rec_Pi, 'test_ca_pulse_var')
+    run_and_save(sh, rec_Pi, 'test_ca_pulse')

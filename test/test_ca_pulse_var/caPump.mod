@@ -11,7 +11,7 @@ UNITS {
 }
 
 NEURON {
-	SUFFIX caPump_var
+	SUFFIX caPump
 	USEION ca READ cai, ica WRITE cai
 	RANGE cai0, P0, k1, k2
 }
