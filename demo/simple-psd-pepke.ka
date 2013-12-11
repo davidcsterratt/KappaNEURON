@@ -1,5 +1,5 @@
 # Volume in um3
-%var: 'vol' 1
+%var: 'vol' 0.5
 # Avagadro's constant
 %var: 'NA'  6.02205E23
 # Concentration of one agent in the volume in mM 
@@ -75,20 +75,20 @@
 'CaM1N2C_diss'  CaM(n1!_,n2,c2!_,ck!1), CaMKII(r!1,T286~u) ->  CaM(n1!_,n2,c2!_,ck),   CaMKII(r,  T286~u)  @ 'kCaM1N1Coff'
 %var: 'kCaM1Non'  0.0220
 %var: 'kCaM1Noff' 0.00310
-'CaM1N'         CaM(n1!_,c1,ck)  , CaMKII(r,T286~u)   ->  CaM(n1!_,c1,ck!1), CaMKII(r!1,T286~u)  @ 'kCaM1Non'*'agconc'
-'CaM1N_diss'    CaM(n1!_,c1,ck!1), CaMKII(r!1,T286~u) ->  CaM(n1!_,c1,ck),   CaMKII(r,T286~u)    @ 'kCaM1Noff'
+'CaM1N'         CaM(n1!_,c1,ck)  , CaMKII(r,  T286~u) ->  CaM(n1!_,c1,ck!1), CaMKII(r!1,T286~u)  @ 'kCaM1Non'*'agconc'
+'CaM1N_diss'    CaM(n1!_,c1,ck!1), CaMKII(r!1,T286~u) ->  CaM(n1!_,c1,ck),   CaMKII(r,  T286~u)  @ 'kCaM1Noff'
 %var: 'kCaM2Non'  0.120
 %var: 'kCaM2Noff' 0.00170
-'CaM2N'         CaM(n2!_,c1,ck)  , CaMKII(r,T286~u)   ->  CaM(n2!_,c1,ck!1), CaMKII(r!1,T286~u)  @ 'kCaM2Non'*'agconc'
-'CaM2N_diss'    CaM(n2!_,c1,ck!1), CaMKII(r!1,T286~u) ->  CaM(n2!_,c1,ck),   CaMKII(r,T286~u)    @ 'kCaM2Noff'
+'CaM2N'         CaM(n2!_,c1,ck)  , CaMKII(r,  T286~u) ->  CaM(n2!_,c1,ck!1), CaMKII(r!1,T286~u)  @ 'kCaM2Non'*'agconc'
+'CaM2N_diss'    CaM(n2!_,c1,ck!1), CaMKII(r!1,T286~u) ->  CaM(n2!_,c1,ck),   CaMKII(r,  T286~u)  @ 'kCaM2Noff'
 %var: 'kCaM2N1Con'  1.90
 %var: 'kCaM2N1Coff' 0.00192
-'CaM2N1C'       CaM(n2!_,c1!_,c2,ck)  , CaMKII(r,T286~u)   ->  CaM(n2!_,c1!_,c2,ck!1), CaMKII(r!1,T286~u)  @ 'kCaM2N1Con'*'agconc'
-'CaM2N1C_diss'  CaM(n2!_,c1!_,c2,ck!1), CaMKII(r!1,T286~u) ->  CaM(n2!_,c1!_,c2,ck),   CaMKII(r,T286~u)    @ 'kCaM2N1Coff'
+'CaM2N1C'       CaM(n2!_,c1!_,c2,ck)  , CaMKII(r,  T286~u) ->  CaM(n2!_,c1!_,c2,ck!1), CaMKII(r!1,T286~u)  @ 'kCaM2N1Con'*'agconc'
+'CaM2N1C_diss'  CaM(n2!_,c1!_,c2,ck!1), CaMKII(r!1,T286~u) ->  CaM(n2!_,c1!_,c2,ck),   CaMKII(r,  T286~u)  @ 'kCaM2N1Coff'
 %var: 'kCaM4on'  1.90
 %var: 'kCaM4off' 0.00192
-'CaM4'          CaM(n2!_,c2!_,ck)  , CaMKII(r,T286~u)   ->  CaM(n2!_,c2!_,ck!1), CaMKII(r!1,T286~u)  @ 'kCaM4on'*'agconc'
-'CaM4_diss'     CaM(n2!_,c2!_,ck!1), CaMKII(r!1,T286~u) ->  CaM(n2!_,c2!_,ck),   CaMKII(r,T286~u)    @ 'kCaM4off'
+'CaM4'          CaM(n2!_,c2!_,ck)  , CaMKII(r,  T286~u) ->  CaM(n2!_,c2!_,ck!1), CaMKII(r!1,T286~u)  @ 'kCaM4on'*'agconc'
+'CaM4_diss'     CaM(n2!_,c2!_,ck!1), CaMKII(r!1,T286~u) ->  CaM(n2!_,c2!_,ck),   CaMKII(r,  T286~u)  @ 'kCaM4off'
 
 # Binding and unbinding of Ca to CaM.CaX.CaMKII
 %var: 'kK1Con'   44.0
@@ -109,7 +109,15 @@
 'K2N_diss'     ca(b!1), CaM(n1!_,n2!1,ck!_) -> ca(b)  , CaM(n1!_,n2  ,ck!_)  @ 2*'kK2Noff'
 
 ## CaKII with bound CaM can be phosphorylated at T286
-# 'CaMKII phosphorylation' CaMKII(r!_,T286~u) <-> CaMKII(r!_,T286~p) @ 100, 0.1
+%var: 'kCaMIIon'  50
+%var: 'kCaMIIoff'  2
+'kCaMKII'       CaMKII(r!_,T286),  CaMKII(r!_,T286)   -> CaMKII(r!_,T286!1),CaMKII(r!_,T286!1) @ 'kCaMIIon'*'agconc'
+'kCaMKII_diss'  CaMKII(r?, T286!1),CaMKII(r?, T286!1) -> CaMKII(r?, T286),  CaMKII(r?,T286)    @ 'kCaMIIoff'
+## The link state is not specified here in case the CaM has dissociated from CaMKII whilst the CaMKII molecules are bound
+
+## Phosphorylation of CaMKII-CaM4
+%var: 'kCaM4pon' 0.001
+'kCaM4p'  CaM(n2!_,c2!_,ck!1),CaMKII(r!1,T286~u!2),CaMKII(r!_,T286!2) -> CaM(n2!_,c2!_,ck!1),CaMKII(r!1,T286~p), CaMKII(r!_,T286) @ 'kCaM4pon'
 
 ## Phosphorylated CaMKII can phosphorylate stargazin
 # 'CaMKII_stargazin_phos' CaMKII(T286~p),stargazin(c~u) -> CaMKII(T286~p!1),stargazin(c~p!1)
@@ -131,11 +139,21 @@
 
 
 ## Initialisation
-%init: 6022 CaM(n1,n2,c1,c2)
-%init: 3011 ca(b)
-%init: 1807 CB(ca1,ca2,ca3,ca4)
-%init: 6022 CaMKII(r,T286~u)
-%init: 600  stargazin(c~u)
+# %init: 6022 CaM(n1,n2,c1,c2)
+# %init: 3011 ca(b)
+# %init: 1807 CB(ca1,ca2,ca3,ca4)
+# %init: 6022 CaMKII(r,T286~u)
+# %init: 600  stargazin(c~u)
+
+%var: 'CaMinit' (0.030/'agconc')
+%init: 'CaMinit' CaM(n1,n2,c1,c2)
+%var: 'cainit' 0.010/'agconc'
+%init: 'cainit' ca(b)
+%init: 0 CB(ca1,ca2,ca3,ca4)
+%var: 'CaMKIIinit' (0.080/'agconc')
+%init: 'CaMKIIinit' CaMKII(r,T286~u)
+# %init: 600  stargazin(c~u)
+
 
 ## Observations
 %obs: 'ca' ca(b)
@@ -144,26 +162,41 @@
 %var: 'CaCB2' ca(b!1),CB(ca2!1)
 %var: 'CaCB3' ca(b!1),CB(ca3!1)
 %var: 'CaCB4' ca(b!1),CB(ca4!1)
-%obs: 'CaCB' 'CaCB1' + 'CaCB2' + 'CaCB3' + 'CaCB4'
+# %obs: 'CaCB' 'CaCB1' + 'CaCB2' + 'CaCB3' + 'CaCB4'
 
 %obs: 'CaM' CaM(n1,n2,c1,c2)
 %var: 'CaCaMC1' ca(b!1),CaM(c1!1)
 %var: 'CaCaMC2' ca(b!1),CaM(c2!1)
-%obs: 'CaCaMC' 'CaCaMC1' + 'CaCaMC2'
+# %obs: 'CaCaMC' 'CaCaMC1' + 'CaCaMC2'
 
 %var: 'CaCaMN1' ca(b!1),CaM(n1!1)
 %var: 'CaCaMN2' ca(b!1),CaM(n2!1)
-%obs: 'CaCaMN' 'CaCaMN1' + 'CaCaMN2'
+# %obs: 'CaCaMN' 'CaCaMN1' + 'CaCaMN2'
 
-%obs: 'CaMKII_CaM'  CaMKII(r!_)
-%obs: 'CaMKII-CaMCa4'  CaMKII(r!1),CaM(ck!1,c1!_,c2!_,n1!_,n2!_)
-%obs: 'CaMKII-phos-bound' CaMKII(r!_,T286~p)
+# %obs: 'CaMKII_CaM'  CaMKII(r!_)
+# %obs: 'CaMKII-CaMCa4'  CaMKII(r!1),CaM(ck!1,c1!_,c2!_,n1!_,n2!_)
+# %obs: 'CaMKII-phos-bound' CaMKII(r!_,T286~p)
 
+# CaM-Ca
+%obs: 'CaCaM1N'  CaM(n1!_,n2,  c1,  c2,  ck)
+%obs: 'CaCaM2N'  CaM(n1!_,n2!_,c1,  c2,  ck)
+%obs: 'CaCaM1C'  CaM(n1,  n2,  c1!_,c2,  ck)
+%obs: 'CaCaM2C'  CaM(n1,  n2,  c1!_,c2!_,ck)
+%obs: 'CaCaM4'   CaM(n1!_,n2!_,c1!_,c2!_,ck)
 
-#%obs: 'CaMN1' CaM(n1!_,n2,c1,c2)
-#%obs: 'CaMN2' CaM(n1!_,n2!_,c1,c2)
-#%obs: 'CaMC1' CaM(n1,n2,c1!_,c2)
-#%obs: 'CaMC2' CaM(n1,n2,c1!_,c2!_)
+# CaMKII-CaM-Ca
+%obs: 'KCaCaM1N' CaM(n1!_,n2,  c1,  c2,  ck!_)
+%obs: 'KCaCaM2N' CaM(n1!_,n2!_,c1,  c2,  ck!_)
+%obs: 'KCaCaM1C' CaM(n1,  n2,  c1!_,c2,  ck!_)
+%obs: 'KCaCaM2C' CaM(n1,  n2,  c1!_,c2!_,ck!_)
+%obs: 'KCaCaM4'  CaM(n1!_,n2!_,c1!_,c2!_,ck!_)
+
+# Phosphorylated CaMKII
+%obs: 'KCaMCaM4p' CaM(n2!_,c2!_,ck!1),CaMKII(r!1, T286~p)
+%obs: 'CaMKIIp'   CaMKII(r?,T286~p?)
+%obs: 'CaMKIIp1'   CaMKII(r?,T286~p)
+%obs: 'CaMKIIp2'   CaMKII(T286~p)
+
 #%obs: 'CaMN1C1' CaM(n1!_,n2,c1!_,c2)
 #%obs: 'CaMN1C2' CaM(n1!_,n2,c1!_,c2!_)
 #%obs: 'CaMN2C1' CaM(n1!_,n2!_,c1!_,c2)
