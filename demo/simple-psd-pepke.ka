@@ -109,8 +109,8 @@
 'K2N_diss'     ca(b!1), CaM(n1!_,n2!1,ck!_) -> ca(b)  , CaM(n1!_,n2  ,ck!_)  @ 2*'kK2Noff'
 
 ## CaKII with bound CaM can be phosphorylated at T286
-%var: 'kCaMIIon'  50
-%var: 'kCaMIIoff'  2
+%var: 'kCaMIIon'  10
+%var: 'kCaMIIoff'  0.02
 'kCaMKII'       CaMKII(r!_,T286),  CaMKII(r!_,T286)   -> CaMKII(r!_,T286!1),CaMKII(r!_,T286!1) @ 'kCaMIIon'*'agconc'
 'kCaMKII_diss'  CaMKII(r?, T286!1),CaMKII(r?, T286!1) -> CaMKII(r?, T286),  CaMKII(r?,T286)    @ 'kCaMIIoff'
 ## The link state is not specified here in case the CaM has dissociated from CaMKII whilst the CaMKII molecules are bound
@@ -178,24 +178,31 @@
 # %obs: 'CaMKII-phos-bound' CaMKII(r!_,T286~p)
 
 # CaM-Ca
-%obs: 'CaCaM1N'  CaM(n1!_,n2,  c1,  c2,  ck)
-%obs: 'CaCaM2N'  CaM(n1!_,n2!_,c1,  c2,  ck)
-%obs: 'CaCaM1C'  CaM(n1,  n2,  c1!_,c2,  ck)
-%obs: 'CaCaM2C'  CaM(n1,  n2,  c1!_,c2!_,ck)
-%obs: 'CaCaM4'   CaM(n1!_,n2!_,c1!_,c2!_,ck)
+%obs: 'CaCaM1N'   CaM(n1!_,n2,  c1,  c2,  ck)
+%obs: 'CaCaM2N'   CaM(n1!_,n2!_,c1,  c2,  ck)
+%obs: 'CaCaM1C'   CaM(n1,  n2,  c1!_,c2,  ck)
+%obs: 'CaCaM2C'   CaM(n1,  n2,  c1!_,c2!_,ck)
+%obs: 'CaCaM4'    CaM(n1!_,n2!_,c1!_,c2!_,ck)
 
 # CaMKII-CaM-Ca
-%obs: 'KCaCaM1N' CaM(n1!_,n2,  c1,  c2,  ck!_)
-%obs: 'KCaCaM2N' CaM(n1!_,n2!_,c1,  c2,  ck!_)
-%obs: 'KCaCaM1C' CaM(n1,  n2,  c1!_,c2,  ck!_)
-%obs: 'KCaCaM2C' CaM(n1,  n2,  c1!_,c2!_,ck!_)
-%obs: 'KCaCaM4'  CaM(n1!_,n2!_,c1!_,c2!_,ck!_)
+%obs: 'KCaCaM1N'  CaM(n1!_,n2,  c1,  c2,  ck!_)
+%obs: 'KCaCaM2N'  CaM(n1!_,n2!_,c1,  c2,  ck!_)
+%obs: 'KCaCaM1C'  CaM(n1,  n2,  c1!_,c2,  ck!_)
+%obs: 'KCaCaM2C'  CaM(n1,  n2,  c1!_,c2!_,ck!_)
+%obs: 'KCaCaM4'   CaM(n1!_,n2!_,c1!_,c2!_,ck!_)
 
 # Phosphorylated CaMKII
-%obs: 'KCaMCaM4p' CaM(n2!_,c2!_,ck!1),CaMKII(r!1, T286~p)
+%obs: 'KCaCaM1Np' CaM(n1!_,n2,  c1,  c2,  ck!1),CaMKII(r!1, T286~p?)
+%obs: 'KCaCaM2Np' CaM(n1!_,n2!_,c1,  c2,  ck!1),CaMKII(r!1, T286~p?)
+%obs: 'KCaCaM1Cp' CaM(n1,  n2,  c1!_,c2,  ck!1),CaMKII(r!1, T286~p?)
+%obs: 'KCaCaM2Cp' CaM(n1,  n2,  c1!_,c2!_,ck!1),CaMKII(r!1, T286~p?)
+%obs: 'KCaCaM4p'  CaM(n1!_,n2!_,c1!_,c2!_,ck!1),CaMKII(r!1, T286~p?)
+
+# Phosphorylated CaMKII
+%obs: 'KCaMCaM4p' CaM(n2!_,c2!_,ck!1),CaMKII(r!1, T286~p?)
 %obs: 'CaMKIIp'   CaMKII(r?,T286~p?)
-%obs: 'CaMKIIp1'   CaMKII(r?,T286~p)
-%obs: 'CaMKIIp2'   CaMKII(T286~p)
+%obs: 'CaMKIIp1'  CaMKII(r?,T286~p)
+%obs: 'CaMKIIp2'  CaMKII(T286~p)
 
 #%obs: 'CaMN1C1' CaM(n1!_,n2,c1!_,c2)
 #%obs: 'CaMN1C2' CaM(n1!_,n2,c1!_,c2!_)
