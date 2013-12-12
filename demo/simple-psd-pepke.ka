@@ -90,7 +90,7 @@
 'CaM4'          CaM(n2!_,c2!_,ck)  , CaMKII(r,  T286~u) ->  CaM(n2!_,c2!_,ck!1), CaMKII(r!1,T286~u)  @ 'kCaM4on'*'agconc'
 'CaM4_diss'     CaM(n2!_,c2!_,ck!1), CaMKII(r!1,T286~u) ->  CaM(n2!_,c2!_,ck),   CaMKII(r,  T286~u)  @ 'kCaM4off'
 
-# Binding and unbinding of Ca to CaM.CaX.CaMKII
+## Binding and unbinding of Ca to CaM.CaX.CaMKII
 %var: 'kK1Con'   44.0
 %var: 'kK1Coff'   0.033
 'K1C'          ca(b)  , CaM(c1  ,c2,  ck!_) -> ca(b!1), CaM(c1!1,c2,  ck!_)  @ 2*'kK1Con'*'agconc'
@@ -113,7 +113,7 @@
 %var: 'kCaMIIoff'  0.02
 'kCaMKII'       CaMKII(r!_,T286),  CaMKII(r!_,T286)   -> CaMKII(r!_,T286!1),CaMKII(r!_,T286!1) @ 'kCaMIIon'*'agconc'
 'kCaMKII_diss'  CaMKII(r?, T286!1),CaMKII(r?, T286!1) -> CaMKII(r?, T286),  CaMKII(r?,T286)    @ 'kCaMIIoff'
-## The link state is not specified here in case the CaM has dissociated from CaMKII whilst the CaMKII molecules are bound
+# The link state is not specified here in case the CaM has dissociated from CaMKII whilst the CaMKII molecules are bound
 
 ## Phosphorylation of CaMKII-CaM4
 %var: 'kCaM4pon' 0.001
@@ -139,24 +139,25 @@
 
 
 ## Initialisation
-# %init: 6022 CaM(n1,n2,c1,c2)
-# %init: 3011 ca(b)
-# %init: 1807 CB(ca1,ca2,ca3,ca4)
-# %init: 6022 CaMKII(r,T286~u)
-# %init: 600  stargazin(c~u)
+%init: 6022 CaM(n1,n2,c1,c2,ck)
+%init: 3011 ca(b)
+%init: 1807 CB(ca1,ca2,ca3,ca4)
+%init: 6022 CaMKII(r,T286~u)
+%init: 600  stargazin(c~u)
 
-%var: 'CaMinit' (0.030/'agconc')
-%init: 'CaMinit' CaM(n1,n2,c1,c2)
-%var: 'cainit' 0.010/'agconc'
-%init: 'cainit' ca(b)
-%init: 0 CB(ca1,ca2,ca3,ca4)
-%var: 'CaMKIIinit' (0.080/'agconc')
-%init: 'CaMKIIinit' CaMKII(r,T286~u)
+#%var: 'CaMinit' (0.030/'agconc')
+#%init: 'CaMinit' CaM(n1,n2,c1,c2)
+#%var: 'cainit' 0.010/'agconc'
+#%init: 'cainit' ca(b)
+#%init: 0 CB(ca1,ca2,ca3,ca4)
+#%var: 'CaMKIIinit' (0.080/'agconc')
+#%init: 'CaMKIIinit' CaMKII(r,T286~u)
 # %init: 600  stargazin(c~u)
 
 
 ## Observations
 %obs: 'ca' ca(b)
+%obs: 'caTot' ca(b?)
 
 %var: 'CaCB1' ca(b!1),CB(ca1!1)
 %var: 'CaCB2' ca(b!1),CB(ca2!1)
@@ -183,6 +184,8 @@
 %obs: 'CaCaM1C'   CaM(n1,  n2,  c1!_,c2,  ck)
 %obs: 'CaCaM2C'   CaM(n1,  n2,  c1!_,c2!_,ck)
 %obs: 'CaCaM4'    CaM(n1!_,n2!_,c1!_,c2!_,ck)
+
+%obs: 'CaMKII'    CaMKII(r,T286~u)
 
 # CaMKII-CaM-Ca
 %obs: 'KCaCaM1N'  CaM(n1!_,n2,  c1,  c2,  ck!_)
