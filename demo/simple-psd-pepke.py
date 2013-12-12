@@ -204,7 +204,7 @@ def plot_data(tmax=None):
     ax4.set_xlabel("Time [ms]")
     ax4.set_ylabel("[mM]")
     plt.axes(ax4)
-    plt.legend(('SAP97GluR2', 'CaMKII'))
+    plt.legend(('CaCaM2N', 'CaMKII'))
     ax4.axis(ymin=-1E-5, ymax=1E-2)
     ax4.axis(xmin=0, xmax=tmax)
 
