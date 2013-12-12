@@ -64,15 +64,16 @@ r = rxd.Region([sh], nrn_region='i')
 
 # WHO are the actors
 ca        = rxd.Species(r, name='ca'       , charge=2, initial=0.001)
-cam       = rxd.Species(r, name='CaM'      , charge=0, initial=0.030) # Check this
-CaMKII    = rxd.Species(r, name='CaMKII'   , charge=0, initial=0.080)
+CB        = rxd.Species(r, name='CB'       , charge=0, initial=0.100) # Faas &al
+cam       = rxd.Species(r, name='CaM'      , charge=0, initial=0.030) # Fass &al, Pepke &al
+CaMKII    = rxd.Species(r, name='CaMKII'   , charge=0, initial=0.080) # Pepke &al
+CaCB      = rxd.Species(r, name='CaCB'     , charge=0) 
 CaCaM2C   = rxd.Species(r, name='CaCaM2C'  , charge=0)
 CaCaM2N   = rxd.Species(r, name='CaCaM2N'  , charge=0)
 KCaCaM2C  = rxd.Species(r, name='KCaCaM2C' , charge=0)
-#CaCB       = rxd.Species(r, name='CaCB'   , charge=0)
 
 #  KCaCaM2C, , CaCB
-kappa = rxd.Kappa([ca, cam, CaMKII, CaCaM2C, CaCaM2N, KCaCaM2C], "simple-psd-pepke.ka", r, time_units="ms")
+kappa = rxd.Kappa([ca, CB, cam, CaMKII, CaCB, CaCaM2C, CaCaM2N, KCaCaM2C], "simple-psd-pepke.ka", r, time_units="ms")
 
 
 ## This setting of parameters gives a calcium influx and pump
@@ -99,7 +100,10 @@ rec_cai.record(sh(0.5)._ref_cai)
 ## Record ica from spine head
 rec_ica = h.Vector()
 rec_ica.record(sh(0.5)._ref_ica)
-## Record P from spine head
+## Record Ca bound to CB from spine head
+rec_CaCBi = h.Vector()
+rec_CaCBi.record(sh(0.5)._ref_CaCBi)
+## Record Free CaM from spine head
 rec_cami = h.Vector()
 rec_cami.record(sh(0.5)._ref_CaMi)
 
@@ -182,12 +186,13 @@ def plot_data(tmax=None):
     ax2.axis(xmin=0, xmax=tmax)
 
     ax3.plot(times[0], cai[0])
+    ax3.plot(times[0], CaCBi[0])
     ax3.plot(times[0], cami[0])
     ax3.plot(times[0], rec_KCaCaM2Ci)
     ax3.set_xlabel("Time [ms]")
     ax3.set_ylabel("[mM]")
     plt.axes(ax3)
-    plt.legend(('Ca', 'CaM', 'KCaCaM2C'))
+    plt.legend(('Ca', 'CaCB', 'CaM', 'KCaCaM2C'))
     ## ax3.axis(ymin=-1E-2, ymax=0.5E-1)
     ax3.axis(xmin=0, xmax=tmax)
 
