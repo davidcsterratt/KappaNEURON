@@ -116,19 +116,21 @@ rec_KCaCaM2Ci.record(sh(0.5)._ref_KCaCaM2Ci)
 init()
 print("Running kappa-only to initialise")
 ## FIXME: put in some read-out to check when system has equilibriated.
-kappa.run_free(120*1000)
+# kappa.run_free(120*1000)
+kappa.run_free(1000)
 # for i in range(1,t_equil):
 #     run(h.t + 10)
 #     kappa.run_free(990)
 #     h.t = h.t + 990
 print("Running NEURON-kappa")
 run(3000)
-for i in range(1,60):
-    print("Running kappa-only")
-    kappa.run_free(990)
-    print("Running NEURON-kappa and trying to trick NEURON")
-    h.t = h.t + 990
-    run(h.t + 10)
+if (0):
+    for i in range(1,60):
+        print("Running kappa-only")
+        kappa.run_free(990)
+        print("Running NEURON-kappa and trying to trick NEURON")
+        h.t = h.t + 990
+        run(h.t + 10)
 
 ## Plot
 import matplotlib.pyplot as plt
@@ -201,7 +203,7 @@ def plot_data(tmax=None):
     fig.show() # If the interpreter stops now: close the figure.
     # For interactive plotting, see `Part 1` -> `ipython`
 
-    fig.savefig("../doc/simple-psd.pdf", format='pdf')
+    fig.savefig("../doc/simple-psd-pepke.pdf", format='pdf')
 
-numpy.savez("simple-psd", t=times[0], cai=cai[0], cami=cami[0], ica=ica[0], voltages=voltages[0], diam=sh.diam)
+numpy.savez("simple-psd-pepke", t=times[0], cai=cai[0], cami=cami[0], ica=ica[0], voltages=voltages[0], diam=sh.diam)
 
