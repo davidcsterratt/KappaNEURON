@@ -161,14 +161,18 @@
 
 
 ## Observations
+# Calcium
 %obs: 'ca' ca(b)
 %obs: 'caTot' ca(b?)
+
+# Calbindin
+%obs: 'CB' CB(ca1,ca2,ca3,ca4)
 
 %var: 'CaCB1' ca(b!1),CB(ca1!1)
 %var: 'CaCB2' ca(b!1),CB(ca2!1)
 %var: 'CaCB3' ca(b!1),CB(ca3!1)
 %var: 'CaCB4' ca(b!1),CB(ca4!1)
-# %obs: 'CaCB' 'CaCB1' + 'CaCB2' + 'CaCB3' + 'CaCB4'
+%obs: 'CaCB' 'CaCB1' + 'CaCB2' + 'CaCB3' + 'CaCB4'
 
 %obs: 'CaM' CaM(n1,n2,c1,c2)
 %var: 'CaCaMC1' ca(b!1),CaM(c1!1)
