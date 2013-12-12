@@ -11,7 +11,7 @@ from py4j.java_gateway import JavaGateway
 gateway = None
 
 class Kappa(GeneralizedReaction):
-    def __init__(self, species, kappa_file, regions=None, membrane_flux=False, time_units='ms'):
+    def __init__(self, species, kappa_file, regions=None, membrane_flux=False, time_units='ms', verbose=False):
         """create a kappa mechanism linked to a species on a given region or set of regions
         if regions is None, then does it on all regions"""
         global gateway
@@ -31,6 +31,7 @@ class Kappa(GeneralizedReaction):
         self._membrane_flux = membrane_flux
         self._time_units = 'ms'
         self._time_units = time_units
+        self._verbose = verbose
         if membrane_flux not in (True, False):
             raise Exception('membrane_flux must be either True or False')
         if membrane_flux and regions is None:
@@ -86,7 +87,7 @@ class Kappa(GeneralizedReaction):
         self._kappa_sims = []   # Will this destroy things properly?
         for index in self._indices_dict[self._involved_species[0]()]:
             print "Creating Kappa Simulation in region", r
-            kappa_sim = gateway.entry_point.newSpatialKappaSim(self._time_units)
+            kappa_sim = gateway.entry_point.newSpatialKappaSim(self._time_units, self._verbose)
             kappa_sim.loadFile(self._kappa_file)
             self._kappa_sims.append(kappa_sim)
             ## TODO: Should we check if we are inserting two kappa schemes
