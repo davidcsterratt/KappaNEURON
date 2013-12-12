@@ -22,11 +22,14 @@ dend.insert("hh")
 # Spine Head
 sh = h.Section()
 sh.insert("pas")                # Passive channel
-sh.L = 0.1
-sh.diam = 0.2
+# This gives volume of 0.1um3
+sh.L = 0.2
+sh.diam = 0.4
 #h.dt = 0.001
 sh.g_pas = g_pas
 sh.connect(dend, 0.5, 0)
+
+# Spine neck needed probably!
 
 # Synapse
 syn     = h.NmdaSyn(sh(0.5))
