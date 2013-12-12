@@ -20,6 +20,11 @@
 %agent: stargazin(c~u)
 # %agent: PSD95
 
+## Very simple pump, with a half-life of 12ms, as per Sabatini &al (2002)
+%agent: P(ca)
+%init: 1   P(ca) 
+'Pump' P(ca),ca(b) -> P(ca)  @ 1/12
+
 ## Calbindin - from Faas & al
 %var: 'kCBon'  75.0     # /mM/ms
 %var: 'kCBoff'  0.0295  # /ms
