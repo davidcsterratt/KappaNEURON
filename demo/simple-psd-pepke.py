@@ -43,7 +43,7 @@ synstim = h.NetStim()
 synstim.start = 1001
 #synstim.start = t_equil*1000 + 10
 synstim.noise = 0
-synstim.number = 1
+synstim.number = 10
 synstim.interval = 25
 
 ampasyn     = h.AmpaSyn(sh(0.5))
@@ -60,10 +60,10 @@ nmdanetcon.weight[0] = 0.045E-3     # From the ddsp work
 apinit = h.ExpSyn(dend(0))
 apinit.tau = 0.3/3
 apinit.e = 0
-#apinitcon = h.NetCon(synstim, apinit)
-#apinitcon.weight[0] = 3*0.4/70 # 0.4nA/70mV = 0.4/70 uS
-#apinitcon.delay = 16
-# iclamp = h.IClamp(0.5, sec=dend)
+apinitcon = h.NetCon(synstim, apinit)
+apinitcon.weight[0] = 3*0.4/70 # 0.4nA/70mV = 0.4/70 uS
+apinitcon.delay = 16
+#  iclamp = h.IClamp(0.5, sec=dend)
 #iclamp.delay = 17 
 # iclamp.amp = 0.4 # nA
 # iclamp.dur = 0.3
