@@ -21,6 +21,8 @@
 # %agent: PSD95
 
 ## Very simple pump, with a half-life of 12ms, as per Sabatini &al (2002)
+# This will be slow at low Ca concentrations, but will start to work
+# faster when the CB and CaM buffers are saturated
 %agent: P(ca)
 %init: 1   P(ca) 
 'Pump' P(ca),ca(b) -> P(ca)  @ 1/12
