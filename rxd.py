@@ -237,7 +237,8 @@ def _fixed_step_solve(dt):
     report(states)
 
     report("flux b")
-    ## DCS: This gets ICa and computes changes due to reactions
+    ## DCS: This gets fluxes (from ica, ik etc) and computes changes
+    ## due to reactions
     b = _rxd_reaction(states)
     report(b)
 
@@ -267,9 +268,8 @@ def _fixed_step_solve(dt):
             ## kappa_sim.runByTime2(h.t - dt/2)      # Second argument is "time per
             kappa_sim.runByTime3(dt/2)      # Second argument is "time per
         
-        ## TODO: At present this only works when one species is
-        ## defined. To get multiple species working, we will need to
-        ## look through _involved_species and _indices
+        ## This should work for multiple species working, but has only
+        ## been tested for ca
         report("\nADDING FLUXES TO KAPPA")
         for  sptr in k._involved_species:
             s = sptr()
@@ -280,7 +280,6 @@ def _fixed_step_solve(dt):
                 ## Flux b has units of mM/ms
                 ## Volumes has units of um3
                 ## _conversion factor has units of molecules mM^-1 um^-3
-                ## FIXME: perhaps make this a Poission variable?
                 mu = dt * b[i] * _conversion_factor * volumes[i]
                 nions = 0.0
                 if mu!=0:
