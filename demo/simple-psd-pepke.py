@@ -19,6 +19,14 @@ dend.diam = 1
 dend.g_pas = g_pas
 dend.insert("hh")
 
+# Spine neck needed probably!
+sn = h.Section()
+sn.insert("pas")                # Passive channel
+sn.L = 1
+sn.diam = 0.1
+sn.g_pas = g_pas
+sn.connect(dend, 0.5, 0)
+
 # Spine Head
 sh = h.Section()
 sh.insert("pas")                # Passive channel
@@ -27,9 +35,7 @@ sh.L = 0.2
 sh.diam = 0.4
 #h.dt = 0.001
 sh.g_pas = g_pas
-sh.connect(dend, 0.5, 0)
-
-# Spine neck needed probably!
+sh.connect(sn, 1, 0)
 
 # Synapse
 syn     = h.NmdaSyn(sh(0.5))
@@ -189,7 +195,7 @@ def plot_data(tmax=None):
     ax2.axis(xmin=0, xmax=tmax)
 
     ax3.plot(times[0], cai[0])
-    ax3.plot(times[0], CaCBi[0])
+    ax3.plot(times[0], rec_CaCBi)
     ax3.plot(times[0], cami[0])
     ax3.plot(times[0], rec_KCaCaM2Ci)
     ax3.set_xlabel("Time [ms]")
