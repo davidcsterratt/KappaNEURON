@@ -9,6 +9,7 @@ t_equil = 1
 
 ## Neuron
 
+h.celsius = 34                  # Temperature
 g_pas = 0.0001               # Gives membrane time constant of 10ms
 
 # Dendrite
@@ -38,20 +39,22 @@ sh.g_pas = g_pas
 sh.connect(sn, 1, 0)
 
 # Synapse
-syn     = h.NmdaSyn(sh(0.5))
 synstim = h.NetStim()
-h.celsius = 34
 synstim.start = 1001
 #synstim.start = t_equil*1000 + 10
 synstim.noise = 0
 synstim.number = 1
 synstim.interval = 25
-netcon  = h.NetCon(synstim, syn)
-netcon.weight[0] = 0.045E-3     # From the ddsp work
-## netcon.weight[0] = 0     # From the ddsp work
+
+ampasyn     = h.AmpaSyn(sh(0.5))
+ampanetcon  = h.NetCon(synstim, ampasyn)
+ampanetcon.weight[0] = 0.20E-3     # From the ddsp work
+
+nmdasyn     = h.NmdaSyn(sh(0.5))
 h.K0_NmdaSyn =  2.57                   
 h.delta_NmdaSyn = 0.96
-## netcon.weight[0] = 0
+nmdanetcon  = h.NetCon(synstim, nmdasyn)
+nmdanetcon.weight[0] = 0.045E-3     # From the ddsp work
 
 ## Used to initiate action potential
 apinit = h.ExpSyn(dend(0))
