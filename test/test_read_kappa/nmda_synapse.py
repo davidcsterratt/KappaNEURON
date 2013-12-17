@@ -33,6 +33,12 @@ h.delta_NmdaSyn = 0.96
 nmdanetcon  = h.NetCon(synstim, nmdasyn)
 nmdanetcon.weight[0] = 0.045E-3     # From the ddsp work
 
+## This setting of parameters gives a calcium influx and pump
+## activation that is more-or-less scale-independent
+vol = sh.L*numpy.pi*(sh.diam/2)**2
+N_A = 6.02205E23 # Avogadro's constant
+# Concentration of one agent in the volume in mM 
+agconc = 10E18/(N_A * vol)
 ## Reaction-diffusion mechanism
 ## This appears to integrate the incoming Ca
 # WHERE the dynamics will take place
@@ -40,16 +46,13 @@ r = rxd.Region([sh], nrn_region='i')
 
 # WHO are the actors
 ca        = rxd.Species(r, name='ca'   , charge=2, initial=0.001)
-NMDA      = rxd.Species(r, name='NMDA'  , charge=0, initial=0.01)
+NMDA      = rxd.Species(r, name='NMDA'  , charge=0, initial=3*agconc)
 Glu       = rxd.Species(r, name='Glu'   , charge=1, initial=0)
 #NMDAO     = rxd.Species(r, name='NMDAO' , charge=0)
 
-kappa = rxd.Kappa([NMDA, Glu], "nmda.ka", r, time_units="ms") # , verbose=True)
+kappa = rxd.Kappa([NMDA, Glu], "nmda.ka", r, time_units="ms", verbose=True)
 rxd.rxd.verbose=False
 
-## This setting of parameters gives a calcium influx and pump
-## activation that is more-or-less scale-independent
-vol = sh.L*numpy.pi*(sh.diam/2)**2
 
 ## Record Time from NEURON (neuron.h._ref_t)
 rec_t = h.Vector()
@@ -152,7 +155,7 @@ def plot_data(tmax=None):
     ax4.set_xlabel("Time [ms]")
     ax4.set_ylabel("g [uS]")
     ## ax3.axis(ymin=-1E-2, ymax=0.5E-1)
-    ax3.axis(xmin=0, xmax=tmax)
+    ax4.axis(xmin=0, xmax=tmax)
 
 
     fig.show() # If the interpreter stops now: close the figure.
