@@ -1,0 +1,31 @@
+%agent: NMDA(b0,b1~c0~c1~c2~c3~o)
+%agent: Glu(b)
+%agent: GluP(b)
+
+# Clear Glu quickly from the cleft wihtin about 100uS
+'Glu-Clear' GluP(b),Glu(b) -> GluP(b) @ 10 
+
+'C0'         NMDA(b0,  b1~c0),  Glu(b)   -> NMDA(b0!1,b1~c1),  Glu(b!1)        @  10
+'C0_diss'    NMDA(b0!1,b1~c1),  Glu(b!1) -> NMDA(b0,  b1~c0),  Glu(b)        @   0.025
+'C1'         NMDA(b0!_,b1~c1),  Glu(b)   -> NMDA(b0!_,b1~c2!1),Glu(b!1)      @   5
+'C1_diss'    NMDA(b0!_,b1~c2!1),Glu(b!1) -> NMDA(b0!_,b1~c1),  Glu(b)        @   0.050
+'C2-O'       NMDA(b0!_,b1~c2!_)          -> NMDA(b0!_,b1~o!_)                @ 280
+'C2-O_diss'  NMDA(b0!_,b1~o!_)           -> NMDA(b0!_,b1~c2!_)               @ 275
+'C2-C3'      NMDA(b0!_,b1~c2!_)          -> NMDA(b0!_,b1~c3!_)               @   8
+'C2-C3_diss' NMDA(b0!_,b1~c3!_)          -> NMDA(b0!_,b1~c2!_)               @   1.8
+
+%init: 10 NMDA(b0,b1~c0)
+%init: 20 Glu(b)
+%init: 1 GluP(b)
+
+# %obs: 'NMDA'  NMDA(b?)
+
+%obs: 'NMDAC0' NMDA(b0,  b1~c0)
+%obs: 'NMDAC1' NMDA(b0!_,b1~c1)
+%obs: 'NMDAC2' NMDA(b0!_,b1~c2!_)
+%obs: 'NMDAC3' NMDA(b0!_,b1~c3!_)
+%obs: 'NMDA'   NMDA(b0!_,b1~o!_)
+#%obs: 'NMDAC' NMDA(b~c)
+#%obs: 'NMDA-GluC' NMDA(b~c!_)
+#%obs: 'NMDA-GluO' NMDA(b~o!_)
+%obs: 'Glu'   Glu(b)

@@ -20,7 +20,7 @@ sh.g_pas = g_pas
 synstim = h.NetStim()
 synstim.start = 10
 synstim.noise = 0
-synstim.number = 10
+synstim.number = 1
 synstim.interval = 25
 
 #ampasyn     = h.AmpaSyn(sh(0.5))
@@ -38,19 +38,23 @@ nmdanetcon.weight[0] = 0.045E-3     # From the ddsp work
 vol = sh.L*numpy.pi*(sh.diam/2)**2
 N_A = 6.02205E23 # Avogadro's constant
 # Concentration of one agent in the volume in mM 
-agconc = 10E18/(N_A * vol)
+agconc = 1E18/(N_A * vol)
 ## Reaction-diffusion mechanism
 ## This appears to integrate the incoming Ca
 # WHERE the dynamics will take place
 r = rxd.Region([sh], nrn_region='i')
 
 # WHO are the actors
-ca        = rxd.Species(r, name='ca'   , charge=2, initial=0.001)
-NMDA      = rxd.Species(r, name='NMDA'  , charge=0, initial=3*agconc)
+ca        = rxd.Species(r, name='ca'       , charge=2, initial=0.001)
+NMDA      = rxd.Species(r, name='NMDA'     , charge=0, initial=2*agconc)
+NMDAC0    = rxd.Species(r, name='NMDAC0' , charge=0)
+NMDAC1    = rxd.Species(r, name='NMDAC1' , charge=0)
+NMDAC2    = rxd.Species(r, name='NMDAC2' , charge=0)
+NMDAC3    = rxd.Species(r, name='NMDAC3' , charge=0)
 Glu       = rxd.Species(r, name='Glu'   , charge=1, initial=0)
 #NMDAO     = rxd.Species(r, name='NMDAO' , charge=0)
 
-kappa = rxd.Kappa([NMDA, Glu], "nmda.ka", r, time_units="ms", verbose=True)
+kappa = rxd.Kappa([NMDA, Glu], "nmda2.ka", r, time_units="ms", verbose=True)
 rxd.rxd.verbose=False
 
 
@@ -69,6 +73,16 @@ rec_ica.record(sh(0.5)._ref_ica)
 ## Record Ca bound to CB from spine head
 rec_NMDAi = h.Vector()
 rec_NMDAi.record(sh(0.5)._ref_NMDAi)
+rec_NMDAC0i = h.Vector()
+rec_NMDAC0i.record(sh(0.5)._ref_NMDAC0i)
+rec_NMDAC1i = h.Vector()
+rec_NMDAC1i.record(sh(0.5)._ref_NMDAC1i)
+rec_NMDAC2i = h.Vector()
+rec_NMDAC2i.record(sh(0.5)._ref_NMDAC2i)
+rec_NMDAC3i = h.Vector()
+rec_NMDAC3i.record(sh(0.5)._ref_NMDAC3i)
+
+
 ## Record Free CaM from spine head
 rec_Glui = h.Vector()
 rec_Glui.record(sh(0.5)._ref_Glui)
@@ -143,6 +157,8 @@ def plot_data(tmax=None):
 
     ax3.plot(times[0], rec_cai)
     ax3.plot(times[0], rec_NMDAi)
+    ax3.plot(times[0], rec_NMDAC1i)
+    ax3.plot(times[0], rec_NMDAC2i)
     ax3.plot(times[0], rec_Glui)
     ax3.set_xlabel("Time [ms]")
     ax3.set_ylabel("[mM]")
