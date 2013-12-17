@@ -1,9 +1,9 @@
 %agent: NMDA(b~o~c)
 %agent: Glu(b)
 
-'Binding'   NMDA(b),Glu(b)       -> NMDA(b!1),Glu(b!1)   @  10
+'Binding'   NMDA(b),Glu(b)       -> NMDA(b!1),Glu(b!1)   @   1
 'Unbinding' NMDA(b!1),Glu(b!1)   -> NMDA(b)              @  10
-'Opening'   NMDA(b~c!1),Glu(b!1) -> NMDA(b~o!1),Glu(b!1) @   1
+'Opening'   NMDA(b~c!1),Glu(b!1) -> NMDA(b~o!1),Glu(b!1) @ 0.1
 'Closing'   NMDA(b~o)            -> NMDA(b~c)            @   1
 
 %init: 0 NMDA(b~c)

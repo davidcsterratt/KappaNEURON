@@ -40,7 +40,7 @@ NEURON {
     RANGE  e, g, i, b, ica, iGlu
     NONSPECIFIC_CURRENT i
     USEION ca READ cai,cao WRITE ica
-    USEION NMDA READ NMDAi VALENCE 0
+    USEION NMDA READ NMDAi,iNMDA VALENCE 0
     USEION Glu  WRITE iGlu VALENCE 0
     GLOBAL total, mg, q10, taurise, taufast, tauslow, taurise_exp, taufast_exp, tauslow_exp, afast, aslow, normfac, T_exp, K0, delta, fracca
 }
@@ -62,12 +62,15 @@ PARAMETER {
     q10 = 3       : Hestrin 90
     K0 = 4.1 (mM) : From Spruston &al 95
     delta = 0.8   : From Spruston &al 95
+    N_A = 6.02205E23 
 }
 
 ASSIGNED {
     v       (mV)
     i       (nA)
     ica	    (nA) 	
+    iGlu    (nA)
+    iNMDA   (nA)
     g       (uS)
     aslow 
     total   (uS)
@@ -79,23 +82,37 @@ ASSIGNED {
     normfac 
     b
     NMDAi  (mM)
-    iGlu    (nA)
+    vol  (micrometer3)
+    area (micrometer2)
+    diam (micrometer)
+    L    (micrometer)
+    conv  (/mM)
+
 }
+
+INITIAL {
+    L = area/(PI*diam)
+    vol = L*PI*(diam/2)^2
+    conv = N_A*vol*(1e-18)
+}
+
 
 BREAKPOINT {
     b = mgblock(v)		: b is the block by magnesium at this voltage
-    g = NMDAi * b
-    i =   g * (1-fracca) * (v - e)
+    g = 0.045E-3(uS) *conv * NMDAi * b 
+    i =   g * (1-fracca) * (v - e) 
     ica = g * fracca     * ghkg(v,cai,cao,z)
+    printf("NMDAi=%g\n", conv * NMDAi)
 }
-
 
 NET_RECEIVE(weight (uS)) {
     if (flag == 0) {
-        iGlu = -0.001
+        iGlu = -0.0001
+        i = 0.0001
         net_send(0.1, 1)
     } else {
         iGlu = 0
+        i = 0
     }
 }
 

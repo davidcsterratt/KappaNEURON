@@ -40,11 +40,12 @@ r = rxd.Region([sh], nrn_region='i')
 
 # WHO are the actors
 # ca        = rxd.Species(r, name='ca'   , charge=2, initial=0.001)
-NMDA      = rxd.Species(r, name='NMDA'  , charge=1, initial=0.01)
+NMDA      = rxd.Species(r, name='NMDA'  , charge=0, initial=0.01)
 Glu       = rxd.Species(r, name='Glu'   , charge=1, initial=0)
 #NMDAO     = rxd.Species(r, name='NMDAO' , charge=0)
 
-kappa = rxd.Kappa([NMDA, Glu], "nmda.ka", r, time_units="ms", verbose=True)
+kappa = rxd.Kappa([NMDA, Glu], "nmda.ka", r, time_units="ms") # , verbose=True)
+rxd.rxd.verbose=False
 
 ## This setting of parameters gives a calcium influx and pump
 ## activation that is more-or-less scale-independent
@@ -68,12 +69,20 @@ rec_NMDAi.record(sh(0.5)._ref_NMDAi)
 ## Record Free CaM from spine head
 rec_Glui = h.Vector()
 rec_Glui.record(sh(0.5)._ref_Glui)
+## Record Free CaM from spine head
+rec_iGlu = h.Vector()
+rec_iGlu.record(sh(0.5)._ref_iGlu)
+## Record Free CaM from spine head
+rec_iNMDA = h.Vector()
+rec_iNMDA.record(sh(0.5)._ref_iNMDA)
+
+
 
 ## Run
 init()
 #kappa.run_free(200)
 print("Running NEURON-kappa")
-run(20)
+run(200)
 
 ## Plot
 import matplotlib.pyplot as plt
@@ -96,12 +105,15 @@ voltages = []
 cai = []
 ica = []
 Glui = []
+iGlu = []
+iNMDA = []
 
 times.append(list(rec_t)) # alternativ to `list(rec_t)`: `numpy.array(rec_t)`
 voltages.append(list(rec_v))
 cai.append(list(rec_cai))
 ica.append(list(rec_ica))
-Glui.append(list(rec_Glui))
+
+
 
 def plot_data(tmax=None):
     if (tmax == None): 
@@ -115,6 +127,10 @@ def plot_data(tmax=None):
     ax1.axis(xmin=0, xmax=tmax)
 
     ax2.plot(times[0], ica[0])
+    ax2.plot(times[0], rec_iNMDA)
+    ax2.plot(times[0], rec_iGlu)
+    plt.axes(ax2)
+    plt.legend(('Ca', 'NMDA', 'Glu'))
     ax2.set_xlabel("Time [ms]")
     ax2.set_ylabel("ICa [mA/cm2]")
     ## ax2.axis(ymin=-1, ymax=0.1)
@@ -137,3 +153,4 @@ def plot_data(tmax=None):
 
 numpy.savez("nmda_synapse.npz", t=times[0], cai=cai[0],  ica=ica[0], voltages=voltages[0], diam=sh.diam)
 
+plot_data()

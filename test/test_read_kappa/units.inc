@@ -8,4 +8,5 @@ UNITS {
     (uS) = (microsiemens)
     FARADAY = (faraday) (coulomb)
     R = (k-mole) (joule/degC)
+    PI = (pi) (1)
 }
