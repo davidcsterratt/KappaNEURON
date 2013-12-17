@@ -8,6 +8,22 @@ import numpy
 h.celsius = 34                  # Temperature
 g_pas = 0.0001                  # Gives membrane time constant of 10ms
 
+# Dendrite
+dend = h.Section()
+dend.insert("pas")                # Passive channel
+dend.L = 100
+dend.diam = 1
+dend.g_pas = g_pas
+dend.insert("hh")
+
+# Spine neck needed probably!
+sn = h.Section()
+sn.insert("pas")                # Passive channel
+sn.L = 1
+sn.diam = 0.1
+sn.g_pas = g_pas
+sn.connect(dend, 0.5, 0)
+
 # Spine Head
 sh = h.Section()
 sh.insert("pas")                # Passive channel
@@ -15,17 +31,18 @@ sh.insert("pas")                # Passive channel
 sh.L = 0.2
 sh.diam = 0.8
 sh.g_pas = g_pas
+sh.connect(sn, 1, 0)
 
 # Synapse
 synstim = h.NetStim()
 synstim.start = 10
 synstim.noise = 0
-synstim.number = 1
+synstim.number = 10
 synstim.interval = 25
 
-#ampasyn     = h.AmpaSyn(sh(0.5))
-#ampanetcon  = h.NetCon(synstim, ampasyn)
-#ampanetcon.weight[0] = 0.20E-3     # From the ddsp work
+ampasyn     = h.AmpaSyn(sh(0.5))
+ampanetcon  = h.NetCon(synstim, ampasyn)
+ampanetcon.weight[0] = 0.20E-3     # From the ddsp work
 
 nmdasyn     = h.NmdaSyn(sh(0.5))
 h.K0_NmdaSyn =  2.57                   
@@ -46,7 +63,7 @@ r = rxd.Region([sh], nrn_region='i')
 
 # WHO are the actors
 ca        = rxd.Species(r, name='ca'       , charge=2, initial=0.001)
-NMDA      = rxd.Species(r, name='NMDA'     , charge=0, initial=2*agconc)
+NMDA      = rxd.Species(r, name='NMDA'     , charge=0, initial=3*agconc)
 NMDAC0    = rxd.Species(r, name='NMDAC0' , charge=0)
 NMDAC1    = rxd.Species(r, name='NMDAC1' , charge=0)
 NMDAC2    = rxd.Species(r, name='NMDAC2' , charge=0)
@@ -54,8 +71,8 @@ NMDAC3    = rxd.Species(r, name='NMDAC3' , charge=0)
 Glu       = rxd.Species(r, name='Glu'   , charge=1, initial=0)
 #NMDAO     = rxd.Species(r, name='NMDAO' , charge=0)
 
-kappa = rxd.Kappa([NMDA, Glu], "nmda2.ka", r, time_units="ms", verbose=True)
-rxd.rxd.verbose=False
+kappa = rxd.Kappa([NMDA, Glu], "nmda2.ka", r, time_units="ms") #, verbose=True)
+# rxd.rxd.verbose=False
 
 
 ## Record Time from NEURON (neuron.h._ref_t)
@@ -101,7 +118,7 @@ rec_g.record(nmdasyn._ref_g)
 init()
 #kappa.run_free(200)
 print("Running NEURON-kappa")
-run(200)
+run(600)
 
 ## Plot
 import matplotlib.pyplot as plt
@@ -142,7 +159,7 @@ def plot_data(tmax=None):
     ax1.plot(times[0], voltages[0])
     ax1.set_xlabel("Time [ms]")
     ax1.set_ylabel("V [mV]")
-    ax1.axis(ymin=-80, ymax=50)
+    ax1.axis(ymin=-66, ymax=-62)
     ax1.axis(xmin=0, xmax=tmax)
 
     ax2.plot(times[0], ica[0])
@@ -157,14 +174,12 @@ def plot_data(tmax=None):
 
     ax3.plot(times[0], rec_cai)
     ax3.plot(times[0], rec_NMDAi)
-    ax3.plot(times[0], rec_NMDAC1i)
-    ax3.plot(times[0], rec_NMDAC2i)
     ax3.plot(times[0], rec_Glui)
     ax3.set_xlabel("Time [ms]")
     ax3.set_ylabel("[mM]")
     plt.axes(ax3)
     plt.legend(('Ca', 'NMDA', 'Glu'))
-    ## ax3.axis(ymin=-1E-2, ymax=0.5E-1)
+    ax3.axis(ymin=0, ymax=0.1)
     ax3.axis(xmin=0, xmax=tmax)
 
     ax4.plot(times[0], rec_g)
