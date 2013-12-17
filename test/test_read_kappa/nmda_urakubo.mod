@@ -106,7 +106,8 @@ BREAKPOINT {
     : spine
     i =   L/(L + diam/4) * g * (1-fracca) * (v - e) - iGlu
     ica = L/(L + diam/4) * g * fracca     * ghkg(v,cai,cao,z)
-    printf("NMDAi=%g\n", conv * NMDAi)
+    : Should print out a near-integer number of open NMDA gates
+    : printf("NMDAi=%g\n", conv * NMDAi)
 }
 
 NET_RECEIVE(weight (uS)) {
