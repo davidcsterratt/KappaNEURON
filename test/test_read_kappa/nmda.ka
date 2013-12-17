@@ -1,13 +1,18 @@
 %agent: NMDA(b~o~c)
 %agent: Glu(b)
+%agent: GluP(b)
+
+# Clear Glu quickly from the cleft wihtin about 100uS
+'Glu-Clear' GluP(b),Glu(b) -> GluP(b) @ 10 
 
 'Binding'   NMDA(b),Glu(b)       -> NMDA(b!1),Glu(b!1)   @   1
-'Unbinding' NMDA(b!1),Glu(b!1)   -> NMDA(b)              @  10
+'Unbinding' NMDA(b!1),Glu(b!1)   -> NMDA(b),Glu(b)       @  10
 'Opening'   NMDA(b~c!1),Glu(b!1) -> NMDA(b~o!1),Glu(b!1) @ 0.1
 'Closing'   NMDA(b~o)            -> NMDA(b~c)            @   1
 
 %init: 0 NMDA(b~c)
 %init: 20 Glu(b)
+%init: 1 GluP(b)
 
 # %obs: 'NMDA'  NMDA(b?)
 %obs: 'NMDA' NMDA(b~o?)
