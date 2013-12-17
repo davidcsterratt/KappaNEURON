@@ -99,10 +99,13 @@ INITIAL {
 
 BREAKPOINT {
     b = mgblock(v)		: b is the block by magnesium at this voltage
+    : Single channe conductnace * conversion factor * concentration of NMDAi * block factor
     g = 0.045E-3(uS) *conv * NMDAi * b 
     iGlu = fGlu*-0.0001
-    i =   g * (1-fracca) * (v - e) - iGlu
-    ica = g * fracca     * ghkg(v,cai,cao,z)
+    : correction for area of spine, assuming that the synapse is on a
+    : spine
+    i =   L/(L + diam/4) * g * (1-fracca) * (v - e) - iGlu
+    ica = L/(L + diam/4) * g * fracca     * ghkg(v,cai,cao,z)
     printf("NMDAi=%g\n", conv * NMDAi)
 }
 
