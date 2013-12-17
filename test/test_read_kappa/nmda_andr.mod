@@ -87,7 +87,7 @@ ASSIGNED {
     diam (micrometer)
     L    (micrometer)
     conv  (/mM)
-
+    fGlu
 }
 
 INITIAL {
@@ -100,19 +100,18 @@ INITIAL {
 BREAKPOINT {
     b = mgblock(v)		: b is the block by magnesium at this voltage
     g = 0.045E-3(uS) *conv * NMDAi * b 
-    i =   g * (1-fracca) * (v - e) 
+    iGlu = fGlu*-0.0001
+    i =   g * (1-fracca) * (v - e) - iGlu
     ica = g * fracca     * ghkg(v,cai,cao,z)
     printf("NMDAi=%g\n", conv * NMDAi)
 }
 
 NET_RECEIVE(weight (uS)) {
     if (flag == 0) {
-        iGlu = -0.0001
-        i = 0.0001
+        fGlu = 1
         net_send(0.1, 1)
     } else {
-        iGlu = 0
-        i = 0
+        fGlu = 0
     }
 }
 
