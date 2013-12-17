@@ -13,7 +13,7 @@ sh = h.Section()
 sh.insert("pas")                # Passive channel
 # This gives volume of 0.1um3
 sh.L = 0.2
-sh.diam = 0.4
+sh.diam = 0.8
 sh.g_pas = g_pas
 
 # Synapse
@@ -39,7 +39,7 @@ nmdanetcon.weight[0] = 0.045E-3     # From the ddsp work
 r = rxd.Region([sh], nrn_region='i')
 
 # WHO are the actors
-# ca        = rxd.Species(r, name='ca'   , charge=2, initial=0.001)
+ca        = rxd.Species(r, name='ca'   , charge=2, initial=0.001)
 NMDA      = rxd.Species(r, name='NMDA'  , charge=0, initial=0.01)
 Glu       = rxd.Species(r, name='Glu'   , charge=1, initial=0)
 #NMDAO     = rxd.Species(r, name='NMDAO' , charge=0)
@@ -76,6 +76,8 @@ rec_iGlu.record(sh(0.5)._ref_iGlu)
 rec_iNMDA = h.Vector()
 rec_iNMDA.record(sh(0.5)._ref_iNMDA)
 
+rec_g = h.Vector()
+rec_g.record(nmdasyn._ref_g)
 
 
 ## Run
@@ -136,7 +138,7 @@ def plot_data(tmax=None):
     ## ax2.axis(ymin=-1, ymax=0.1)
     ax2.axis(xmin=0, xmax=tmax)
 
-    ax3.plot(times[0], cai[0])
+    ax3.plot(times[0], rec_cai)
     ax3.plot(times[0], rec_NMDAi)
     ax3.plot(times[0], rec_Glui)
     ax3.set_xlabel("Time [ms]")
@@ -145,6 +147,13 @@ def plot_data(tmax=None):
     plt.legend(('Ca', 'NMDA', 'Glu'))
     ## ax3.axis(ymin=-1E-2, ymax=0.5E-1)
     ax3.axis(xmin=0, xmax=tmax)
+
+    ax4.plot(times[0], rec_g)
+    ax4.set_xlabel("Time [ms]")
+    ax4.set_ylabel("g [uS]")
+    ## ax3.axis(ymin=-1E-2, ymax=0.5E-1)
+    ax3.axis(xmin=0, xmax=tmax)
+
 
     fig.show() # If the interpreter stops now: close the figure.
     # For interactive plotting, see `Part 1` -> `ipython`
