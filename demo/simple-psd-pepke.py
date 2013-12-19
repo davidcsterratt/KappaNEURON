@@ -33,7 +33,7 @@ sh = h.Section()
 sh.insert("pas")                # Passive channel
 # This gives volume of 0.1um3
 sh.L = 0.2
-sh.diam = 0.4
+sh.diam = 0.8
 #h.dt = 0.001
 sh.g_pas = g_pas
 sh.connect(sn, 1, 0)
