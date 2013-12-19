@@ -3,6 +3,7 @@
 from neuron import *
 from neuron import rxd
 import numpy
+import random
 
 ## Time for equilibriation in seconds
 t_equil = 1
@@ -43,8 +44,8 @@ synstim = h.NetStim()
 synstim.start = 20
 #synstim.start = t_equil*1000 + 10
 synstim.noise = 0
-synstim.number = 10
-synstim.interval = 25
+synstim.number = 20
+synstim.interval = 10
 
 ampasyn     = h.AmpaSyn(sh(0.5))
 ampanetcon  = h.NetCon(synstim, ampasyn)
@@ -64,6 +65,25 @@ apinitcon = h.NetCon(synstim, apinit)
 apinitcon.weight[0] = 3*0.4/70 # 0.4nA/70mV = 0.4/70 uS
 apinitcon.delay = 1
 
+
+class MyAmpaSyn():
+    def __init__(self):
+        self.stim = h.NetStim()
+        self.stim.start = 20
+        #stim.start = t_equil*1000 + 10
+        self.stim.noise = 1
+        self.stim.number = 40
+        self.stim.interval = 20
+        
+        self.syn = h.AmpaSyn(dend(random.random()))
+        self.netcon  = h.NetCon(self.stim, self.syn)
+        self.netcon.weight[0] = 0.20E-3     # From the ddsp work
+
+synlist = []
+for i in range(1, 50):
+    synlist.append(MyAmpaSyn())
+
+
 ## This setting of parameters gives a calcium influx and pump
 ## activation that is more-or-less scale-independent
 vol = sh.L*numpy.pi*(sh.diam/2)**2
@@ -79,17 +99,18 @@ r = rxd.Region([sh], nrn_region='i')
 # WHO are the actors
 ca        = rxd.Species(r, name='ca'       , charge=2, initial=0.001)
 Glu       = rxd.Species(r, name='Glu'   , charge=1, initial=0)
-NMDA      = rxd.Species(r, name='NMDA'     , charge=0, initial=3*agconc)
+NMDA      = rxd.Species(r, name='NMDA'     , charge=0, initial=19*agconc)
 CB        = rxd.Species(r, name='CB'       , charge=0, initial=0.100) # Faas &al
 cam       = rxd.Species(r, name='CaM'      , charge=0, initial=0.030) # Fass &al, Pepke &al
 CaMKII    = rxd.Species(r, name='CaMKII'   , charge=0, initial=0.080) # Pepke &al
 CaCB      = rxd.Species(r, name='CaCB'     , charge=0) 
-CaCaM2C   = rxd.Species(r, name='CaCaM2C'  , charge=0)
-CaCaM2N   = rxd.Species(r, name='CaCaM2N'  , charge=0)
+CaCaMC   = rxd.Species(r, name='CaCaMC'  , charge=0)
+CaCaMN   = rxd.Species(r, name='CaCaMN'  , charge=0)
 KCaCaM2C  = rxd.Species(r, name='KCaCaM2C' , charge=0)
+CaMKIIp   = rxd.Species(r, name='CaMKIIp' , charge=0)
 
 #  KCaCaM2C, , CaCB
-kappa = rxd.Kappa([ca, Glu, NMDA, CB, cam, CaMKII, CaCB, CaCaM2C, CaCaM2N, KCaCaM2C], "simple-psd-pepke-kappa-nmda.ka", r, time_units="ms", verbose=True)
+kappa = rxd.Kappa([ca, Glu, NMDA, CB, cam, CaMKII, CaCB, CaCaMC, CaCaMN, KCaCaM2C, CaMKIIp], "simple-psd-pepke-kappa-nmda.ka", r, time_units="ms", verbose=True)
 rxd.rxd.verbose=False
 ## This setting of parameters gives a calcium influx and pump
 ## activation that is more-or-less scale-independent
@@ -124,12 +145,15 @@ rec_cami.record(sh(0.5)._ref_CaMi)
 
 rec_CaMKIIi = h.Vector()
 rec_CaMKIIi.record(sh(0.5)._ref_CaMKIIi)
-rec_CaCaM2Ni = h.Vector()
-rec_CaCaM2Ni.record(sh(0.5)._ref_CaCaM2Ni)
-rec_CaCaM2Ci = h.Vector()
-rec_CaCaM2Ci.record(sh(0.5)._ref_CaCaM2Ci)
+rec_CaCaMNi = h.Vector()
+rec_CaCaMNi.record(sh(0.5)._ref_CaCaMNi)
+rec_CaCaMCi = h.Vector()
+rec_CaCaMCi.record(sh(0.5)._ref_CaCaMCi)
 rec_KCaCaM2Ci = h.Vector()
 rec_KCaCaM2Ci.record(sh(0.5)._ref_KCaCaM2Ci)
+rec_CaMKIIpi = h.Vector()
+rec_CaMKIIpi.record(sh(0.5)._ref_CaMKIIpi)
+
 
 ## Run
 init()
@@ -142,7 +166,7 @@ kappa.run_free(1000)
 #     kappa.run_free(990)
 #     h.t = h.t + 990
 print("Running NEURON-kappa")
-run(300)
+run(5000)
 if (0):
     for i in range(1,60):
         print("Running kappa-only")
@@ -202,23 +226,25 @@ def plot_data(tmax=None):
 
     ax3.plot(times[0], cai[0])
     ax3.plot(times[0], rec_CaCBi)
-    ax3.plot(times[0], cami[0])
-    ax3.plot(times[0], rec_KCaCaM2Ci)
+    ax3.plot(times[0], rec_CaCaMNi)
+    ax3.plot(times[0], rec_CaCaMCi)
     ax3.set_xlabel("Time [ms]")
     ax3.set_ylabel("[mM]")
     plt.axes(ax3)
-    plt.legend(('Ca', 'CaCB', 'CaM', 'KCaCaM2C'))
+    plt.legend(('Ca', 'CaCB', 'CaCaMN', 'CaCaMC'))
+    ax3.axis(ymin=-1E-3, ymax=0.5E-1)
     ## ax3.axis(ymin=-1E-2, ymax=0.5E-1)
     ax3.axis(xmin=0, xmax=tmax)
 
-    ax4.plot(times[0], rec_CaCaM2Ni)
-    ax4.plot(times[0], rec_CaMKIIi)
+    
+    ax4.plot(times[0], rec_KCaCaM2Ci)
+    ax4.plot(times[0], rec_CaMKIIpi)
     ax4.set_xlabel("Time [ms]")
     ax4.set_ylabel("[mM]")
     plt.axes(ax4)
-    plt.legend(('CaCaM2N', 'CaMKII'))
-    ax4.axis(ymin=-1E-5, ymax=1E-2)
+    plt.legend(('KCaCaM2C','CaMKIIp'))
     ax4.axis(xmin=0, xmax=tmax)
+    ax4.axis(ymin=0, ymax=0.001)
 
     fig.show() # If the interpreter stops now: close the figure.
     # For interactive plotting, see `Part 1` -> `ipython`
