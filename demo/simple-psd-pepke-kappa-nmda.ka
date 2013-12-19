@@ -15,7 +15,7 @@
 # Clear Glu quickly from the cleft wihtin about 100uS
 'Glu-Clear' GluP(b),Glu(b) -> GluP(b) @ 10 
 
-'C0'         NMDA(b0,  b1~c0),  Glu(b)   -> NMDA(b0!1,b1~c1),  Glu(b!1)        @  10
+'C0'         NMDA(b0,  b1~c0),  Glu(b)   -> NMDA(b0!1,b1~c1),  Glu(b!1)      @  10
 'C0_diss'    NMDA(b0!1,b1~c1),  Glu(b!1) -> NMDA(b0,  b1~c0),  Glu(b)        @   0.025
 'C1'         NMDA(b0!_,b1~c1),  Glu(b)   -> NMDA(b0!_,b1~c2!1),Glu(b!1)      @   5
 'C1_diss'    NMDA(b0!_,b1~c2!1),Glu(b!1) -> NMDA(b0!_,b1~c1),  Glu(b)        @   0.050
@@ -212,11 +212,11 @@
 %obs: 'CaM' CaM(n1,n2,c1,c2)
 %var: 'CaCaMC1' ca(b!1),CaM(c1!1)
 %var: 'CaCaMC2' ca(b!1),CaM(c2!1)
-# %obs: 'CaCaMC' 'CaCaMC1' + 'CaCaMC2'
+%obs: 'CaCaMC' 'CaCaMC1' + 'CaCaMC2'
 
 %var: 'CaCaMN1' ca(b!1),CaM(n1!1)
 %var: 'CaCaMN2' ca(b!1),CaM(n2!1)
-# %obs: 'CaCaMN' 'CaCaMN1' + 'CaCaMN2'
+%obs: 'CaCaMN' 'CaCaMN1' + 'CaCaMN2'
 
 # %obs: 'CaMKII_CaM'  CaMKII(r!_)
 # %obs: 'CaMKII-CaMCa4'  CaMKII(r!1),CaM(ck!1,c1!_,c2!_,n1!_,n2!_)
