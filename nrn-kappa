@@ -5,7 +5,7 @@ PREFIX=/disk/scratch/sterratt/nrn/7.4
 SKPATH=${HOME}/projects/mlm/SpatialKappa
 SKJAR=${SKPATH}/SpatialKappa-v2.1.1.jar
 PY4JJAR=${HOME}/projects/mlm/py4j/py4j0.7.jar
-NRNKAPPAPATH=${HOME}/projects/mlm/rxd-SpatialKappa
+ROOT=$(dirname $0)
 # Needed for ss on some sytems
 export PATH=${PATH}:/usr/sbin
 SS=ss
@@ -16,10 +16,10 @@ echo $pid
 if [ "x${pid}" != "x" ]; then kill -9 ${pid} ; fi
 
 ## Start gateway process
-export CLASSPATH=${NRNKAPPAPATH}:${SKJAR}:${SKPATH}/*:${PY4JJAR}
+export CLASSPATH=${ROOT}:${SKJAR}:${SKPATH}/*:${PY4JJAR}
 echo $CLASSPATH
 java SpatialKappaSimEntryPoint main &
 sleep 1
 
 ## Start NEURON
-PYTHONPATH=${PREFIX}/lib/python:${PYTHONPATH} python2.7 $*
+PYTHONPATH=${ROOT}:${PREFIX}/lib/python:${PYTHONPATH} python2.7 $*
