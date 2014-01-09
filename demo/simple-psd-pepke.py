@@ -3,6 +3,7 @@
 from neuron import *
 from neuron import rxd
 import numpy
+import KappaNEURON
 
 ## Time for equilibriation in seconds
 t_equil = 1
@@ -85,7 +86,7 @@ CaCaM2N   = rxd.Species(r, name='CaCaM2N'  , charge=0)
 KCaCaM2C  = rxd.Species(r, name='KCaCaM2C' , charge=0)
 
 #  KCaCaM2C, , CaCB
-kappa = rxd.Kappa([ca, CB, cam, CaMKII, CaCB, CaCaM2C, CaCaM2N, KCaCaM2C], "simple-psd-pepke.ka", r, time_units="ms")
+kappa = KappaNEURON.Kappa([ca, CB, cam, CaMKII, CaCB, CaCaM2C, CaCaM2N, KCaCaM2C], "simple-psd-pepke.ka", r, time_units="ms")
 
 
 ## This setting of parameters gives a calcium influx and pump
