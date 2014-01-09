@@ -1,11 +1,11 @@
 import os
 import weakref
-import species
-import rxdmath
-import rxd
+import neuron.rxd.species
+import neuron.rxd.rxdmath
+import neuron.rxd
 import numpy
-import node
-from generalizedReaction import GeneralizedReaction
+import neuron.rxd.node
+from neuron.rxd.generalizedReaction import GeneralizedReaction
 from py4j.java_gateway import JavaGateway
 
 gateway = None
