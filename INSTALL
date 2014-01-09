@@ -1,3 +1,12 @@
-# 1. Install NEURON with python2.7 - see INSTALL-neuron for details
+1. Install NEURON with python2.7 - see INSTALL-neuron for details
 
-# 2. Install version of SpatialKappa from "neuron" branch
+2. Install version of SpatialKappa from "neuron" branch
+
+3. Run make to produce .class files
+
+4. Check paths to NEURON and SpatialKappa jar file in nrn-kappa
+
+5. Try
+
+   cd test/test_ca_pulse_var
+   ../../nrn-kappa -i test_ca_pulse.py
