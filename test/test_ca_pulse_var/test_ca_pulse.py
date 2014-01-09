@@ -2,6 +2,7 @@
 ## pumped out.  Voltage clamp ensures almost constant Ca flow.
 from test_ca_pulse_common import *
 from neuron import rxd
+import KappaNEURON
 
 def run(diam=0.2, 
         gcalbar=0.05,
@@ -18,7 +19,7 @@ def run(diam=0.2,
     # WHO are the actors
     ca = rxd.Species(r, name='ca', charge=2, initial=0.0)
     P  = rxd.Species(r, name='P',  charge=0, initial=P0)
-    kappa = rxd.Kappa([ca, P], "caPump.ka", r)
+    kappa = KappaNEURON.Kappa([ca, P], "caPump.ka", r, verbose=True)
     vol = sh.L*numpy.pi*(sh.diam/2)**2
     ## kappa.setVariable('gamma1', 1E-3*0.1*numpy.pi*0.5**2/vol)
     ## kappa.setVariable('gamma2', gamma2)
