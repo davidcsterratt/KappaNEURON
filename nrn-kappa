@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # PREFIX=/home/dcs
-PREFIX=/disk/scratch/sterratt
+PREFIX=/disk/scratch/sterratt/nrn/7.4
 SKPATH=${HOME}/projects/mlm/SpatialKappa
 SKJAR=${SKPATH}/SpatialKappa-v2.1.1.jar
 PY4JJAR=${HOME}/projects/mlm/py4j/py4j0.7.jar
