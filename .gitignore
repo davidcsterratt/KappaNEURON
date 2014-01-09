@@ -3,3 +3,4 @@
 *.npz
 x86_64
 *.pdf
+*.class
