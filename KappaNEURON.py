@@ -106,7 +106,7 @@ def _kn_fixed_step_solve(raw_dt):
                     mu = dt * b[i] * nrr._conversion_factor * volumes[i]
                     nions = 0.0
                     if mu!=0:
-                        nions = math.copysign(1, mu)*poisson.rvs(abs(mu))
+                        nions = numpy.sign(mu)*poisson.rvs(abs(mu))
                     report("index %d; volume: %f ; flux %f ; # of ions: %s" % (i, volumes[i], b[i], nions))
                     kappa_sim.addAgent(name, nions)
                     t_kappa = kappa_sim.getTime()
