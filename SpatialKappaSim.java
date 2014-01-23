@@ -68,15 +68,7 @@ public class SpatialKappaSim
         }
     }
 
-    public void runByTime(float totalTime, float timePerStep) {
-        simulation.runByTime(totalTime, timePerStep);
-        Observation observation = simulation.getCurrentObservation();
-        System.out.println(observation.toString());
-        // This allows us to get the value of a particular observable
-        System.out.println(observation.observables.get("Ca"));
-    }
-
-    public void runByTime2(float stepEndTime) {
+    public void runToTime(float stepEndTime) {
         simulation.runByTime2(stepEndTime*(float)timeMult);
         if (verbose) {
             // This allows us to get the value of a particular observable
@@ -85,9 +77,9 @@ public class SpatialKappaSim
         }
     }
 
-    public void runByTime3(float dt) {
+    public void runForDt(float dt) {
         float stepEndTime = getTime() + dt;
-        runByTime2(stepEndTime);
+        runToTime(stepEndTime);
     }
 
     public Map<String, Variable> getVariables() {
@@ -163,12 +155,5 @@ public class SpatialKappaSim
     @Override
     public String toString() {
         return(kappaModel.toString());
-    }
-
-    public static void main(String[] args)
-    {
-        SpatialKappaSim sks = new SpatialKappaSim();
-        sks.runByTime(10, 1);
-        System.out.println("Hello, World!");
     }
 }
