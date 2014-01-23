@@ -44,10 +44,6 @@ public class SpatialKappaSim
         this("ms", false);
     }
 
-    public boolean simulationLoaded() {
-        return(simulation != null);
-    }
-
     public void loadFile(String kappaFile) {
         File f = new File(kappaFile);
         try {
@@ -59,7 +55,7 @@ public class SpatialKappaSim
         initialiseSim();
     }
 
-    public void initialiseSim() {
+    private void initialiseSim() {
         try {
             System.out.println("initialiseSim()");
             simulation = new TransitionMatchingSimulation(kappaModel);
@@ -103,13 +99,6 @@ public class SpatialKappaSim
         Observation observation = simulation.getCurrentObservation();
         return(observation.observables.get(key).value);
     }
-
-    public void printAgentNames() {
-        List<String> agentNames = new ArrayList<String>(kappaModel.getAgentDeclarationMap().keySet());
-        for(String agentName : agentNames) {
-            System.out.println(agentName + " ");
-        }
-    }
     
     // value can be negative
     public void addAgent(String key, double value) {
@@ -146,7 +135,7 @@ public class SpatialKappaSim
         System.out.println("Number of " + key + " is " +  getObservation(key));
     }
     
-    public void getFixedLocatedInitialValuesMap() {
+    private void getFixedLocatedInitialValuesMap() {
         for (Map.Entry<Complex, Integer> result : kappaModel.getFixedLocatedInitialValuesMap().entrySet()) {
             System.out.println("Key = " + result.getKey() + ", Value = " + result.getValue());
         }
@@ -155,5 +144,12 @@ public class SpatialKappaSim
     @Override
     public String toString() {
         return(kappaModel.toString());
+    }
+
+    public void printAgentNames() {
+        List<String> agentNames = new ArrayList<String>(kappaModel.getAgentDeclarationMap().keySet());
+        for(String agentName : agentNames) {
+            System.out.println(agentName + " ");
+        }
     }
 }
