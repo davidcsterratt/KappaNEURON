@@ -1,0 +1,19 @@
+1. Install NEURON with python2.7 - see INSTALL-neuron for details
+
+2. Get latest version of NEURON-compatible SpatialKappa:
+   
+   git clone https://github.com/davidcsterratt/SpatialKappa.git
+   git branch neuron
+   
+   Follow SpatialKappa install instructions including installation of
+   python interface
+
+3. Within this KappaNEURON directory:
+
+   python2.7 setup.py 
+   # python2.7 setup.py --prefix=/disk/scratch/sterratt
+
+4. Test:
+
+   cd test/test_ca_pulse_var
+   python2.7 -i test_ca_pulse.py

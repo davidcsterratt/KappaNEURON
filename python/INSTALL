@@ -1,16 +1,10 @@
-1. Install NEURON with python2.7 - see INSTALL-neuron for details
-
-2. Install version of SpatialKappa from "neuron" branch
-
-3. Install py4j
+1. Install py4j:
+   
    easy_install py4j
    # easy_install  --install-dir=/disk/scratch/sterratt/lib/python2.7/site-packages/ py4j
 
-4. Run make to produce .class files
+2. Install SpatialKappa python files
+   
+   python2.7 setup.py
+   # python2.7 setup.py --prefix=/disk/scratch/sterratt
 
-5. Check paths to NEURON and SpatialKappa jar file in nrn-kappa
-
-6. Try
-
-   cd test/test_ca_pulse_var
-   ../../nrn-kappa -i test_ca_pulse.py
