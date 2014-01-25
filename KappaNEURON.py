@@ -5,7 +5,7 @@ import neuron.rxd.rxd as nrr
 from scipy.stats import poisson
 import math
 
-from py4j.java_gateway import JavaGateway
+import SpatialKappa
 
 verbose = False
 def report(mess):
@@ -163,7 +163,6 @@ import neuron.rxd
 import numpy
 import neuron.rxd.node
 from neuron.rxd.generalizedReaction import GeneralizedReaction
-from py4j.java_gateway import JavaGateway
 
 gateway = None
 
@@ -241,13 +240,13 @@ class Kappa(GeneralizedReaction):
 
         ## Create the kappa simulations
         if not gateway:
-            gateway = JavaGateway()
-            print gateway.entry_point
+            gateway = SpatialKappa.SpatialKappa()
+            print gateway
 
         self._kappa_sims = []   # Will this destroy things properly?
         for index in self._indices_dict[self._involved_species[0]()]:
             print "Creating Kappa Simulation in region", r
-            kappa_sim = gateway.entry_point.newSpatialKappaSim(self._time_units, verbose)
+            kappa_sim = gateway.kappa_sim(self._time_units, verbose)
             kappa_sim.loadFile(self._kappa_file)
             self._kappa_sims.append(kappa_sim)
             ## TODO: Should we check if we are inserting two kappa schemes
