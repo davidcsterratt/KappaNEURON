@@ -4,5 +4,4 @@ VERSION = '0.1'
 
 setup(name='KappaNEURON',
       version=VERSION,
-      py_modules=['KappaNEURON'],)
-
+      py_modules=['KappaNEURON'])
