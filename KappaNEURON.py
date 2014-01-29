@@ -89,7 +89,7 @@ def _kn_fixed_step_solve(raw_dt):
             report("\nRUN 0.5 KAPPA STEP")
             for kappa_sim in k._kappa_sims:
                 ## kappa_sim.runByTime2(h.t - dt/2)      # Second argument is "time per
-                kappa_sim.runForDt(dt/2)      # Second argument is "time per
+                kappa_sim.runForTime(dt/2)      # Second argument is "time per
 
             ## This should work for multiple species working, but has only
             ## been tested for ca
@@ -117,7 +117,7 @@ def _kn_fixed_step_solve(raw_dt):
             report("\nRUN 0.5 KAPPA STEP")  
             for kappa_sim in k._kappa_sims:
                 ## kappa_sim.runByTime2(h.t)      # Second argument is "time per
-                kappa_sim.runForDt(dt/2)      # Second argument is "time per
+                kappa_sim.runForTime(dt/2)      # Second argument is "time per
                 t_kappa = kappa_sim.getTime()
                 discrepancy = nrr.h.t - t_kappa
                 report('Kappa Time %f; NEURON time %f; Discrepancy %f' % (t_kappa, nrr.h.t, discrepancy))
