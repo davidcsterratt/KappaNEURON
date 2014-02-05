@@ -6,6 +6,9 @@ from scipy.stats import poisson
 import math
 
 import SpatialKappa
+from py4j.protocol import * 
+
+import re
 
 verbose = False
 def report(mess):
@@ -245,7 +248,13 @@ class Kappa(GeneralizedReaction):
         for index in self._indices_dict[self._involved_species[0]()]:
             print "Creating Kappa Simulation in region", r
             kappa_sim = gateway.kappa_sim(self._time_units, verbose)
-            kappa_sim.loadFile(self._kappa_file)
+            try:
+                kappa_sim.loadFile(self._kappa_file)
+            except Py4JJavaError as e:
+                java_err = re.sub(r'java.lang.IllegalStateException: ', r'', str(e.java_exception))
+                errstr = 'Error in kappa file %s: %s' % (self._kappa_file, java_err)
+                raise RuntimeError(errstr)
+                
             self._kappa_sims.append(kappa_sim)
             ## TODO: Should we check if we are inserting two kappa schemes
             ## in the same place?
@@ -286,7 +295,11 @@ class Kappa(GeneralizedReaction):
                     nions = round(states[i] \
                                   * nrr._conversion_factor * volumes[i])
                     ## print "Species ", s.name, " conc ", states[i], " nions ", nions
-                    kappa_sim.setAgentInitialValue(s.name, nions)
+                    try:
+                        kappa_sim.setAgentInitialValue(s.name, nions)
+                    except:
+                        print('Error setting initial value of agent %s to %d' % (s.name, nions))
+                        raise
 
 
     def run_free(self, t_run):
