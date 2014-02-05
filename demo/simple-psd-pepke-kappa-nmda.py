@@ -5,6 +5,7 @@ from neuron import rxd
 import KappaNEURON
 import numpy
 import random
+import os
 
 ## Time for equilibriation in seconds
 t_equil = 1
@@ -250,8 +251,12 @@ def plot_data(tmax=None):
 
     fig.show() # If the interpreter stops now: close the figure.
     # For interactive plotting, see `Part 1` -> `ipython`
-
-    fig.savefig("../doc/simple-psd-pepke-kappa-nmda.pdf", format='pdf')
+    try:
+        os.makedirs("figs")
+    except Exception as e:
+        pass
+        
+    fig.savefig("figs/simple-psd-pepke-kappa-nmda.pdf", format='pdf')
 
 numpy.savez("simple-psd-pepke-kappa-nmda", t=times[0], cai=cai[0], cami=cami[0], ica=ica[0], voltages=voltages[0], diam=sh.diam)
 
