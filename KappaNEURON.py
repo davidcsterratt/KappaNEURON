@@ -1,14 +1,19 @@
 import neuron
 import neuron.rxd as nr
 import neuron.rxd.rxd as nrr
-
-from scipy.stats import poisson
-import math
+import neuron.rxd.species
+import neuron.rxd.rxdmath
+import neuron.rxd.node
+from neuron.rxd.generalizedReaction import GeneralizedReaction
+import weakref
 
 import SpatialKappa
 from py4j.protocol import * 
 
+from scipy.stats import poisson
+import numpy
 import re
+import os
 
 verbose = False
 def report(mess):
@@ -156,14 +161,6 @@ def _kn_fixed_step_solve(raw_dt):
 
 nrr._callbacks[4] = _kn_fixed_step_solve
 
-import os
-import weakref
-import neuron.rxd.species
-import neuron.rxd.rxdmath
-import neuron.rxd
-import numpy
-import neuron.rxd.node
-from neuron.rxd.generalizedReaction import GeneralizedReaction
 
 gateway = None
 
