@@ -2,6 +2,7 @@
 ## out. Voltage clamp ensures almost constant Ca flow.
 from neuron import *
 from neuron import rxd
+import KappaNEURON
 import numpy
 import random
 
@@ -97,20 +98,21 @@ agconc = 1E18/(N_A * vol)
 r = rxd.Region([sh], nrn_region='i')
 
 # WHO are the actors
-ca        = rxd.Species(r, name='ca'       , charge=2, initial=0.001)
-Glu       = rxd.Species(r, name='Glu'   , charge=1, initial=0)
-NMDA      = rxd.Species(r, name='NMDA'     , charge=0, initial=19*agconc)
-CB        = rxd.Species(r, name='CB'       , charge=0, initial=0.100) # Faas &al
-cam       = rxd.Species(r, name='CaM'      , charge=0, initial=0.030) # Fass &al, Pepke &al
-CaMKII    = rxd.Species(r, name='CaMKII'   , charge=0, initial=0.080) # Pepke &al
-CaCB      = rxd.Species(r, name='CaCB'     , charge=0) 
-CaCaMC   = rxd.Species(r, name='CaCaMC'  , charge=0)
-CaCaMN   = rxd.Species(r, name='CaCaMN'  , charge=0)
-KCaCaM2C  = rxd.Species(r, name='KCaCaM2C' , charge=0)
-CaMKIIp   = rxd.Species(r, name='CaMKIIp' , charge=0)
+ca         = rxd.Species(r, name='ca'        , charge=2, initial=0.001)
+Glu        = rxd.Species(r, name='Glu'       , charge=1, initial=0)
+NMDA       = rxd.Species(r, name='NMDA'      , charge=0, initial=19*agconc)
+CB         = rxd.Species(r, name='CB'        , charge=0, initial=0.100) # Faas &al
+cam        = rxd.Species(r, name='CaM'       , charge=0, initial=0.030) # Fass &al, Pepke &al
+CaMKII     = rxd.Species(r, name='CaMKII'    , charge=0, initial=0.080) # Pepke &al
+CaCB       = rxd.Species(r, name='CaCB'      , charge=0) 
+CaCaMC     = rxd.Species(r, name='CaCaMC'    , charge=0)
+CaCaMN     = rxd.Species(r, name='CaCaMN'    , charge=0)
+KCaCaM2C   = rxd.Species(r, name='KCaCaM2C'  , charge=0)
+CaMKIIp    = rxd.Species(r, name='CaMKIIp'   , charge=0)
+# stargazinp = rxd.Species(r, name='stargazinp', charge=0)
 
 #  KCaCaM2C, , CaCB
-kappa = rxd.Kappa([ca, Glu, NMDA, CB, cam, CaMKII, CaCB, CaCaMC, CaCaMN, KCaCaM2C, CaMKIIp], "simple-psd-pepke-kappa-nmda.ka", r, time_units="ms", verbose=True)
+kappa = KappaNEURON.Kappa([ca, Glu, NMDA, CB, cam, CaMKII, CaCB, CaCaMC, CaCaMN, KCaCaM2C, CaMKIIp], "simple-psd-pepke-kappa-nmda.ka", r, time_units="ms", verbose=True)
 rxd.rxd.verbose=False
 ## This setting of parameters gives a calcium influx and pump
 ## activation that is more-or-less scale-independent

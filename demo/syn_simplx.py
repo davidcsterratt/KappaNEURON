@@ -3,6 +3,7 @@
 from neuron import *
 from neuron import rxd
 import numpy
+import KappaNEURON
 
 ## Time for equilibriation in seconds
 t_equil = 1
@@ -71,7 +72,7 @@ stargazin  = rxd.Species(r, name='stargazin'  , charge=0)
 SAP97GluR1 = rxd.Species(r, name='SAP97GluR1' , charge=0)
 SAP97NR2   = rxd.Species(r, name='SAP97NR2'   , charge=0)
 
-kappa = rxd.Kappa([ca, cam, PSD95NR2, CaMKII_CaM, stargazin, SAP97GluR1, SAP97NR2], "simplx-demo.ka", r, time_units="s")
+kappa = KappaNEURON.Kappa([ca, cam, PSD95NR2, CaMKII_CaM, stargazin, SAP97GluR1, SAP97NR2], "simplx-demo.ka", r, time_units="s")
 
 
 ## This setting of parameters gives a calcium influx and pump
