@@ -156,6 +156,8 @@ rec_KCaCaM2Ci = h.Vector()
 rec_KCaCaM2Ci.record(sh(0.5)._ref_KCaCaM2Ci)
 rec_CaMKIIpi = h.Vector()
 rec_CaMKIIpi.record(sh(0.5)._ref_CaMKIIpi)
+rec_stargazinpi = h.Vector()
+rec_stargazinpi.record(sh(0.5)._ref_stargazinpi)
 
 
 ## Run
@@ -242,10 +244,11 @@ def plot_data(tmax=None):
     
     ax4.plot(times[0], rec_KCaCaM2Ci)
     ax4.plot(times[0], rec_CaMKIIpi)
+    ax4.plot(times[0], rec_stargazinpi)
     ax4.set_xlabel("Time [ms]")
     ax4.set_ylabel("[mM]")
     plt.axes(ax4)
-    plt.legend(('KCaCaM2C','CaMKIIp'))
+    plt.legend(('KCaCaM2C','CaMKIIp', 'stargazinp'))
     ax4.axis(xmin=0, xmax=tmax)
     ax4.axis(ymin=0, ymax=0.001)
 

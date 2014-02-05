@@ -50,7 +50,7 @@
 ## T286 
 %agent: CaMKII(r,T286~u~p)
 
-%agent: stargazin(c~u)
+%agent: stargazin(c~u~p)
 # %agent: PSD95
 
 ## Very simple pump, with a half-life of 12ms, as per Sabatini &al (2002)
@@ -160,7 +160,7 @@
 'kCaM4p'  CaM(n2!_,c2!_,ck!1),CaMKII(r!1,T286~u!2),CaMKII(r!_,T286!2) -> CaM(n2!_,c2!_,ck!1),CaMKII(r!1,T286~p), CaMKII(r!_,T286) @ 'kCaM4pon'
 
 ## Phosphorylated CaMKII can phosphorylate stargazin
-# 'CaMKII_stargazin_phos' CaMKII(T286~p),stargazin(c~u) -> CaMKII(T286~p!1),stargazin(c~p!1)
+'CaMKII_stargazin_phos' CaMKII(T286~p),stargazin(c~u) -> CaMKII(T286~p!1),stargazin(c~p!1) @ 1
 # 'CaMKII_stargazin_diss' CaMKII(T286~p!1),stargazin(c~p!1) -> CaMKII(T286~p),stargazin(c~p)
 #'stargazin_dephos'  stargazin(c~p) -> stargazin(c~u)
 
@@ -250,6 +250,9 @@
 %obs: 'CaMKIIp'   CaMKII(r?,T286~p?)
 %obs: 'CaMKIIp1'  CaMKII(r?,T286~p)
 %obs: 'CaMKIIp2'  CaMKII(T286~p)
+
+# Phosphorylated stargazin
+%obs: 'stargazinp' stargazin(c~p?) 
 
 #%obs: 'CaMN1C1' CaM(n1!_,n2,c1!_,c2)
 #%obs: 'CaMN1C2' CaM(n1!_,n2,c1!_,c2!_)
