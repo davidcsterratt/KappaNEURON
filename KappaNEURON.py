@@ -32,7 +32,6 @@ def _unregister_kappa_scheme(weakref_r):
     _kappa_schemes.remove(weakref_r)
 
 def _kn_init(): 
-    print "_kn_init()"
     nrr._init()
     global _kappa_schemes
     # update Kappa schemes
@@ -176,7 +175,6 @@ class Kappa(GeneralizedReaction):
         ## self._species = weakref.ref(species)
         self._involved_species = self._species
         self._kappa_file = os.path.join(os.getcwd(), kappa_file)
-        print(os.getcwd())
         if not hasattr(regions, '__len__'):
             regions = [regions]
         self._regions = regions
@@ -207,7 +205,6 @@ class Kappa(GeneralizedReaction):
             del(kappa_sim)
 
     def _update_indices(self):
-        print '_update_indices'
         global gateway
 
         # this is called anytime the geometry changes as well as at init
@@ -239,7 +236,6 @@ class Kappa(GeneralizedReaction):
         ## Create the kappa simulations
         if not gateway:
             gateway = SpatialKappa.SpatialKappa()
-            print gateway
 
         self._kappa_sims = []   # Will this destroy things properly?
         for index in self._indices_dict[self._involved_species[0]()]:
@@ -281,10 +277,8 @@ class Kappa(GeneralizedReaction):
     ## This is perhaps an abuse of this function, but it is called at
     ## init() time
     def re_init(self):
-        print "Kappa.re_init()"
         volumes = nrr.node._get_data()[0]
         states = nrr.node._get_states()[:]
-        print(states)
         for sptr in self._involved_species:
             s = sptr()
             if s:
