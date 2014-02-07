@@ -2,12 +2,11 @@
 
 2. Get latest version of NEURON-compatible SpatialKappa:
    
-   git clone https://github.com/davidcsterratt/SpatialKappa.git
-   git checkout python
+   git clone https://github.com/lptolik/SpatialKappa.git
    
    Follow SpatialKappa install instructions, including installation of
-   python interface. Make a note of the directory in which you
-   installed NEURON. 
+   the python interface. Make a note of the directory in which you
+   installed NEURON.
    
 3. Within this KappaNEURON directory:
 
