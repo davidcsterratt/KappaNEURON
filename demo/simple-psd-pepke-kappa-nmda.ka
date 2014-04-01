@@ -175,8 +175,10 @@
 # 'PDZ1_stargazin_PSD93_diss' PSD93(PDZ1!0,PDZ2!_),stargazin(c~u!0) -> PSD93(PDZ1,PDZ2!_),stargazin(c~u) @ 0.0381606323421001
 
 ## LTD Involves PP1 and calcineurin (PP2B) which may lead to
-##  dephosphorylation of stargazin (and CaMKII??)
-
+##  dephosphorylation of stargazin (and CaMKII??) See Li, Stefan & Le
+##  Novere (2012) PLoS ONE 7 "Calcium input frequency, duration and
+##  amplitude differentially modulate the relative activation of
+##  Calcineurin and CaMKII
 
 ## Initialisation
 %init: 6022 CaM(n1,n2,c1,c2,ck)
