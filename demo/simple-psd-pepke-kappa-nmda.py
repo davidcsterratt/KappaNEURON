@@ -46,8 +46,8 @@ synstim = h.NetStim()
 synstim.start = 20
 #synstim.start = t_equil*1000 + 10
 synstim.noise = 0
-synstim.number = 20
-synstim.interval = 10
+synstim.number = 25
+synstim.interval = 200
 
 ampasyn     = h.AmpaSyn(sh(0.5))
 ampanetcon  = h.NetCon(synstim, ampasyn)
@@ -74,7 +74,7 @@ class MyAmpaSyn():
         self.stim.start = 20
         #stim.start = t_equil*1000 + 10
         self.stim.noise = 1
-        self.stim.number = 40
+        self.stim.number = 400
         self.stim.interval = 20
         
         self.syn = h.AmpaSyn(dend(random.random()))
@@ -110,10 +110,10 @@ CaCaMC     = rxd.Species(r, name='CaCaMC'    , charge=0)
 CaCaMN     = rxd.Species(r, name='CaCaMN'    , charge=0)
 KCaCaM2C   = rxd.Species(r, name='KCaCaM2C'  , charge=0)
 CaMKIIp    = rxd.Species(r, name='CaMKIIp'   , charge=0)
-# stargazinp = rxd.Species(r, name='stargazinp', charge=0)
+stargazinp = rxd.Species(r, name='stargazinp', charge=0)
 
 #  KCaCaM2C, , CaCB
-kappa = KappaNEURON.Kappa([ca, Glu, NMDA, CB, cam, CaMKII, CaCB, CaCaMC, CaCaMN, KCaCaM2C, CaMKIIp], "simple-psd-pepke-kappa-nmda.ka", r, time_units="ms", verbose=True)
+kappa = KappaNEURON.Kappa([ca, Glu, NMDA, CB, cam, CaMKII, CaCB, CaCaMC, CaCaMN, KCaCaM2C, CaMKIIp, stargazinp], "simple-psd-pepke-kappa-nmda.ka", r, time_units="ms", verbose=True)
 rxd.rxd.verbose=False
 ## This setting of parameters gives a calcium influx and pump
 ## activation that is more-or-less scale-independent
@@ -171,7 +171,7 @@ kappa.run_free(1000)
 #     kappa.run_free(990)
 #     h.t = h.t + 990
 print("Running NEURON-kappa")
-run(5000)
+run(6000)
 if (0):
     for i in range(1,60):
         print("Running kappa-only")
@@ -180,37 +180,23 @@ if (0):
         h.t = h.t + 990
         run(h.t + 10)
 
-## Plot
-import matplotlib.pyplot as plt
-
-## Get values from NEURON-vector format into Python format
-times = [] # Use list to add another trace later.
-voltages = []
-times.append(list(rec_t)) # alternative to `list(rec_t)`:
-                          # `numpy.array(rec_t)`
-voltages.append(list(rec_v))
-
 # Plot the recordings with matplotlib
 # ===================================
 
 import matplotlib.pyplot as plt
 
-# get values from NEURON-vector format into Python format
-times = [] # Use list to add another trace later.
+# Get values from NEURON-vector format into Python format
+times = [] 
 voltages = []
 cai = []
 ica = []
 cami = []
 
-times.append(list(rec_t)) # alternativ to `list(rec_t)`: `numpy.array(rec_t)`
+times.append(list(rec_t)) # alternative to `list(rec_t)`: `numpy.array(rec_t)`
 voltages.append(list(rec_v))
 cai.append(list(rec_cai))
 ica.append(list(rec_ica))
 cami.append(list(rec_cami))
-
-# check types by:
-# >>> type(rec_t)
-# >>> type(time[0])
 
 def plot_data(tmax=None):
     if (tmax == None): 
