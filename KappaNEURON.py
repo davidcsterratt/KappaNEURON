@@ -14,6 +14,7 @@ from scipy.stats import poisson
 import numpy
 import re
 import os
+import warnings
 
 verbose = False
 def report(mess):
@@ -172,6 +173,9 @@ class Kappa(GeneralizedReaction):
         self._species = []
         for s in species:
             self._species.append(weakref.ref(s))
+            if s.initial is None:
+                s.initial = 0
+                warnings.warn('Initial concentration of %s not specified; setting to zero' % (s.name), UserWarning)
         ## self._species = weakref.ref(species)
         self._involved_species = self._species
         self._kappa_file = os.path.join(os.getcwd(), kappa_file)
