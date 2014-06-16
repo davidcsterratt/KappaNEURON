@@ -291,10 +291,14 @@ class Kappa(GeneralizedReaction):
                                   * nrr._conversion_factor * volumes[i])
                     ## print "Species ", s.name, " conc ", states[i], " nions ", nions
                     try:
+                        kappa_sim.getObservation(s.name)
+                    except:
+                        raise NameError('There is no observable in %s called %s; add a line like this:\n%%obs: \'%s\' <complex definition> ' % (self._kappa_file, s.name, s.name))
+                    try:
                         kappa_sim.setAgentInitialValue(s.name, nions)
                     except:
-                        print('Error setting initial value of agent %s to %d' % (s.name, nions))
-                        raise
+                        raise Error('Error setting initial value of agent %s to %d' % (s.name, nions))
+                        
 
 
     def run_free(self, t_run):
