@@ -13,7 +13,7 @@ from py4j.protocol import *
 from scipy.stats import poisson
 import numpy
 import re
-import os
+import os, sys
 import warnings
 
 verbose = False
@@ -96,7 +96,7 @@ def _kn_fixed_step_solve(raw_dt):
 
             report("\nRUN 0.5 KAPPA STEP")
             for kappa_sim in k._kappa_sims:
-                kappa_sim.runForTime(dt/2)      # Second argument is "time per
+                kappa_sim.runForTime(dt/2, False)      # Second argument is "time per
 
             ## This should work for multiple species working, but has only
             ## been tested for ca
@@ -123,7 +123,7 @@ def _kn_fixed_step_solve(raw_dt):
 
             report("\nRUN 0.5 KAPPA STEP")  
             for kappa_sim in k._kappa_sims:
-                kappa_sim.runForTime(dt/2)      # Second argument is "time per
+                kappa_sim.runForTime(dt/2, False)      # Second argument is "time per
                 t_kappa = kappa_sim.getTime()
                 discrepancy = nrr.h.t - t_kappa
                 report('Kappa Time %f; NEURON time %f; Discrepancy %f' % (t_kappa, nrr.h.t, discrepancy))
@@ -158,6 +158,9 @@ def _kn_fixed_step_solve(raw_dt):
         for sr in nrr._species_get_all_species().values():
             s = sr()
             if s is not None: s._transfer_to_legacy()
+
+    sys.stdout.write("\rTime = %12.5f/%5.5f [%3.3f%%]" % (neuron.h.t, neuron.h.tstop, neuron.h.t/neuron.h.tstop*100))
+    sys.stdout.flush()
 
 nrr._callbacks[4] = _kn_fixed_step_solve
 
@@ -307,4 +310,4 @@ class Kappa(GeneralizedReaction):
             k = kptr()
             for kappa_sim in k._kappa_sims:
                 t_kappa = kappa_sim.getTime()
-                kappa_sim.runForTime(t_kappa + t_run)
+                kappa_sim.runForTime(t_kappa + t_run, True)
