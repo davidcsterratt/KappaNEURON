@@ -317,4 +317,4 @@ class Kappa(GeneralizedReaction):
             k = kptr()
             for kappa_sim in k._kappa_sims:
                 t_kappa = kappa_sim.getTime()
-                kappa_sim.runForTime(t_kappa + t_run, True)
+                kappa_sim.runForTime(float(t_run), True)
