@@ -162,9 +162,10 @@ def _kn_fixed_step_solve(raw_dt):
         for sr in nrr._species_get_all_species().values():
             s = sr()
             if s is not None: s._transfer_to_legacy()
-
-    sys.stdout.write("\rTime = %12.5f/%5.5f [%3.3f%%]" % (neuron.h.t, neuron.h.tstop, neuron.h.t/neuron.h.tstop*100))
-    if (neuron.h.t == neuron.h.tstop):
+    
+    t = nrr.h.t + dt
+    sys.stdout.write("\rTime = %12.5f/%5.5f [%3.3f%%]" % (t, neuron.h.tstop, t/neuron.h.tstop*100))
+    if (abs(t - neuron.h.tstop) < 1E-6):
         sys.stdout.write("\n")
     sys.stdout.flush()
 
