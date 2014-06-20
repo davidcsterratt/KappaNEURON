@@ -125,10 +125,14 @@ def _kn_fixed_step_solve(raw_dt):
             for kappa_sim in k._kappa_sims:
                 kappa_sim.runForTime(dt/2, False)      # Second argument is "time per
                 t_kappa = kappa_sim.getTime()
-                discrepancy = nrr.h.t - t_kappa
+                discrepancy = nrr.h.t - t_kappa + dt/2
                 report('Kappa Time %f; NEURON time %f; Discrepancy %f' % (t_kappa, nrr.h.t, discrepancy))
+                ## This code is commented out because it doesn't work
+                ## if run_free has been used; this makes NEURON and
+                ## SpatialKappa time go out of sync
+                ## 
                 ## if (abs(discrepancy) > 1e-3):
-                ##    raise NameError('NEURON time (%f) does not match Kappa time (%f). Discrepancy = %f ' % (h.t, t_kappa, h.t - t_kappa))
+                ##     raise NameError('NEURON time (%f) does not match Kappa time (%f). Discrepancy = %f ' % (nrr.h.t + dt/2, t_kappa, discrepancy))
 
             ## Update states
             for  sptr in k._involved_species:
