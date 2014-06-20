@@ -160,6 +160,8 @@ def _kn_fixed_step_solve(raw_dt):
             if s is not None: s._transfer_to_legacy()
 
     sys.stdout.write("\rTime = %12.5f/%5.5f [%3.3f%%]" % (neuron.h.t, neuron.h.tstop, neuron.h.t/neuron.h.tstop*100))
+    if (neuron.h.t == neuron.h.tstop):
+        sys.stdout.write("\n")
     sys.stdout.flush()
 
 nrr._callbacks[4] = _kn_fixed_step_solve
