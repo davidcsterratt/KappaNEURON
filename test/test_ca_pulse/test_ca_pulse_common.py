@@ -33,6 +33,7 @@ def insert_vclamp(sh):
     return(stim)
 
 def run_and_save(sh, rec_Pi, dataname='test_ca_pulse_mod'):
+    init()
     ## Record Time from NEURON (neuron.h._ref_t)
     rec_t = h.Vector()
     rec_t.record(h._ref_t)
@@ -65,35 +66,45 @@ def run_and_save(sh, rec_Pi, dataname='test_ca_pulse_mod'):
     numpy.savez(dataname, t=times[0], cai=cai[0], Pi=Pi[0], ica=ica[0], voltages=voltages[0], diam=sh.diam)
 
 def plot_records(tcp_mod, tcp):
-    fig, ax = plt.subplots(nrows=4, ncols=1)
+    # figsize=(2.25, 3)
+    plt.subplots_adjust(left=0.25)
+    fig, ax = plt.subplots(nrows=4, ncols=1, figsize=(2.25*2, 2.5*2))
+    plt.subplots_adjust(left=0.2, top=0.95, bottom=0.1)
 
     ax[0].plot(tcp_mod['t'], tcp_mod['voltages'])
     ax[0].plot(tcp['t'],     tcp['voltages'],   'r')
-    ax[0].set_xlabel("Time [ms]")
-    ax[0].set_ylabel("V [mV]")
+    ax[0].set_xlabel("")
+    ax[0].set_ylabel("V (mV)")
     ax[0].axis(ymin=-80, ymax=50)
+    ax[0].xaxis.set_ticklabels([])
+    ax[0].yaxis.set_ticks([-80, 0])
 
     icamin = min(numpy.concatenate([tcp_mod['ica'], tcp['ica']]))
     ax[1].plot(tcp_mod['t'], tcp_mod['ica'])
     ax[1].plot(tcp['t'],     tcp['ica'],   'r')
-    ax[1].set_xlabel("Time [ms]")
-    ax[1].set_ylabel("ICa [mA/cm2]")
+    ax[1].set_xlabel("")
+    ax[1].set_ylabel("ICa (mA/cm2)")
     ax[1].axis(ymin=icamin*1.1,
                ymax=-0.1*icamin)
+    ax[1].xaxis.set_ticklabels([])
+    ax[1].yaxis.set_ticks([0, -0.1])
 
     caimax = max(numpy.concatenate([tcp_mod['cai'], tcp['cai']]))
     ax[2].plot(tcp_mod['t'], tcp_mod['cai'])
     ax[2].plot(tcp['t'], tcp['cai'], 'r')
-    ax[2].set_xlabel("Time [ms]")
-    ax[2].set_ylabel("Ca [mM]")
+    ax[2].set_xlabel("")
+    ax[2].set_ylabel("[Ca] (mM)")
     ax[2].axis(ymin=-0.1*caimax, ymax=caimax*1.1)
+    ax[2].xaxis.set_ticklabels([])
+    ax[2].yaxis.set_ticks([0, 0.020])
 
     Pimax = max(numpy.concatenate([tcp_mod['Pi'], tcp['Pi']]))
     ax[3].plot(tcp_mod['t'], tcp_mod['Pi'])
     ax[3].plot(tcp['t'], tcp['Pi'], 'r')
-    ax[3].set_xlabel("Time [ms]")
-    ax[3].set_ylabel("P [mM]")
+    ax[3].set_xlabel("Time (ms)")
+    ax[3].set_ylabel("[P] (mM)")
     ax[3].axis(ymin=0, ymax=Pimax*1.1)
+    ax[3].yaxis.set_ticks([0, 0.20])
 
     fig.show()
     
