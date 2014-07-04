@@ -45,8 +45,16 @@ def _kn_init():
 #
 nrr._fih = neuron.h.FInitializeHandler(_kn_init)
 
-## Override the NEURON nonvint _fixed_step_solve callback   
+mode = 'lumped_influx' # 'continuous_influx'
+
 def _kn_fixed_step_solve(raw_dt):
+    if (mode == 'lumped_influx'):
+        _kn_fixed_step_solve_lumped_influx(raw_dt)
+    else:
+        _kn_fixed_step_solve_continuous_influx(raw_dt)
+
+## Override the NEURON nonvint _fixed_step_solve callback   
+def _kn_fixed_step_solve_lumped_influx(raw_dt):
     global _kappa_schemes
     
     report("---------------------------------------------------------------------------")
@@ -169,6 +177,157 @@ def _kn_fixed_step_solve(raw_dt):
         sys.stdout.write("\n")
     sys.stdout.flush()
 
+## Override the NEURON nonvint _fixed_step_solve callback   
+def _kn_fixed_step_solve_continuous_influx(raw_dt):
+    global _kappa_schemes
+    
+    report("---------------------------------------------------------------------------")
+    report("FIXED STEP SOLVE. NEURON time %f" % nrr.h.t)
+    report("states")
+
+    # allow for skipping certain fixed steps
+    # warning: this risks numerical errors!
+    fixed_step_factor = nrr.options.fixed_step_factor
+    nrr._fixed_step_count += 1
+    if nrr._fixed_step_count % fixed_step_factor: return
+    dt = fixed_step_factor * raw_dt
+    
+    # TODO: this probably shouldn't be here
+    if nrr._diffusion_matrix is None and nrr._euler_matrix is None: nrr._setup_matrices()
+
+    states = nrr._node_get_states()[:]
+    report(states)
+
+    report("flux b")
+    ## DCS: This gets fluxes (from ica, ik etc) and computes changes
+    ## due to reactions
+
+    ## DCS FIXME: This is different from the old rxd.py file - need check what
+    ## the difference is
+    b = nrr._rxd_reaction(states) - nrr._diffusion_matrix * states
+    report(b)
+    
+    dim = nrr.region._sim_dimension
+    if dim is None:
+        return
+    elif dim == 1:
+        #############################################################################
+        ## 1. Pass all relevant continous variables to the rule-based simulator
+        ##
+        ## Relevant variables might be
+        ## * Calcium current (for deterministic channels)
+        ## * Membrane potential (for stochastic channels controlled by Kappa model)
+        #############################################################################
+
+        ## Go through each kappa scheme. The region belonging to each
+        ## kappa scheme should not overlap with any other kappa scheme's
+        ## region.
+        volumes = nrr.node._get_data()[0]
+        for kptr in _kappa_schemes:
+            k = kptr()
+            report("\nPASSING FLUXES TO KAPPA")
+            for  sptr in k._involved_species:
+                s = sptr()
+                if (s.charge != 0):
+                    name = s.name
+                    report("ION: %s" % (name))
+                    for kappa_sim, i in zip(k._kappa_sims, k._indices_dict[s]):
+                        ## Number of ions
+                        ## Flux b has units of mM/ms
+                        ## Volumes has units of um3
+                        ## _conversion factor has units of molecules mM^-1 um^-3
+                        flux = b[i] * nrr._conversion_factor * volumes[i]
+                        kappa_sim.setTransitionRate('Create %s' % (s.name), flux)
+                        ## kappa_sim.setVariable(flux, 'f%s' % (s.name))
+
+            report("\nPASSING MEMBRANE POTENTIAL TO KAPPA")
+            ## TODO: pass membrane potential to kappa
+
+        #############################################################################
+        ## 2. Run the rule-based simulator from t to t + dt
+        #############################################################################
+        #############################################################################
+        ## 3. Compute the net change Delta Stot in the number of each
+        ## bridging species S and convert back into a current.
+        #############################################################################
+        #############################################################################
+        ## 4. Set the corresponding elements of the flux to the
+        ## currents computed in step 3
+        #############################################################################
+
+        for kptr in _kappa_schemes:
+            k = kptr()
+
+            ## Recording total starting value of each species
+            Stot0 = {}
+            for sptr in k._involved_species:
+                s = sptr()
+                if (s.charge != 0):
+                    Stot0[s.name] = {}
+                    for kappa_sim, i in zip(k._kappa_sims, k._indices_dict[s]):
+                        Stot0[s.name][i] = kappa_sim.getVariable('Total %s' % (s.name))
+
+            report("\nRUN 1 KAPPA STEP")  
+            for kappa_sim in k._kappa_sims:
+                kappa_sim.runForTime(dt, False)     
+                t_kappa = kappa_sim.getTime()
+
+            ## Recording total ending value of each species
+            for sptr in k._involved_species:
+                s = sptr()
+                for kappa_sim, i in zip(k._kappa_sims, k._indices_dict[s]):
+                    ## For ions, compute the current
+                    if (s.charge != 0):
+                        Stot1 = kappa_sim.getVariable('Total %s' % (s.name))
+                        DeltaStot = Stot1 - Stot0[s.name][i]
+                        b[i] = DeltaStot/(dt*nrr._conversion_factor*volumes[i])
+
+        report("Updated states")
+        report(states)
+        
+        #############################################################################
+        ## 5. Update the continous variables according to the update step
+        #############################################################################
+        states[:] += nrr._reaction_matrix_solve(dt, states, nrr._diffusion_matrix_solve(dt, dt * b))
+
+        #############################################################################
+        ## 6. Voltage step overrides states, possibly making them negative so put back actual states
+        #############################################################################
+        for kptr in _kappa_schemes:
+            k = kptr()
+            ## Recording total ending value of each species
+            for sptr in k._involved_species:
+                s = sptr()
+                for kappa_sim, i in zip(k._kappa_sims, k._indices_dict[s]):
+                    ## Update concentration
+                    states[i] = kappa_sim.getObservation(s.name) \
+                                /(nrr._conversion_factor * volumes[i])
+
+        # clear the zero-volume "nodes"
+        states[nrr._zero_volume_indices] = 0
+
+        # TODO: refactor so this isn't in section1d... probably belongs in node
+        nrr._section1d_transfer_to_legacy()
+    elif dim == 3:
+        # the actual advance via implicit euler
+        n = len(states)
+        m = _scipy_sparse_eye(n, n) - dt * _euler_matrix
+        # removed diagonal preconditioner since tests showed no improvement in convergence
+        result, info = _scipy_sparse_linalg_bicgstab(m, dt * b)
+        assert(info == 0)
+        states[:] += result
+
+        for sr in nrr._species_get_all_species().values():
+            s = sr()
+            if s is not None: s._transfer_to_legacy()
+    
+    t = nrr.h.t + dt
+    sys.stdout.write("\rTime = %12.5f/%5.5f [%3.3f%%]" % (t, neuron.h.tstop, t/neuron.h.tstop*100))
+    if (abs(t - neuron.h.tstop) < 1E-6):
+        sys.stdout.write("\n")
+    sys.stdout.flush()
+
+
 nrr._callbacks[4] = _kn_fixed_step_solve
 
 
@@ -261,7 +420,24 @@ class Kappa(GeneralizedReaction):
                 java_err = re.sub(r'java.lang.IllegalStateException: ', r'', str(e.java_exception))
                 errstr = 'Error in kappa file %s: %s' % (self._kappa_file, java_err)
                 raise RuntimeError(errstr)
+            
+            if (mode == 'continuous_influx'):
+                s = self._involved_species[0]()
+                ## Get description of agent
+                agent = kappa_sim.getAgentMap(s.name)
+                link_names = agent[s.name].keys()
+                if (len(link_names) > 1):
+                    errstr = 'Error in kappa file %s: Agent %s has more than one site' % (self._kappa_file, s.name)
+                    raise RuntimeError()
                 
+                link_name = link_names[0]
+
+                ## Add transition to create 
+                kappa_sim.addTransition('Create %s' % (s.name), {}, agent, 0.0)
+
+                ## Add variable to measure total species
+                kappa_sim.addVariableMap('Total %s' % (s.name), {s.name: {link_name: {'l': '?'}}})
+
             self._kappa_sims.append(kappa_sim)
             ## TODO: Should we check if we are inserting two kappa schemes
             ## in the same place?
@@ -316,5 +492,4 @@ class Kappa(GeneralizedReaction):
         for kptr in _kappa_schemes:
             k = kptr()
             for kappa_sim in k._kappa_sims:
-                t_kappa = kappa_sim.getTime()
                 kappa_sim.runForTime(float(t_run), True)
