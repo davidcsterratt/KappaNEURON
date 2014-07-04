@@ -1,8 +1,8 @@
-PREFIX=${HOME}
+NRNPREFIX=${HOME}
 
 sudo apt-get install hg bison
 
-cd ${PREFIX}/src
+cd ${NRNPREFIX}/src
 mkdir neuron
 cd neuron
 # Install neuron
@@ -20,13 +20,13 @@ else
 fi
 cd iv/
 ./build.sh 
-./configure --prefix=$PREFIX
+./configure --prefix=$NRNPREFIX
 make 
 make install
 cd ../nrn
 ./build.sh
-./configure --prefix=$PREFIX --with-iv=$PREFIX  --with-nrnpython=/usr/bin/python2.7
+./configure --prefix=$NRNPREFIX --with-iv=$NRNPREFIX  --with-nrnpython=/usr/bin/python2.7
 make
 make install
 
-# Python packages are installed in ${PREFIX}/lib/python
+# Python packages are installed in ${NRNPREFIX}/lib/python
