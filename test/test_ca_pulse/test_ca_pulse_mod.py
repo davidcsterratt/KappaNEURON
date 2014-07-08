@@ -6,7 +6,8 @@ import numpy
 def run(diam=0.2, 
         gcalbar=0.05,
         gamma2=1,
-        P0=0.2):
+        P0=0.2,
+        vclamp=False):
     # Neuron spine Head
     sh = make_spine_head(diam=diam, gcalbar=gcalbar)
     sh.insert("caPump")            # My own calcium buffer
@@ -22,7 +23,8 @@ def run(diam=0.2,
 
     sh.P0_caPump = P0
 
-    stim = insert_vclamp(sh)
+    if vclamp:
+        stim = insert_vclamp(sh)
 
     ## Record P from spine head
     rec_Pi = h.Vector()

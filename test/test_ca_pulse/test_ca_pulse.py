@@ -7,7 +7,8 @@ import KappaNEURON
 def run(diam=0.2, 
         gcalbar=0.05,
         gamma2=1,
-        P0=0.2):
+        P0=0.2,
+        vclamp=False):
     # Neuron spine head
     sh = make_spine_head(diam=diam, gcalbar=gcalbar)
 
@@ -29,7 +30,8 @@ def run(diam=0.2,
     kappa.setVariable('k2', gamma2)
     kappa.setVariable('vol', vol)
 
-    stim = insert_vclamp(sh)
+    if vclamp:
+        stim = insert_vclamp(sh)
 
     ## Record P from spine head
     rec_Pi = h.Vector()
