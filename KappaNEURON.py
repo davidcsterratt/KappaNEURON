@@ -6,6 +6,7 @@ import neuron.rxd.rxdmath
 import neuron.rxd.node
 from neuron.rxd.generalizedReaction import GeneralizedReaction
 import weakref
+import random
 
 import SpatialKappa
 from py4j.protocol import * 
@@ -330,6 +331,20 @@ def _kn_fixed_step_solve_continuous_influx(raw_dt):
 
 nrr._callbacks[4] = _kn_fixed_step_solve
 
+def _kn_currents(rhs):
+    nrr._currents(rhs)
+    # global nrr._rxd_induced_currents
+    print "adding some noise"
+    sign = 1
+    cur = random.random()/10
+    ## This line alters ica, but does not seem to have effect on voltage
+    nrr._curr_ptrs[0][0] += -sign * cur
+    print nrr._rxd_induced_currents
+    # nrr._rxd_induced_currents[0] += 0.0
+    nrr._rxd_induced_currents[0] += sign * cur
+    print nrr._rxd_induced_currents
+
+nrr._callbacks[2] = _kn_currents
 
 gateway = None
 
