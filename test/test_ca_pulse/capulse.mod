@@ -37,7 +37,7 @@ INITIAL {                        : initialize the following parameter using rate
 
 BREAKPOINT {
     gcal = 0
-    if (v > -50) {
+    if ((t > 10) && (t < 20)) {
         gcal = gcalbar
     }
 	  ica = gcal*ghk(v,cai,cao): calcium current induced by this channel
