@@ -48,6 +48,8 @@ nrr._fih = neuron.h.FInitializeHandler(_kn_init)
 
 mode = 'lumped_influx' # 'continuous_influx'
 
+_db = None
+
 def _kn_fixed_step_solve(raw_dt):
     if (mode == 'lumped_influx'):
         _kn_fixed_step_solve_lumped_influx(raw_dt)
@@ -180,7 +182,8 @@ def _kn_fixed_step_solve_lumped_influx(raw_dt):
 
 ## Override the NEURON nonvint _fixed_step_solve callback   
 def _kn_fixed_step_solve_continuous_influx(raw_dt):
-    global _kappa_schemes
+    global _kappa_schemes, _db
+    print _db
     
     report("---------------------------------------------------------------------------")
     report("FIXED STEP SOLVE. NEURON time %f" % nrr.h.t)
@@ -281,7 +284,10 @@ def _kn_fixed_step_solve_continuous_influx(raw_dt):
                     if (s.charge != 0):
                         Stot1 = kappa_sim.getVariable('Total %s' % (s.name))
                         DeltaStot = Stot1 - Stot0[s.name][i]
-                        b[i] = DeltaStot/(dt*nrr._conversion_factor*volumes[i])
+                        bnew = DeltaStot/(dt*nrr._conversion_factor*volumes[i])
+                        _db[i] = bnew - b[i]
+                        print "Change in current:", _db[i]
+                        b[i] = bnew
 
         report("Updated states")
         report(states)
@@ -332,17 +338,23 @@ def _kn_fixed_step_solve_continuous_influx(raw_dt):
 nrr._callbacks[4] = _kn_fixed_step_solve
 
 def _kn_currents(rhs):
+    global _db
+    if _db is None:
+        _db = nrr._numpy_zeros(len(rhs))
+        print "CREATING _db", _db
+
     nrr._currents(rhs)
     # global nrr._rxd_induced_currents
     print "adding some noise"
     sign = 1
     cur = random.random()/10
-    ## This line alters ica, but does not seem to have effect on voltage
-    nrr._curr_ptrs[0][0] += -sign * cur
-    print nrr._rxd_induced_currents
-    # nrr._rxd_induced_currents[0] += 0.0
-    nrr._rxd_induced_currents[0] += sign * cur
-    print nrr._rxd_induced_currents
+    ## This line alters ica, but does not affect the voltage
+    ## nrr._curr_ptrs[0][0] += -sign * cur
+    ## This line is necessary to change the voltage
+    rhs[1] -= _db[1]
+    # Is this line needed?
+    # nrr._rxd_induced_currents[0] -= _db[1]
+    # print nrr._rxd_induced_currents
 
 nrr._callbacks[2] = _kn_currents
 
@@ -456,7 +468,6 @@ class Kappa(GeneralizedReaction):
             self._kappa_sims.append(kappa_sim)
             ## TODO: Should we check if we are inserting two kappa schemes
             ## in the same place?
-
         self._mult = [1]
 
     def _do_memb_scales(self):
