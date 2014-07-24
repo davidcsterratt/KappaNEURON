@@ -285,6 +285,7 @@ def _kn_fixed_step_solve_continuous_influx(raw_dt):
                         Stot1 = kappa_sim.getVariable('Total %s' % (s.name))
                         DeltaStot = Stot1 - Stot0[s.name][i]
                         bnew = DeltaStot/(dt*nrr._conversion_factor*volumes[i])
+                        print "DeltaStot, bnew, b, _db", DeltaStot, bnew, b[i], _db[i]
                         _db[i] = bnew - b[i]
                         print "Change in current:", _db[i]
                         b[i] = bnew
@@ -338,23 +339,22 @@ def _kn_fixed_step_solve_continuous_influx(raw_dt):
 nrr._callbacks[4] = _kn_fixed_step_solve
 
 def _kn_currents(rhs):
+    nrr._currents(rhs)
     global _db
     if _db is None:
         _db = nrr._numpy_zeros(len(rhs))
         print "CREATING _db", _db
 
-    nrr._currents(rhs)
-    # global nrr._rxd_induced_currents
-    print "adding some noise"
-    sign = 1
-    cur = random.random()/10
-    ## This line alters ica, but does not affect the voltage
-    ## nrr._curr_ptrs[0][0] += -sign * cur
     ## This line is necessary to change the voltage
-    rhs[1] -= _db[1]
-    # Is this line needed?
-    # nrr._rxd_induced_currents[0] -= _db[1]
-    # print nrr._rxd_induced_currents
+    print rhs, _db, nrr._curr_scales, nrr._rxd_induced_currents, nrr._curr_ptrs[0][0], rhs[1]
+    rhs[1] -= _db[1]/nrr._curr_scales[0]
+    ## This line alters ica, but does not affect the voltage
+    ## nrr._curr_ptrs[0][0] += _db[1]/nrr._curr_scales[0]
+
+    # It seems that this line is needed to cancel out the effect of
+    # the previous line on the integration
+    print nrr._rxd_induced_currents
+    # nrr._rxd_induced_currents[0] -= _db[1]/nrr._curr_scales[0]
 
 nrr._callbacks[2] = _kn_currents
 
