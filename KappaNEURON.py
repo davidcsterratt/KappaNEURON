@@ -180,69 +180,35 @@ def _kn_fixed_step_solve_lumped_influx(raw_dt):
         sys.stdout.write("\n")
     sys.stdout.flush()
 
-## Override the NEURON nonvint _fixed_step_solve callback   
-def _kn_fixed_step_solve_continuous_influx(raw_dt):
-    global _kappa_schemes, _db
-    print _db
-    
-    report("---------------------------------------------------------------------------")
-    report("FIXED STEP SOLVE. NEURON time %f" % nrr.h.t)
-    report("states")
+def _run_kappa_continuous(states, b, dt):
+    #############################################################################
+    ## 1. Pass all relevant continous variables to the rule-based simulator
+    ##
+    ## Relevant variables might be
+    ## * Calcium current (for deterministic channels)
+    ## * Membrane potential (for stochastic channels controlled by Kappa model)
+    #############################################################################
 
-    # allow for skipping certain fixed steps
-    # warning: this risks numerical errors!
-    fixed_step_factor = nrr.options.fixed_step_factor
-    nrr._fixed_step_count += 1
-    if nrr._fixed_step_count % fixed_step_factor: return
-    dt = fixed_step_factor * raw_dt
-    
-    # TODO: this probably shouldn't be here
-    if nrr._diffusion_matrix is None and nrr._euler_matrix is None: nrr._setup_matrices()
-
-    states = nrr._node_get_states()[:]
-    report(states)
-
-    report("flux b")
-    ## DCS: This gets fluxes (from ica, ik etc) and computes changes
-    ## due to reactions
-
-    ## DCS FIXME: This is different from the old rxd.py file - need check what
-    ## the difference is
-    b = nrr._rxd_reaction(states) - nrr._diffusion_matrix * states
-    report(b)
-    
-    dim = nrr.region._sim_dimension
-    if dim is None:
-        return
-    elif dim == 1:
-        #############################################################################
-        ## 1. Pass all relevant continous variables to the rule-based simulator
-        ##
-        ## Relevant variables might be
-        ## * Calcium current (for deterministic channels)
-        ## * Membrane potential (for stochastic channels controlled by Kappa model)
-        #############################################################################
-
-        ## Go through each kappa scheme. The region belonging to each
-        ## kappa scheme should not overlap with any other kappa scheme's
-        ## region.
-        volumes = nrr.node._get_data()[0]
-        for kptr in _kappa_schemes:
-            k = kptr()
-            report("\nPASSING FLUXES TO KAPPA")
-            for  sptr in k._involved_species:
-                s = sptr()
-                if (s.charge != 0):
-                    name = s.name
-                    report("ION: %s" % (name))
-                    for kappa_sim, i in zip(k._kappa_sims, k._indices_dict[s]):
-                        ## Number of ions
-                        ## Flux b has units of mM/ms
-                        ## Volumes has units of um3
-                        ## _conversion factor has units of molecules mM^-1 um^-3
-                        flux = b[i] * nrr._conversion_factor * volumes[i]
-                        kappa_sim.setTransitionRate('Create %s' % (s.name), flux)
-                        ## kappa_sim.setVariable(flux, 'f%s' % (s.name))
+    ## Go through each kappa scheme. The region belonging to each
+    ## kappa scheme should not overlap with any other kappa scheme's
+    ## region.
+    volumes = nrr.node._get_data()[0]
+    for kptr in _kappa_schemes:
+        k = kptr()
+        report("\nPASSING FLUXES TO KAPPA")
+        for  sptr in k._involved_species:
+            s = sptr()
+            if (s.charge != 0):
+                name = s.name
+                report("ION: %s" % (name))
+                for kappa_sim, i in zip(k._kappa_sims, k._indices_dict[s]):
+                    ## Number of ions
+                    ## Flux b has units of mM/ms
+                    ## Volumes has units of um3
+                    ## _conversion factor has units of molecules mM^-1 um^-3
+                    flux = b[i] * nrr._conversion_factor * volumes[i]
+                    kappa_sim.setTransitionRate('Create %s' % (s.name), flux)
+                    ## kappa_sim.setVariable(flux, 'f%s' % (s.name))
 
             report("\nPASSING MEMBRANE POTENTIAL TO KAPPA")
             ## TODO: pass membrane potential to kappa
@@ -310,6 +276,45 @@ def _kn_fixed_step_solve_continuous_influx(raw_dt):
                     ## Update concentration
                     states[i] = kappa_sim.getObservation(s.name) \
                                 /(nrr._conversion_factor * volumes[i])
+    return states
+
+
+## Override the NEURON nonvint _fixed_step_solve callback   
+def _kn_fixed_step_solve_continuous_influx(raw_dt):
+    global _kappa_schemes, _db
+    print _db
+    
+    report("---------------------------------------------------------------------------")
+    report("FIXED STEP SOLVE. NEURON time %f" % nrr.h.t)
+    report("states")
+
+    # allow for skipping certain fixed steps
+    # warning: this risks numerical errors!
+    fixed_step_factor = nrr.options.fixed_step_factor
+    nrr._fixed_step_count += 1
+    if nrr._fixed_step_count % fixed_step_factor: return
+    dt = fixed_step_factor * raw_dt
+    
+    # TODO: this probably shouldn't be here
+    if nrr._diffusion_matrix is None and nrr._euler_matrix is None: nrr._setup_matrices()
+
+    states = nrr._node_get_states()[:]
+    report(states)
+
+    report("flux b")
+    ## DCS: This gets fluxes (from ica, ik etc) and computes changes
+    ## due to reactions
+
+    ## DCS FIXME: This is different from the old rxd.py file - need check what
+    ## the difference is
+    b = nrr._rxd_reaction(states) - nrr._diffusion_matrix * states
+    report(b)
+    
+    dim = nrr.region._sim_dimension
+    if dim is None:
+        return
+    elif dim == 1:
+        states = _run_kappa_continuous(states, b, dt)
 
         # clear the zero-volume "nodes"
         states[nrr._zero_volume_indices] = 0
