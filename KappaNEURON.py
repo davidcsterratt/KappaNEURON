@@ -360,6 +360,14 @@ nrr._callbacks[2] = _kn_currents
 
 gateway = None
 
+def setSeed(seed):
+    global _kappa_schemes
+    print _kappa_schemes
+    k = _kappa_schemes[0]
+    k()._kappa_sims[0].setSeed(seed)
+
+    # _kappa_sims[0].setSeed(seed)
+
 class Kappa(GeneralizedReaction):
     def __init__(self, species, kappa_file, regions=None, membrane_flux=False, time_units='ms', verbose=False):
         """create a kappa mechanism linked to a species on a given region or set of regions
