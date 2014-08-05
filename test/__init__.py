@@ -1,6 +1,7 @@
 import KappaNEURON
 import os
 import unittest
+import neuron
 from neuron import *
 from neuron import rxd
 
@@ -21,7 +22,10 @@ def debug_on(*exceptions):
 class TestKappaNEURON(unittest.TestCase):
     @debug_on()
     def setUp(self):
-        pass
+        ## Find the version of nrnivmodl corresponding to this python module
+        self.neuron_root = os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(neuron.__file__)), '../../../'))
+        ## Use it to compile files in the test directory
+        os.system(os.path.join(self.neuron_root, 'x86_64/bin/nrnivmodl test'))
 
     def test_createSection(self):
         sh = h.Section()
