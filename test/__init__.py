@@ -18,6 +18,7 @@ class TestKappaNEURON(unittest.TestCase):
         r = rxd.Region([sh], nrn_region='i')
         ca = rxd.Species(r, name='ca', charge=2, initial=0.0)
         kappa = KappaNEURON.Kappa([ca], self.__module__ + "/caMinimal.ka", r, verbose=True)
+        kappa = []
 
     def tearDown(self):
         pass
