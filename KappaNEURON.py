@@ -224,8 +224,9 @@ class Kappa(GeneralizedReaction):
         _unregister_kappa_scheme(self._weakref)
         for kappa_sim in self._kappa_sims:
             del(kappa_sim)
+        ## Needed to ensure cleanup and no exit errors in python2.7
         if (len(_kappa_schemes) == 0):
-            del(gateway)
+            gateway = None
 
     def _update_indices(self):
         global gateway
