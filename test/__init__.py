@@ -19,12 +19,13 @@ class TestKappaNEURON(unittest.TestCase):
         print 'test_injectCalcium'
         sh = h.Section()
         sh.insert("capulse")
+        sh.L=2
+        sh.diam=1
         r = rxd.Region([sh], nrn_region='i')
         ca = rxd.Species(r, name='ca', charge=2, initial=0.0)
         kappa = KappaNEURON.Kappa([ca], self.__module__ + "/caMinimal.ka", r, verbose=True)
         init()
         run(30)
-        # print h.t, h.v
         kappa = []
 
     def tearDown(self):
