@@ -24,7 +24,7 @@ class TestKappaNEURON(unittest.TestCase):
         kappa = KappaNEURON.Kappa([ca], self.__module__ + "/caMinimal.ka", r, verbose=True)
         init()
         run(30)
-        print h.t, h.v
+        # print h.t, h.v
         kappa = []
 
     def tearDown(self):
