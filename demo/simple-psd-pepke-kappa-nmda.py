@@ -215,7 +215,7 @@ def plot_data(tmax=None):
     ## ax2.axis(ymin=-1, ymax=0.1)
     ax2.axis(xmin=0, xmax=tmax)
 
-    ax3.plot(times[0], cai[0])
+    ax3.plot(times[0], rec_cai)
     ax3.plot(times[0], rec_CaCBi)
     ax3.plot(times[0], rec_CaCaMNi)
     ax3.plot(times[0], rec_CaCaMCi)
@@ -247,6 +247,27 @@ def plot_data(tmax=None):
         
     fig.savefig("figs/simple-psd-pepke-kappa-nmda.pdf", format='pdf')
 
-numpy.savez("simple-psd-pepke-kappa-nmda", t=times[0], cai=cai[0], cami=cami[0], ica=ica[0], voltages=voltages[0], diam=sh.diam)
+numpy.savez("simple-psd-pepke-kappa-nmda", t=times[0], cai=rec_cai, 
+            cami=cami[0], ica=ica[0], voltages=voltages[0], 
+            diam=sh.diam, Glu=numpy.array(Glu), 
+            NMDA=numpy.array(NMDA), CB=numpy.array(CB),
+            cam=numpy.array(cam), CaMKII=numpy.array(CaMKII), 
+            CaCB=numpy.array(CaCB), CaCaMC=numpy.array(CaCaMC), 
+            CaCaMN=numpy.array(CaCaMN), KCaCaM2C=numpy.array(KCaCaM2C),
+            CaMKIIp=numpy.array(CaMKIIp), stargazinp=numpy.array(stargazinp))
+
+numpy.savez("simple-psd-pepke-kappa-nmda-comp", times=times, rec_cai=rec_cai, 
+            cami=cami, ica=ica, voltages=voltages, 
+            diam=sh.diam, rec_CaCBi=rec_CaCBi,
+            rec_CaMKIIi=rec_CaMKIIi, rec_CaCaMNi=rec_CaCaMNi,
+            rec_CaCaMCi=rec_CaCaMCi, rec_KCaCaM2Ci=rec_KCaCaM2Ci,
+            rec_CaMKIIpi=rec_CaMKIIpi,  rec_stargazinpi=rec_stargazinpi)
 
 plot_data()
+
+# Total Ca influx is ica * dt * area /2/F *NA
+
+# Area = pi*diam*L = pi*0.8*0.2 um2 = pi*0.8*0.2*10^-8cm2
+
+# ica is measured in mA/cm2; dt in ms, so the total charge in Coulombs is
+# Q = 10^-3*ica * 10^-3*dt * pi*diam*L*10^-8

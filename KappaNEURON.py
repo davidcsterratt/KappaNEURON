@@ -412,10 +412,13 @@ class Kappa(GeneralizedReaction):
         return 'Kappa(%r, kappa_file=%r, regions=%r, membrane_flux=%r)' % (self._involved_species, self._kappa_file, self._regions, self._membrane_flux)
     
     def __del__(self):
+        global gateway, _kappa_schemes
         ## A similar idiom to rxd._register_kappa_scheme() doesn't seem to work
         _unregister_kappa_scheme(self._weakref)
         for kappa_sim in self._kappa_sims:
             del(kappa_sim)
+        if (len(_kappa_schemes) == 0):
+            del(gateway)
 
     def _update_indices(self):
         global gateway
