@@ -7,6 +7,7 @@ build_py:
 	python2.7 setup.py build
 
 .PHONY test: build_py
+	./test/nrnivmodl.py
 	python2.7 -m unittest test
 
 install:

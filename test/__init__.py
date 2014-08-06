@@ -5,37 +5,26 @@ import neuron
 from neuron import *
 from neuron import rxd
 
-import functools
-def debug_on(*exceptions):
-    if not exceptions:
-        exceptions = (AssertionError, )
-    def decorator(f):
-        @functools.wraps(f)
-        def wrapper(*args, **kwargs):
-            try:
-                return f(*args, **kwargs)
-            except exceptions:
-                pdb.post_mortem(sys.exc_info()[2])
-        return wrapper
-    return decorator
-
 class TestKappaNEURON(unittest.TestCase):
-    @debug_on()
     def setUp(self):
-        ## Find the version of nrnivmodl corresponding to this python module
-        self.neuron_root = os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(neuron.__file__)), '../../../'))
-        ## Use it to compile files in the test directory
-        os.system(os.path.join(self.neuron_root, 'x86_64/bin/nrnivmodl test'))
+        pass
 
     def test_createSection(self):
+        print 'test_createSection'
         sh = h.Section()
         self.assertIsInstance(sh, nrn.Section)
+        sh.insert("capulse")
 
     def test_injectCalcium(self):
+        print 'test_injectCalcium'
         sh = h.Section()
+        sh.insert("capulse")
         r = rxd.Region([sh], nrn_region='i')
         ca = rxd.Species(r, name='ca', charge=2, initial=0.0)
         kappa = KappaNEURON.Kappa([ca], self.__module__ + "/caMinimal.ka", r, verbose=True)
+        init()
+        run(30)
+        print h.t, h.v
         kappa = []
 
     def tearDown(self):
