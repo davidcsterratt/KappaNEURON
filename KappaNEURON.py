@@ -111,11 +111,17 @@ def _kn_fixed_step_solve(raw_dt):
                     ## Volumes has units of um3
                     ## _conversion factor has units of molecules mM^-1 um^-3
                     mu = dt * b[i] * nrr._conversion_factor * volumes[i]
-                    nions = 0.0
+                    nions = 0
                     if mu!=0:
                         nions = numpy.sign(mu)*poisson.rvs(abs(mu))
-                    report("index %d; volume: %f ; flux %f ; # of ions: %s" % (i, volumes[i], b[i], nions))
-                    kappa_sim.addAgent(name, nions)
+                    report("index %d; volume: %f ; flux %f ; # ions: %s; mu: %f\n" % (i, volumes[i], b[i], nions, mu))
+                    try:
+                        kappa_sim.addAgent(name, nions)
+                    except Py4JJavaError as e:
+                        java_err = re.sub(r'java.lang.IllegalStateException: ', r'', str(e.java_exception))
+                        errstr = 'Problem adding agents, probably trying to add too many in one step; try reducing number of agents by reducing surface area or current density:\n%s' % (java_err)
+                        raise RuntimeError(errstr)
+
                     t_kappa = kappa_sim.getTime()
                     discrepancy = nrr.h.t - t_kappa
                     report('Kappa Time %f; NEURON time %f; Discrepancy %f' % (t_kappa, nrr.h.t, discrepancy))
