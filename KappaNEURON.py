@@ -23,6 +23,8 @@ def report(mess):
         print(mess)
 _kappa_schemes = []
 
+progress = True
+
 def _register_kappa_scheme(r):
     # TODO: should we search to make sure that (a weakref to) r hasn't already been added?
     global _kappa_schemes
@@ -170,10 +172,11 @@ def _kn_fixed_step_solve(raw_dt):
             if s is not None: s._transfer_to_legacy()
     
     t = nrr.h.t + dt
-    sys.stdout.write("\rTime = %12.5f/%5.5f [%3.3f%%]" % (t, neuron.h.tstop, t/neuron.h.tstop*100))
-    if (abs(t - neuron.h.tstop) < 1E-6):
-        sys.stdout.write("\n")
-    sys.stdout.flush()
+    if progress:
+        sys.stdout.write("\rTime = %12.5f/%5.5f [%3.3f%%]" % (t, neuron.h.tstop, t/neuron.h.tstop*100))
+        if (abs(t - neuron.h.tstop) < 1E-6):
+            sys.stdout.write("\n")
+        sys.stdout.flush()
 
 nrr._callbacks[4] = _kn_fixed_step_solve
 
@@ -210,9 +213,9 @@ class Kappa(GeneralizedReaction):
             # TODO: rename regions to region?
             raise Exception('if membrane_flux then must specify the (unique) membrane regions')
         self._update_indices()
-        print('Registering kappa scheme')
+        report('Registering kappa scheme')
         _register_kappa_scheme(self)
-        print _kappa_schemes
+        report(_kappa_schemes)
         self._weakref = weakref.ref(self) # Seems to be needed for the destructor
     
     def __repr__(self):
@@ -263,7 +266,7 @@ class Kappa(GeneralizedReaction):
 
         self._kappa_sims = []   # Will this destroy things properly?
         for index in self._indices_dict[self._involved_species[0]()]:
-            print "Creating Kappa Simulation in region", r
+            report("Creating Kappa Simulation in region %s" % (r))
             kappa_sim = gateway.kappa_sim(self._time_units, verbose)
             try:
                 kappa_sim.loadFile(self._kappa_file)
