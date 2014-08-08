@@ -29,15 +29,15 @@ class TestKappaNEURON(unittest.TestCase):
         init()
         self.assertEqual(h.t, 0.0)
         self.assertEqual(self.sh(0.5).cai, 0.0)
-        run(15)
-        self.assertAlmostEqual(h.t, 15.0)
+        run(3)
+        self.assertAlmostEqual(h.t, 3.0)
         self.assertGreater(self.sh(0.5).cai, 0.0)
 
     def test_injectCalcium2(self):
         init()
         self.assertEqual(h.t, 0.0)
-        run(30)
-        self.assertAlmostEqual(h.t, 30.0)
+        run(3)
+        self.assertAlmostEqual(h.t, 3.0)
 
     def tearDown(self):
         self.kappa = None
