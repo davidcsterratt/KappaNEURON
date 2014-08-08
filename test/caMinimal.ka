@@ -1,2 +1,3 @@
 %agent: ca(x)
 %obs: 'ca' ca(x)
+%init: 0 ca(x)
