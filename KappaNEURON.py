@@ -24,6 +24,8 @@ def report(mess):
         print(mess)
 _kappa_schemes = []
 
+progress = True
+
 def _register_kappa_scheme(r):
     # TODO: should we search to make sure that (a weakref to) r hasn't already been added?
     global _kappa_schemes
@@ -122,11 +124,17 @@ def _kn_fixed_step_solve_lumped_influx(raw_dt):
                     ## Volumes has units of um3
                     ## _conversion factor has units of molecules mM^-1 um^-3
                     mu = dt * b[i] * nrr._conversion_factor * volumes[i]
-                    nions = 0.0
+                    nions = 0
                     if mu!=0:
                         nions = numpy.sign(mu)*poisson.rvs(abs(mu))
-                    report("index %d; volume: %f ; flux %f ; # of ions: %s" % (i, volumes[i], b[i], nions))
-                    kappa_sim.addAgent(name, nions)
+                    report("index %d; volume: %f ; flux %f ; # ions: %s; mu: %f\n" % (i, volumes[i], b[i], nions, mu))
+                    try:
+                        kappa_sim.addAgent(name, nions)
+                    except Py4JJavaError as e:
+                        java_err = re.sub(r'java.lang.IllegalStateException: ', r'', str(e.java_exception))
+                        errstr = 'Problem adding agents, probably trying to add too many in one step; try reducing number of agents by reducing surface area or current density:\n%s' % (java_err)
+                        raise RuntimeError(errstr)
+
                     t_kappa = kappa_sim.getTime()
                     discrepancy = nrr.h.t - t_kappa
                     report('Kappa Time %f; NEURON time %f; Discrepancy %f' % (t_kappa, nrr.h.t, discrepancy))
@@ -175,10 +183,11 @@ def _kn_fixed_step_solve_lumped_influx(raw_dt):
             if s is not None: s._transfer_to_legacy()
     
     t = nrr.h.t + dt
-    sys.stdout.write("\rTime = %12.5f/%5.5f [%3.3f%%]" % (t, neuron.h.tstop, t/neuron.h.tstop*100))
-    if (abs(t - neuron.h.tstop) < 1E-6):
-        sys.stdout.write("\n")
-    sys.stdout.flush()
+    if progress:
+        sys.stdout.write("\rTime = %12.5f/%5.5f [%3.3f%%]" % (t, neuron.h.tstop, t/neuron.h.tstop*100))
+        if (abs(t - neuron.h.tstop) < 1E-6):
+            sys.stdout.write("\n")
+        sys.stdout.flush()
 
 def _run_kappa_continuous(states, b, dt):
     #############################################################################
@@ -403,9 +412,9 @@ class Kappa(GeneralizedReaction):
             # TODO: rename regions to region?
             raise Exception('if membrane_flux then must specify the (unique) membrane regions')
         self._update_indices()
-        print('Registering kappa scheme')
+        report('Registering kappa scheme')
         _register_kappa_scheme(self)
-        print _kappa_schemes
+        report(_kappa_schemes)
         self._weakref = weakref.ref(self) # Seems to be needed for the destructor
     
     def __repr__(self):
@@ -417,8 +426,9 @@ class Kappa(GeneralizedReaction):
         _unregister_kappa_scheme(self._weakref)
         for kappa_sim in self._kappa_sims:
             del(kappa_sim)
+        ## Needed to ensure cleanup and no exit errors in python2.7
         if (len(_kappa_schemes) == 0):
-            del(gateway)
+            gateway = None
 
     def _update_indices(self):
         global gateway
@@ -455,7 +465,7 @@ class Kappa(GeneralizedReaction):
 
         self._kappa_sims = []   # Will this destroy things properly?
         for index in self._indices_dict[self._involved_species[0]()]:
-            print "Creating Kappa Simulation in region", r
+            report("Creating Kappa Simulation in region %s" % (r))
             kappa_sim = gateway.kappa_sim(self._time_units, verbose)
             try:
                 kappa_sim.loadFile(self._kappa_file)
@@ -524,8 +534,8 @@ class Kappa(GeneralizedReaction):
                         raise NameError('There is no observable in %s called %s; add a line like this:\n%%obs: \'%s\' <complex definition> ' % (self._kappa_file, s.name, s.name))
                     try:
                         kappa_sim.setAgentInitialValue(s.name, nions)
-                    except:
-                        raise Error('Error setting initial value of agent %s to %d' % (s.name, nions))
+                    except Py4JJavaError as e:
+                        raise NameError('Error setting initial value of agent %s to %d\n%s' % (s.name, nions,  str(e.java_exception)))
                         
 
 
