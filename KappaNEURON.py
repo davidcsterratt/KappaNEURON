@@ -319,8 +319,8 @@ class Kappa(GeneralizedReaction):
                         raise NameError('There is no observable in %s called %s; add a line like this:\n%%obs: \'%s\' <complex definition> ' % (self._kappa_file, s.name, s.name))
                     try:
                         kappa_sim.setAgentInitialValue(s.name, nions)
-                    except:
-                        raise Error('Error setting initial value of agent %s to %d' % (s.name, nions))
+                    except Py4JJavaError as e:
+                        raise NameError('Error setting initial value of agent %s to %d\n%s' % (s.name, nions,  str(e.java_exception)))
                         
 
 
