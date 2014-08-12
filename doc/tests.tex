@@ -1,0 +1,78 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{xspace}
+\usepackage[amssymb]{SIunits}
+\addunit{\molar}{M}
+\newcommand{\ICa}{\ensuremath{I_\mathrm{Ca}}\xspace}
+\newcommand{\gCa}{\ensuremath{g_\mathrm{Ca}}\xspace}
+\newcommand{\ECa}{\ensuremath{E_\mathrm{Ca}}\xspace}
+\newcommand{\Cmem}{\ensuremath{C_\mathrm{m}}\xspace}
+\newcommand{\dif}{\textrm{d}}
+
+
+\begin{document}
+\section{Test 1 - Ca accumulation}
+\label{tests:sec:test-1-ca}
+
+1 compartment, length $L$, diameter $d$, membrane capacitance \Cmem,
+membrane potential $V$. Calcium current $\ICa=\gCa(V-\ECa)$, where $g$ is
+conductance and $\ECa$ is calcium reversal potential. $g$ is 0 apart
+from when it is set to $\overline{g}$ from $t_1$ to $t_2$.
+
+ODEs describing membrane potential and calcium concentration:
+\begin{equation}
+  \label{tests:eq:1}
+  \Cmem\frac{\dif V}{\dif t} = \ICa
+\end{equation}
+ This can be solved:
+\begin{equation}
+  \label{tests:eq:2}
+  V(t) = V(t_0) + (\ECa - V(t_0))(1-\exp((t-t_0)\gCa/\Cmem))
+\end{equation}
+
+
+The equation describing the calcium concentration [Ca] is:
+\begin{equation}
+  \frac{\dif [\mathrm{Ca}]}{\dif t} = \frac{\ICa a }{2Fv}
+\end{equation}
+where $a= \pi Ld$ is the surface area and $v = \pi Ld^2/4$ is the
+volume. 
+
+Hence following should be true:
+\begin{equation}
+[\textrm{Ca}](t_1) - [\textrm{Ca}](t_0) =  \frac{\Cmem a (V(t_1) -
+    V(t_0))  }{2Fv} =  \frac{2\Cmem  (V(t_1) -
+    V(t_0))  }{Fd}
+\end{equation}
+
+\begin{tabular}{lll}
+Quantity       & Symbol & Units \\
+\hline
+Voltage        & $V$    & mV    \\
+Time           & $t$    & ms    \\
+Conductance    & $g$    & \siemens\per\centi\square\meter \\
+Concentration  & [Ca]   & mM \\
+Faraday const. & $F$    & C\per\mole  \\
+Length         & $l$    & \micro\meter \\
+Diameter       & $d$    & \micro\meter \\
+Capacitance    & $\Cmem$ & \micro\farad\per\centi\square\meter \\
+\hline
+\end{tabular}
+
+Hence the factor-label method gives: 
+\begin{equation}
+  \begin{split}
+  \frac{\micro\farad}{\centi\square\meter}\cdot\frac{\micro\meter\squared\cdot\milli\volt}%
+  {\coulomb\per\mole\cdot\micro\meter\cubed}
+  = \frac{10^{-6} \farad}{10^{-4}\square\meter}\cdot\frac{\mole\cdot10^{-3}\volt}%
+  {\coulomb\cdot10^{-6}\meter}
+  = \frac{10^{-6} \coulomb}{10^{-4}\volt\square\meter}\cdot\frac{\mole\cdot10^{-3}\volt}%
+  {\coulomb\cdot10^{-6}\meter}\\
+  = \frac{10^1\mole}{\meter\cubed} =
+  \frac{10^1\mole}{10^3\deci\meter\cubed} = 10^{-2}\molar = 10\milli\molar
+  \end{split}
+\end{equation}
+  
+
+
+\end{document}

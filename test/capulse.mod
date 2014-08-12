@@ -14,34 +14,36 @@ UNITS {
 PARAMETER {		:parameters that can be entered when function is called in cell-setup 
 	  v             (mV)
 	  celsius = 34	(degC)
-	  gcalbar = 1   (mho/cm2)   : initialized conductance
+	  gbar = 1   (mho/cm2)   : initialized conductance
 	  cai = 5.e-5   (mM)        : initial internal Ca++ concentration
 	  cao = 2       (mM)        : initial external Ca++ concentration
     eca = 140     (mV)        : Ca++ reversal potential
+    t0 = 1        (ms)
+    t1 = 2        (ms)
 }
 
 NEURON {
 	  SUFFIX capulse
 	  USEION ca READ cai,cao,eca WRITE ica
-    RANGE gcalbar, gcal
+    RANGE gbar, g, t0, t1
 }
 
 ASSIGNED {                       : parameters needed to solve DE
 	  ica   (mA/cm2)
-    gcal  (mho/cm2)
+    g  (mho/cm2)
 }
 
 INITIAL {                        : initialize the following parameter using rates()
-	  gcal = 0
+	  g = 0
 }
 
 BREAKPOINT {
-    gcal = 0
-    if ((t > 10) && (t < 20)) {
-        gcal = gcalbar
+    g = 0
+    if ((t >= t0) && (t <= t1)) {
+        g = gbar
     }
-	  ica = gcal*ghk(v,cai,cao): calcium current induced by this channel
-    : ica = gcal*(v - eca): calcium current induced by this channel
+	  : ica = g*ghk(v,cai,cao): calcium current induced by this channel
+    ica = g*(v - eca): calcium current induced by this channel
 }
 
 FUNCTION ghk(v(mV), ci(mM), co(mM)) (mV) {
