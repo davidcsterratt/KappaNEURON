@@ -49,7 +49,7 @@ def _kn_init():
 nrr._fih = neuron.h.FInitializeHandler(_kn_init)
 
 mode = 'lumped_influx' # 'continuous_influx'
-
+# mode = 'continuous_influx'
 _db = None
 
 def _kn_fixed_step_solve(raw_dt):
@@ -370,7 +370,7 @@ def _kn_currents(rhs):
     print nrr._rxd_induced_currents
     # nrr._rxd_induced_currents[0] -= _db[1]/nrr._curr_scales[0]
 
-nrr._callbacks[2] = _kn_currents
+# nrr._callbacks[2] = _kn_currents
 
 gateway = None
 
