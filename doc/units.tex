@@ -1,0 +1,83 @@
+\documentclass{article}
+\usepackage{tabularx}
+\usepackage[amssymb]{SIunits}
+\addunit{\molar}{M}
+\newcommand{\cS}{[\mathrm{S}]}
+\newcommand{\NA}{N_\mathrm{A}}
+\newcommand{\convfac}{10^{-18}N_\mathrm{A}}
+\begin{document}
+\usepackage[left=1in,right=1in]{geometry}
+
+\section{Units and conversions}
+
+
+\begin{table}
+  \centering
+  \begin{tabularx}{\linewidth}{l>{$}l<{$}>{\ttfamily}lll}
+    Quantity & \mathrm{Symbol} & \textrm{NEURON varible names} & Units \\
+    \hline
+    Species concentration & \cS & states & mM \\
+    Species number        & S & Stot,DeltaStot &  \\
+    Current density       & I &                 & mA\per\centi\meter\squared\\
+    Absolute current      &   & rhs             & \\
+    Faraday's constant    & F & h.FARADAY       & C\per\mole \\
+    Compartment volume    & v & volumes[]       & \micro\meter\cubed \\
+    Compartment area      & a & surface\_area[] & \micro\meter\squared \\
+    Avogadro's constant   & \NA &      & \per\mole \\
+    Molecules\per mM\per\micro\meter\cubed & \convfac &
+    molecules\_per\_mM\_um3 \\
+    Rate of change of concentration   & \cS/dt &  b    & \milli\Molar\per\milli\second \\    
+    \hline
+  \end{tabularx}
+  \caption{Quantities}
+  \label{tab:quantities}
+\end{table}
+
+\subsection{Number of molecules to concentration}
+\label{units:sec:numb-molec-conc}
+
+\begin{equation}
+  \label{units:eq:1}
+  \cS = \frac{S}{\NA v}
+\end{equation}
+\begin{equation}
+  \label{units:eq:2}
+  \cS \milli\molar = \frac{S}{\NA\per\mole v\micro\meter\cubed}
+  = \frac{S}{\NA v} 
+  \frac{\mole}{\micro\meter\cubed}
+  =  \frac{S}{\NA v} 
+  \frac{\mole}{\deci\meter\cubed}\frac{\deci\meter\cubed}{\micro\meter\cubed}
+  =  \frac{S}{\NA v} 
+  10^{15} \molar 
+  =  \frac{S}{\NA v} 
+  10^{15} 10^3 \milli\molar
+  =  \frac{S}{10^{-18}\NA v} 
+  \milli\molar
+\end{equation}
+
+\subsection{Rate of change of concentration to absolute current}
+\label{units:sec:numb-molec-conc}
+
+\begin{equation}
+  \label{units:eq:3}
+  I = \frac{d\cS}{dt} z F v
+\end{equation}
+
+\begin{equation}
+  \label{units:eq:3}
+  I = \frac{d\cS}{dt} \frac{\milli\molar}{\milli\second} z F
+  \frac{C}{\mole} v \micro\meter\cubed
+= \frac{d\cS}{dt} z F v \frac{\mole}{\deci\meter\cubed}
+  \frac{C}{\mole}  \micro\meter\cubed
+=  \frac{d\cS}{dt} z F v \frac{\mole}{\second\deci\meter\cubed}
+  \frac{C}{\mole}  \micro\meter\cubed 
+=  \frac{d\cS}{dt} z F v 
+  \frac{C}{\second} 10^{-15} 
+=  \frac{d\cS}{dt} z F v 
+  10^{-15} \ampere = 10^{-6}  \frac{d\cS}{dt} z F v 
+  \nano\ampere 
+
+\end{equation}
+
+
+\end{document}

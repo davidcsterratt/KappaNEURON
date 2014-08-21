@@ -15,7 +15,7 @@ class TestKappaNEURON(unittest.TestCase):
     sk = h.Section()
     sk.insert("capulse")
     sk.L=0.2
-    sk.diam=1
+    sk.diam=0.5
     r = rxd.Region([sk], nrn_region='i')
     ca = rxd.Species(r, name='ca', charge=2, initial=0.0)
 
@@ -23,7 +23,7 @@ class TestKappaNEURON(unittest.TestCase):
     sm = h.Section()
     sm.insert("capulse")
     sm.L=0.2
-    sm.diam=1
+    sm.diam=0.5
     ## Calcium accumulation via a pump with the pumping turned off
     sm.insert("caPump")
     sm(0.5).k1_caPump = 0 
@@ -58,8 +58,8 @@ class TestKappaNEURON(unittest.TestCase):
         v0 = self.sk(0.5).v
         self.assertEqual(h.t, 0.0)
         self.assertEqual(self.sk(0.5).cai, 0.0)
-        run(3)
-        self.assertAlmostEqual(h.t, 3.0)
+        run(1.15)
+        self.assertAlmostEqual(h.t, 1.15)
         self.assertGreater(self.sk(0.5).cai, 0.0)
         plt.subplots_adjust(left=0.25)
         fig, ax = plt.subplots(nrows=3, ncols=1, figsize=(2.25*2, 2.5*2))
@@ -70,7 +70,9 @@ class TestKappaNEURON(unittest.TestCase):
         for sec in h.allsec():
             ax[0].plot(self.rec_t, self.rec_v[i], color='br'[i])
             ax[1].plot(self.rec_t, self.rec_cai[i], color='br'[i])
-            ax[2].plot(numpy.diff(self.rec_v[i]), caitonum*numpy.diff(self.rec_cai[i]), 'o', color='br'[i])
+            diffv = numpy.diff(self.rec_v[i])
+            diffca = caitonum*numpy.diff(self.rec_cai[i])
+            ax[2].plot(diffv[1:len(diffv)-1], diffca[0:len(diffv)-2], 'o', color='br'[i])
             fig.show()        
             print sec.name()
             for mech in sec(0.5):
