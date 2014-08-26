@@ -4,7 +4,7 @@ import unittest
 import neuron
 from neuron import *
 from neuron import rxd
-import numpy
+import numpy as np
 import matplotlib.pyplot as plt
 
 class TestKappaNEURON(unittest.TestCase):
@@ -64,14 +64,21 @@ class TestKappaNEURON(unittest.TestCase):
         plt.subplots_adjust(left=0.25)
         fig, ax = plt.subplots(nrows=3, ncols=1, figsize=(2.25*2, 2.5*2))
         NA =  6.02214129e23     # Avogadro's number
-        caitonum = NA*numpy.pi*(self.sk.diam**2)/4*self.sk.L*1e-18 
+        caitonum = NA*np.pi*(self.sk.diam**2)/4*self.sk.L*1e-18 
         
         i = 0
         for sec in h.allsec():
+            ## Check that during the stimulus, every voltage increment
+            ## is proportional to the calcium increment in the
+            ## *preceeding* timestep.  At the end of the pulse and the
+            ## beginning of the pulse this is not true, because the voltage increment 
+            times = np.array(self.rec_t)
+            stim_inds = np.where((times > seg.t0_capulse) & (times < seg.t1_capulse))
+            diffv = np.diff(np.array(self.rec_v[i])[stim_inds])
+            diffca = caitonum*np.diff(np.array(self.rec_cai[i])[stim_inds])
+
             ax[0].plot(self.rec_t, self.rec_v[i], color='br'[i])
             ax[1].plot(self.rec_t, self.rec_cai[i], color='br'[i])
-            diffv = numpy.diff(self.rec_v[i])
-            diffca = caitonum*numpy.diff(self.rec_cai[i])
             ax[2].plot(diffv[1:len(diffv)-1], diffca[0:len(diffv)-2], 'o', color='br'[i])
             fig.show()        
             print sec.name()
@@ -87,7 +94,7 @@ class TestKappaNEURON(unittest.TestCase):
             vtocai = cm/(1E-1*2*h.FARADAY*volbyarea)
             print("Eca=%f, t0=%f, t1=%f, gbar=%f, cm=%f, v0=%f, v1=%f" % (eca, t0, t1, gbar, cm, v0, v1))
             print 'Theoretical voltage and Ca difference:'
-            Deltav_theo = (eca - v0)*(1 - numpy.exp(-(t1 - t0)*1000*gbar/cm))
+            Deltav_theo = (eca - v0)*(1 - np.exp(-(t1 - t0)*1000*gbar/cm))
             Deltaca_theo = Deltav_theo*vtocai
             print Deltav_theo, Deltaca_theo
             print 'Actual voltage and Ca difference:'
