@@ -8,6 +8,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class TestKappaNEURON(unittest.TestCase):
+    ## Whether to plot
+    plot = True
+
     ## We can't put this stuff in setUp(), since problems arise if we
     ## try to redefine sections, regions and species. This is because
     ## of class variables in Species.
@@ -45,6 +48,8 @@ class TestKappaNEURON(unittest.TestCase):
                 seg.t1_capulse = 1.1
                 seg.gbar_capulse = 0.001
         h.dt = h.dt/20
+
+        ## Set up recordings
         self.rec_t = h.Vector()
         self.rec_t.record(h._ref_t)
         self.rec_cai = []
@@ -54,38 +59,54 @@ class TestKappaNEURON(unittest.TestCase):
             self.rec_cai[-1].record(sec(0.5)._ref_cai)
             self.rec_v.append(h.Vector())
             self.rec_v[-1].record(sec(0.5)._ref_v)
+
+        ## Initialise simulation
         init()
         v0 = self.sk(0.5).v
         self.assertEqual(h.t, 0.0)
         self.assertEqual(self.sk(0.5).cai, 0.0)
+        ## Run
         run(1.15)
         self.assertAlmostEqual(h.t, 1.15)
         self.assertGreater(self.sk(0.5).cai, 0.0)
-        plt.subplots_adjust(left=0.25)
-        fig, ax = plt.subplots(nrows=3, ncols=1, figsize=(2.25*2, 2.5*2))
+        
+        ## Plot
+        if self.plot:
+            plt.subplots_adjust(left=0.25)
+            fig, ax = plt.subplots(nrows=3, ncols=1, figsize=(2.25*2, 2.5*2))
+
+        ## Conversions
         NA =  6.02214129e23     # Avogadro's number
         caitonum = NA*np.pi*(self.sk.diam**2)/4*self.sk.L*1e-18 
         
+        
+        times = np.array(self.rec_t)
+        stim_inds = np.where((times > seg.t0_capulse) & (times < seg.t1_capulse))
+        
+        ## Run through both sections
         i = 0
         for sec in h.allsec():
+            ## Determine if section contains mod pump or kappa pump
+            mode = 'kappa'
+            for mech in sec(0.5):
+                if mech.name() == 'caPump':
+                    mode = 'mod'
+
             ## Check that during the stimulus, every voltage increment
             ## is proportional to the calcium increment in the
             ## *preceeding* timestep.  At the end of the pulse and the
             ## beginning of the pulse this is not true, because the voltage increment 
-            times = np.array(self.rec_t)
-            stim_inds = np.where((times > seg.t0_capulse) & (times < seg.t1_capulse))
             diffv = np.diff(np.array(self.rec_v[i])[stim_inds])
-            diffca = caitonum*np.diff(np.array(self.rec_cai[i])[stim_inds])
+            diffca = np.diff(np.array(self.rec_cai[i])[stim_inds])
 
-            ax[0].plot(self.rec_t, self.rec_v[i], color='br'[i])
-            ax[1].plot(self.rec_t, self.rec_cai[i], color='br'[i])
-            ax[2].plot(diffv[1:len(diffv)-1], diffca[0:len(diffv)-2], 'o', color='br'[i])
-            fig.show()        
-            print sec.name()
-            for mech in sec(0.5):
-                print mech.name()
+            if self.plot:
+                ax[0].plot(self.rec_t, self.rec_v[i], color='br'[i])
+                ax[1].plot(self.rec_t, self.rec_cai[i], color='br'[i])
+                ax[2].plot(diffv[1:len(diffv)-1], caitonum*diffca[0:len(diffv)-2], 'o', color='br'[i])
+                fig.show()        
+
             v1 = sec(0.5).v
-            volbyarea = self.sk.diam/4
+            volbyarea = sec.diam/4
             eca = sec(0.5).eca
             t0 = sec(0.5).t0_capulse
             t1 = sec(0.5).t1_capulse
@@ -101,9 +122,15 @@ class TestKappaNEURON(unittest.TestCase):
             Deltav = v1 - v0
             Deltaca = sec(0.5).cai
             print Deltav, Deltaca
-            self.assertAlmostEqual(Deltav, Deltav_theo, 0)
-            self.assertAlmostEqual(Deltaca, Deltaca_theo, 2)
-            # self.assertAlmostEqual(v1 - v0, sec(0.5).cai/vtocai, 1)
+            if mode == 'mod':
+                self.assertAlmostEqual(Deltav, Deltav_theo, 0)
+                self.assertAlmostEqual(Deltaca, Deltaca_theo, 2)
+            self.assertAlmostEqual(v1 - v0, (sec(0.5).cai - self.rec_cai[i][0])/vtocai, 1)
+            if mode == 'kappa':
+                ## All calcium ion increments should be integers
+                self.assertAlmostEqual(max(caitonum*diffca - np.round(caitonum*diffca)), 0, 2)
+                ## Calcium ion increments should be equal to voltage increments
+                self.assertAlmostEqual(max(abs(vtocai*diffv[1:len(diffv)-1] - diffca[0:len(diffv)-2])), 0, 2)
             i = i + 1
 
     @unittest.skip("skip for now")
