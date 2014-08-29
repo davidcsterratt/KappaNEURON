@@ -8,11 +8,34 @@
 \newcommand{\ECa}{\ensuremath{E_\mathrm{Ca}}\xspace}
 \newcommand{\Cmem}{\ensuremath{C_\mathrm{m}}\xspace}
 \newcommand{\dif}{\textrm{d}}
+\newcommand{\cCa}{[\textrm{Ca}]}
 
 
 \begin{document}
+
+\begin{table}
+  \centering
+  \begin{tabular}{lll}
+    Quantity       & Symbol & Units \\
+    \hline
+    Voltage        & $V$    & mV    \\
+    Time           & $t$    & ms    \\
+    Conductance    & $g$    & \siemens\per\centi\square\meter \\
+    Concentration  & [Ca]   & mM \\
+    Faraday const. & $F$    & C\per\mole  \\
+    Length         & $l$    & \micro\meter \\
+    Diameter       & $d$    & \micro\meter \\
+    Capacitance    & $\Cmem$ & \micro\farad\per\centi\square\meter \\
+    \hline
+  \end{tabular}
+  \caption{Quantities, symbols and units}
+  \label{tab:quantities}
+\end{table}
+
+\clearpage
 \section{Test 1 - Ca accumulation}
 \label{tests:sec:test-1-ca}
+
 
 1 compartment, length $L$, diameter $d$, membrane capacitance \Cmem,
 membrane potential $V$. Calcium current $\ICa=\gCa(V-\ECa)$, where $g$ is
@@ -33,7 +56,7 @@ ODEs describing membrane potential and calcium concentration:
 
 The equation describing the calcium concentration [Ca] is:
 \begin{equation}
-  \frac{\dif [\mathrm{Ca}]}{\dif t} = \frac{\ICa a }{2Fv}
+  \frac{\dif [\mathrm{Ca}]}{\dif t} = \frac{\ICa a }{2Fv} = \frac{2\ICa }{Fd}
 \end{equation}
 where $a= \pi Ld$ is the surface area and $v = \pi Ld^2/4$ is the
 volume. 
@@ -44,20 +67,6 @@ Hence following should be true:
     V(t_0))  }{2Fv} =  \frac{2\Cmem  (V(t_1) -
     V(t_0))  }{Fd}
 \end{equation}
-
-\begin{tabular}{lll}
-Quantity       & Symbol & Units \\
-\hline
-Voltage        & $V$    & mV    \\
-Time           & $t$    & ms    \\
-Conductance    & $g$    & \siemens\per\centi\square\meter \\
-Concentration  & [Ca]   & mM \\
-Faraday const. & $F$    & C\per\mole  \\
-Length         & $l$    & \micro\meter \\
-Diameter       & $d$    & \micro\meter \\
-Capacitance    & $\Cmem$ & \micro\farad\per\centi\square\meter \\
-\hline
-\end{tabular}
 
 Hence the factor-label method gives: 
 \begin{equation}
@@ -73,6 +82,46 @@ Hence the factor-label method gives:
   \end{split}
 \end{equation}
   
+\clearpage
+\section{Test 2  - Ca accumulation with pump}
+\label{tests:sec:test-1-ca}
+
+\begin{itemize}
+\item 1 compartment, length $L$, diameter $d$, membrane capacitance
+  \Cmem, membrane potential $V$.
+\item Calcium channel current $\ICa^\mathrm{chan}=\gCa(V-\ECa)$, where $g$ is conductance
+  and $\ECa$ is calcium reversal potential.
+\item Calcium pump current $\ICa^\mathrm{pump}=- \frac{Fdk_1}{2}\cCa$,
+  where $k_1$ is a constant.
+\item $g$ is 0 apart from when it is set to $\overline{g}$ from $t_1$
+  to $t_2$.
+\end{itemize}
+
+ODEs describing membrane potential and calcium concentration:
+\begin{equation}
+  \begin{split}
+    \Cmem\frac{\dif V}{\dif t} = -\ICa^\mathrm{chan} - \ICa^\mathrm{pump} = \gCa(\ECa - V) - \frac{Fdk_1}{2}\cCa ) \\
+b    \frac{\dif\cCa}{\dif t} = -\frac{2\ICa^\mathrm{chan}}{Fd} - k_1\cCa =
+    \frac{2}{Fd} \left(\gCa(\ECa - V) - \frac{Fdk_1}{2}\cCa \right)
+  \end{split}
+\end{equation}
+ This can be solved:
+\begin{equation}
+  \label{tests:eq:2}
+  V(t) = V(t_0) + (V_\infty - V(t_0))(1-\exp((t-t_0)/\tau))
+\end{equation}
+Where 
+\begin{equation}
+  \label{tests:eq:5}
+  V_\infty = \frac{g\ECa + \Cmem k_1 V(t_0)}{g + \Cmem k_1} \quad
+  \mbox{and} \quad \tau = \frac{\Cmem}{g + k_1\Cmem}
+\end{equation}
+For the dimensions of our quantities we need:
+\begin{equation}
+  \label{tests:eq:5}
+  V_\infty = \frac{10^3g\ECa + \Cmem k_1 V(t_0)}{10^3g + \Cmem k_1} \quad
+  \mbox{and} \quad \tau = \frac{\Cmem}{10^3g + k_1\Cmem}
+\end{equation}
 
 
 \end{document}
