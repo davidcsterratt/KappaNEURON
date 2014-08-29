@@ -111,17 +111,19 @@ def plot_records(tcp_mod, tcp):
     return fig, ax
 
 def compare_traces(diam=0.2, gcalbar=0.05, 
-                   gamma2=1, P0=0.2):
+                   gamma2=1, P0=0.2, vclamp=False):
     import test_ca_pulse_mod
     test_ca_pulse_mod.run(diam=diam, 
                           gcalbar=gcalbar,
                           gamma2=gamma2,
-                          P0=P0)
+                          P0=P0,
+                          vclamp=vclamp)
     import test_ca_pulse
     test_ca_pulse.run(diam=diam, 
                       gcalbar=gcalbar,
                       gamma2=gamma2,
-                      P0=P0)
+                      P0=P0,
+                      vclamp=vclamp)
     
     tcp     = numpy.load("test_ca_pulse.npz")
     tcp_mod = numpy.load("test_ca_pulse_mod.npz")
