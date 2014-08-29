@@ -8,7 +8,9 @@ build_py:
 
 .PHONY test: build_py
 	./test/nrnivmodl.py
-	python2.7 -m unittest test
+	python2.7 -m unittest test.TestCaAccumulation.test_injectCalcium
+	python2.7 -m unittest test.TestCaAccumulation.test_injectCalciumGHK
+
 
 install:
 	python2.7 setup.py install --prefix=$(PREFIX)

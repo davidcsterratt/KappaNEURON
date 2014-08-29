@@ -1,0 +1,29 @@
+# Simple calcium pump
+# Now with variables to specify the volume.
+
+%agent: ca(x)
+%agent: P(x)
+
+# Volume in um3
+%var: 'vol' 1
+# Avagadro's constant
+%var: 'NA'  6.02205E23
+# Concentration of one agent in the volume in mM 
+%var: 'agconc' 1E18/('NA' * 'vol')
+
+# Rate constants in /mM-ms or /ms, depending on the number of reactants
+%var: 'k1' 0.001
+%var: 'k2' 1
+
+# Rules
+'ca binding' ca(x), P(x)     -> ca(x!1), P(x!1) @ 'k1' * 'agconc'
+'ca release' ca(x!1), P(x!1) -> P(x)            @ 'k2'
+
+# Initialise
+%init: 1000 ca(x)
+%init: 10000 P(x)
+
+%obs: 'ca' ca(x)
+%obs: 'P-Ca' ca(x!1), P(x!1)
+%obs: 'P' P(x)
+

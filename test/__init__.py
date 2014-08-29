@@ -33,12 +33,16 @@ class TestCaAccumulation(unittest.TestCase):
     ## Time of pulse
     t0 = 1.0
     t1 = 1.1
-    
+    tstop = t1
+
     ## Conversions
     NA =  6.02214129e23     # Avogadro's number
 
     gbar = 0.001
     cm = sk(0.5).cm
+
+    ## Pump parameter
+    k1 = 0
 
     def setUp(self):
         ## Set up recordings
@@ -53,10 +57,10 @@ class TestCaAccumulation(unittest.TestCase):
             self.rec_v[-1].record(sec(0.5)._ref_v)
         self.caitonum = self.NA*np.pi*(self.sk.diam**2)/4*self.sk.L*1e-18 
 
-    def injectCalcium(self, ghk=0, k1=0):
+    def injectCalcium(self, ghk=0):
         self.kappa = KappaNEURON.Kappa([self.ca], self.__module__ + "/caPump1.ka", self.r, verbose=True)
-        self.kappa.setVariable('k1', k1)
-        self.sm(0.5).k1_caPump1 = k1
+        self.kappa.setVariable('k1', self.k1)
+        self.sm(0.5).k1_caPump1 = self.k1
         
         KappaNEURON.progress = False
         KappaNEURON.verbose = False
@@ -81,13 +85,16 @@ class TestCaAccumulation(unittest.TestCase):
 
         ## Initialise simulation
         init()
+        eca0 = self.sk(0.5).eca
         self.v0 = self.sk(0.5).v
         self.assertEqual(h.t, 0.0)
         self.assertEqual(self.sk(0.5).cai, 0.0)
         ## Run
-        run(1.15)
-        self.assertAlmostEqual(h.t, 1.15)
+        run(self.tstop)
+        self.assertAlmostEqual(h.t, self.tstop)
         self.assertGreater(self.sk(0.5).cai, 0.0)
+        if (ghk == 0):
+            self.assertEqual(eca0, self.sk(0.5).eca)
 
 
     def get_diffv_diffca(self, i):
@@ -108,19 +115,31 @@ class TestCaAccumulation(unittest.TestCase):
         for sec in h.allsec():
             (diffv, diffca) = self.get_diffv_diffca(i)
             ax[0].plot(self.rec_t, self.rec_v[i], color='br'[i])
+            (Deltav_theo, Deltaca_theo) = self.get_Deltav_Deltaca_theo(sec, np.array(self.rec_t))
+            ax[0].plot(self.rec_t, Deltav_theo + self.v0, color='g')
             ax[1].plot(self.rec_t, self.rec_cai[i], color='br'[i])
             ax[2].plot(diffv[1:len(diffv)-1], self.caitonum*diffca[0:len(diffv)-2], 'o', color='br'[i])
             fig.show()        
             i = i + 1
 
-    def get_Deltav_Deltaca_theo(self, sec):
+    def get_Deltav_Deltaca_theo(self, sec, t, verbose=False):
         eca = sec(0.5).eca
         volbyarea = sec.diam/4
         vtocai = self.cm/(1E-1*2*h.FARADAY*volbyarea)
-        print 'Theoretical voltage and Ca difference:'
-        Deltav_theo = (eca - self.v0)*(1 - np.exp(-(self.t1 - self.t0)*1000*self.gbar/self.cm))
+        ## Print some variables
+        v1 = sec(0.5).v
+        if verbose:
+            print("cca=%f, t0=%f, t1=%f, gbar=%f, cm=%f, v0=%f, v1=%f" % (sec(0.5).eca, self.t0, self.t1, self.gbar, self.cm, self.v0, v1))
+        if verbose:
+            print 'Theoretical voltage and Ca difference:'
+        tau = self.cm/(1000.0*self.gbar + self.k1*self.cm)
+        vinf = (1000.0*self.gbar*eca + self.cm*self.k1*self.v0)/(1000.0*self.gbar + self.cm*self.k1)
+        Deltav_theo = (vinf - self.v0)*(1-np.exp(-(t - self.t0)/tau))
+        if isinstance(Deltav_theo, numpy.ndarray):
+            Deltav_theo[np.where(t < self.t0)] = 0.0
         Deltaca_theo = Deltav_theo*vtocai
-        print Deltav_theo, Deltaca_theo
+        if verbose:
+            print "eca= %f; tau=%f; vinf=%f; Deltav_theo=%f; Deltaca_theo=%f" % (eca, tau, vinf, Deltav_theo, Deltaca_theo)
         return(Deltav_theo, Deltaca_theo)
 
     def get_Deltav_Deltaca(self, sec, i):
@@ -147,13 +166,10 @@ class TestCaAccumulation(unittest.TestCase):
                     mode = 'mod'
             print mode
 
-            ## Print some variables
-            v1 = sec(0.5).v
-            print("Eca=%f, t0=%f, t1=%f, gbar=%f, cm=%f, v0=%f, v1=%f" % (sec(0.5).eca, self.t0, self.t1, self.gbar, self.cm, self.v0, v1))
 
             ## Check theory and simulation match, if using
             ## deterministic ('mod') simulation
-            (Deltav_theo, Deltaca_theo) = self.get_Deltav_Deltaca_theo(sec)
+            (Deltav_theo, Deltaca_theo) = self.get_Deltav_Deltaca_theo(sec, self.tstop)
             (Deltav,      Deltaca     ) = self.get_Deltav_Deltaca(sec, i)
             if mode == 'mod':
                 self.assertAlmostEqual(Deltav, Deltav_theo, 0)
@@ -162,7 +178,7 @@ class TestCaAccumulation(unittest.TestCase):
             ## Check voltage and calcium are in sync
             volbyarea = sec.diam/4
             vtocai = self.cm/(1E-1*2*h.FARADAY*volbyarea)
-            self.assertAlmostEqual(Deltav, Deltaca/vtocai, 1)
+            self.assertAlmostEqual(Deltav, Deltaca/vtocai, 0)
 
             ## Check all differences are the same
             (diffv, diffca) = self.get_diffv_diffca(i)
@@ -191,13 +207,13 @@ class TestCaAccumulation(unittest.TestCase):
 
             ## The theoretical values here don't apply since we are
             ## using GHK, but get them anyway for information
-            (Deltav_theo, Deltaca_theo) = self.get_Deltav_Deltaca_theo(sec)
+            (Deltav_theo, Deltaca_theo) = self.get_Deltav_Deltaca_theo(sec, self.tstop)
             (Deltav,      Deltaca     ) = self.get_Deltav_Deltaca(sec, i)
 
             ## Check voltage and calcium are in sync
             volbyarea = sec.diam/4
             vtocai = self.cm/(1E-1*2*h.FARADAY*volbyarea)
-            self.assertAlmostEqual(Deltav, Deltaca/vtocai, 1)
+            self.assertAlmostEqual(Deltav, Deltaca/vtocai, 0)
 
             ## Check all differences are the same
             (diffv, diffca) = self.get_diffv_diffca(i)
@@ -209,7 +225,28 @@ class TestCaAccumulation(unittest.TestCase):
             i = i + 1
 
     def test_injectCalciumPump(self):
-        self.injectCalcium(ghk=0, k1=0.01)
+        self.t1 = 2
+        self.tstop = 2
+        self.k1 = 1
+        self.injectCalcium(ghk=0)
+        self.do_plot()
+        ## Run through both sections
+        i = 0
+        for sec in h.allsec():
+            ## Determine if section contains mod pump or kappa pump
+            mode = 'kappa'
+            for mech in sec(0.5):
+                if mech.name() == 'caPump1':
+                    mode = 'mod'
+            print mode
+
+            ## Check theory and simulation match, if using
+            ## deterministic ('mod') simulation
+            (Deltav_theo, Deltaca_theo) = self.get_Deltav_Deltaca_theo(sec, self.tstop)
+            (Deltav,      Deltaca     ) = self.get_Deltav_Deltaca(sec, i)
+            if mode == 'mod':
+                self.assertAlmostEqual(Deltav, Deltav_theo, 0)
+                self.assertAlmostEqual(Deltaca, Deltaca_theo, 2)
 
 
     @unittest.skip("skip for now")
