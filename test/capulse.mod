@@ -1,6 +1,5 @@
-TITLE L-type calcium channel with low threshold for activation
-: used in somatic and proximal dendritic regions 
-: it calculates I_Ca using channel permeability instead of conductance
+TITLE Ca injection pulse
+: Sets Ca conductance to gbar between t0 and t1; conductance is 0 otherwise
 
 UNITS {
 	  (mA) = (milliamp)
@@ -14,18 +13,19 @@ UNITS {
 PARAMETER {		:parameters that can be entered when function is called in cell-setup 
 	  v             (mV)
 	  celsius = 34	(degC)
-	  gbar = 1   (mho/cm2)   : initialized conductance
-	  cai = 5.e-5   (mM)        : initial internal Ca++ concentration
-	  cao = 2       (mM)        : initial external Ca++ concentration
-    eca = 140     (mV)        : Ca++ reversal potential
-    t0 = 1        (ms)
-    t1 = 2        (ms)
+	  gbar = 1   (mho/cm2)         : initialized conductance
+	  cai = 5.e-5   (mM)           : initial internal Ca++ concentration
+	  cao = 2       (mM)           : initial external Ca++ concentration
+    eca = 140     (mV)           : Ca++ reversal potential
+    t0 = 1        (ms)           : Start time of pulse
+    t1 = 2        (ms)           : End time of pulse
+    fghk = 0                     : Whether GHK equation should be used
 }
 
 NEURON {
 	  SUFFIX capulse
 	  USEION ca READ cai,cao,eca WRITE ica
-    RANGE gbar, g, t0, t1
+    RANGE gbar, g, t0, t1, fghk
 }
 
 ASSIGNED {                       : parameters needed to solve DE
@@ -42,8 +42,12 @@ BREAKPOINT {
     if ((t >= t0) && (t <= t1)) {
         g = gbar
     }
-	  : ica = g*ghk(v,cai,cao): calcium current induced by this channel
-    ica = g*(v - eca): calcium current induced by this channel
+    : calcium current induced by this channel
+    if (fghk) {
+	      ica = g*ghk(v,cai,cao)
+    } else {
+        ica = g*(v - eca)
+    }
 }
 
 FUNCTION ghk(v(mV), ci(mM), co(mM)) (mV) {
