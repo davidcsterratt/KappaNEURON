@@ -40,10 +40,15 @@ INITIAL {
 
 BREAKPOINT {
 	  SOLVE integrate METHOD derivimplicit
+    : Add the pump current to ica after the SOLVE
     ica = k1*cai/2*diam*F/(1e4)
 }
 
 DERIVATIVE integrate {
-    cai' = -2*(ica)/diam/F*(1e4)
-	  : cai' = -2*ica/diam/F*(1e4) - k1*cai
+    cai' = -2*ica/diam/F*(1e4)
+    : We don't write this:
+    :   cai' = -2*ica/diam/F*(1e4) - k1*cai
+    : because the pump current has been added to ica in the BREAKPOINT
+    : block
+
 }
