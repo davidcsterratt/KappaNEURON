@@ -6,6 +6,7 @@ from neuron import *
 from neuron import rxd
 import numpy as np
 import matplotlib.pyplot as plt
+import re
 
 class TestCaAccumulation(unittest.TestCase):
     ## Whether to plot
@@ -27,8 +28,6 @@ class TestCaAccumulation(unittest.TestCase):
     sm.insert("capulse")
     sm.L=0.2
     sm.diam=0.5
-    ## Calcium accumulation via a pump with the pumping turned off
-    sm.insert("caPump1")
     
     ## Time of pulse
     t0 = 1.0
@@ -41,10 +40,28 @@ class TestCaAccumulation(unittest.TestCase):
     gbar = 0.001
     cm = sk(0.5).cm
 
-    ## Pump parameter
-    k1 = 0
+    k1 = 0                      # Pump parameter
+    k2 = False                  # Optional parameter
+    P = False              # Pump species
+    P0 = 0 
 
     def setUp(self):
+        self.caitonum = self.NA*np.pi*(self.sk.diam**2)/4*self.sk.L*1e-18 
+
+    def injectCalcium(self, ghk=0, mechanism='caPump1'):
+        ## Calcium accumulation mechanism
+        self.P  = rxd.Species(self.r, name='P', charge=0, initial=self.P0)
+        self.kappa = KappaNEURON.Kappa([self.ca, self.P], self.__module__ + "/" + mechanism + ".ka", self.r, verbose=True)
+        self.sm.insert(mechanism)
+
+        self.kappa.setVariable('vol', self.sk.L*(self.sk.diam**2)/4*np.pi)
+        ## Set variables
+        self.kappa.setVariable('k1', self.k1)
+        setattr(self.sm(0.5), 'k1_' + mechanism, self.k1)
+        if mechanism == 'caPump2':
+            self.kappa.setVariable('k2', self.k2)
+            setattr(self.sm(0.5), 'k2_' + mechanism, self.k2)
+
         ## Set up recordings
         self.rec_t = h.Vector()
         self.rec_t.record(h._ref_t)
@@ -55,12 +72,17 @@ class TestCaAccumulation(unittest.TestCase):
             self.rec_cai[-1].record(sec(0.5)._ref_cai)
             self.rec_v.append(h.Vector())
             self.rec_v[-1].record(sec(0.5)._ref_v)
-        self.caitonum = self.NA*np.pi*(self.sk.diam**2)/4*self.sk.L*1e-18 
 
-    def injectCalcium(self, ghk=0):
-        self.kappa = KappaNEURON.Kappa([self.ca], self.__module__ + "/caPump1.ka", self.r, verbose=True)
-        self.kappa.setVariable('k1', self.k1)
-        self.sm(0.5).k1_caPump1 = self.k1
+        # self.sm(0.5).P0_caPump2 = self.P0
+        if mechanism == 'caPump2':
+            self.rec_Pi = []
+            for sec in h.allsec():
+                self.rec_Pi.append(h.Vector())
+                print self.get_mode(sec)
+                if self.get_mode(sec) == 'mod':
+                    self.rec_Pi[-1].record(sec(0.5)._ref_P_caPump2)
+                else:
+                    self.rec_Pi[-1].record(sec(0.5)._ref_Pi)
         
         KappaNEURON.progress = False
         KappaNEURON.verbose = False
@@ -110,7 +132,10 @@ class TestCaAccumulation(unittest.TestCase):
 
     def do_plot(self):
         plt.subplots_adjust(left=0.25)
-        fig, ax = plt.subplots(nrows=3, ncols=1, figsize=(2.25*2, 2.5*2))
+        nrow = 3
+        if (not self.P):
+            nrow = 4
+        fig, ax = plt.subplots(nrows=4, ncols=1, figsize=(2.25*2, 2.5*2))
         i = 0
         for sec in h.allsec():
             (diffv, diffca) = self.get_diffv_diffca(i)
@@ -119,6 +144,8 @@ class TestCaAccumulation(unittest.TestCase):
             ax[0].plot(self.rec_t, Deltav_theo + self.v0, color='g')
             ax[1].plot(self.rec_t, self.rec_cai[i], color='br'[i])
             ax[2].plot(diffv[1:len(diffv)-1], self.caitonum*diffca[0:len(diffv)-2], 'o', color='br'[i])
+            if (self.P0 > 0):
+                ax[3].plot(self.rec_t, self.rec_Pi[i], color='br'[i])
             fig.show()        
             i = i + 1
 
@@ -282,6 +309,36 @@ class TestCaAccumulation(unittest.TestCase):
                 self.assertAlmostEqual(max(abs(vtocai*diffv[1:len(diffv)-1] - diffca[0:len(diffv)-2])), 0, 2)
             i = i + 1
 
+    def get_mode(self, sec):
+        ## Determine if section contains mod pump or kappa pump
+        mode = 'kappa'
+        for mech in sec(0.5):
+            if re.search('caPump', mech.name()):
+                mode = 'mod'
+        return(mode)
+
+    def test_injectCalciumPump2(self):
+        self.t1 = 2.0
+        self.tstop = 3.0
+        self.k1 = 1
+        self.k2 = 0
+        self.P0 = 0.20 
+
+        self.injectCalcium(ghk=0, mechanism='caPump2')
+
+        self.do_plot()
+        ## Run through both sections
+        times = np.array(self.rec_t)
+        i = 0
+        for sec in h.allsec():
+            mode = self.get_mode(sec)
+            print mode
+            v = np.array(self.rec_v[i])
+            self.assertAlmostEqual(v[np.where(np.isclose(times, self.t1 + 0.1))],
+                                   v[np.where(np.isclose(times, self.tstop))])
+            cai = np.array(self.rec_cai[i])
+            self.assertGreater(cai[np.where(np.isclose(times, self.t1 + 0.1))],
+                               cai[np.where(np.isclose(times, self.tstop))])
 
     @unittest.skip("skip for now")
     def test_injectCalcium2(self):

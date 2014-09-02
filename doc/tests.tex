@@ -1,6 +1,7 @@
 \documentclass{article}
 \usepackage{amsmath}
 \usepackage{xspace}
+\usepackage{mhchem}
 \usepackage[amssymb]{SIunits}
 \addunit{\molar}{M}
 \newcommand{\ICa}{\ensuremath{I_\mathrm{Ca}}\xspace}
@@ -83,7 +84,7 @@ Hence the factor-label method gives:
 \end{equation}
   
 \clearpage
-\section{Test 2  - Ca accumulation with pump}
+\section{Test 2  - Ca accumulation with linear pump}
 \label{tests:sec:test-1-ca}
 
 \begin{itemize}
@@ -101,7 +102,7 @@ ODEs describing membrane potential and calcium concentration:
 \begin{equation}
   \begin{split}
     \Cmem\frac{\dif V}{\dif t} = -\ICa^\mathrm{chan} - \ICa^\mathrm{pump} = \gCa(\ECa - V) - \frac{Fdk_1}{2}\cCa ) \\
-b    \frac{\dif\cCa}{\dif t} = -\frac{2\ICa^\mathrm{chan}}{Fd} - k_1\cCa =
+    \frac{\dif\cCa}{\dif t} = -\frac{2\ICa^\mathrm{chan}}{Fd} - k_1\cCa =
     \frac{2}{Fd} \left(\gCa(\ECa - V) - \frac{Fdk_1}{2}\cCa \right)
   \end{split}
 \end{equation}
@@ -122,6 +123,57 @@ For the dimensions of our quantities we need:
   V_\infty = \frac{10^3g\ECa + \Cmem k_1 V(t_0)}{10^3g + \Cmem k_1} \quad
   \mbox{and} \quad \tau = \frac{\Cmem}{10^3g + k_1\Cmem}
 \end{equation}
+
+\clearpage
+
+\section{Test 3 - Ca accumulation with nonlinear pump}
+\label{tests:sec:test-3-ca}
+
+\begin{itemize}
+\item 1 compartment, length $L$, diameter $d$, membrane capacitance
+  \Cmem, membrane potential $V$.
+\item Calcium channel current $\ICa^\mathrm{chan}=\gCa(V-\ECa)$, where
+  $g$ is conductance and $\ECa$ is calcium reversal potential.
+\item Pump is modelled using a pump molecule P with starting density
+  $[\ce{P}]_0$ and pump reactions:
+  \begin{equation}
+    \label{tests:eq:3}
+    \begin{aligned}
+      \textrm{Ca binding:}\quad & \ce{P + Ca  ->[k_1] P.Ca} \\
+      \textrm{Ca release:}\quad & \ce{P.Ca  ->[k_2] P}
+    \end{aligned}
+  \end{equation}
+\item Thus the calcium pump current $\ICa^\mathrm{pump}=-
+  \frac{Fdk_2}{2}[\ce{P.Ca}]$, where $k_1$ is a constant.
+\item $g$ is 0 apart from when it is set to $\overline{g}$ from $t_1$
+  to $t_2$.
+\end{itemize}
+
+ODEs describing membrane potential and calcium concentration:
+\begin{equation}
+  \begin{aligned}
+    \Cmem\frac{\dif V}{\dif t}  &
+    %= -\ICa^\mathrm{chan} - \ICa^\mathrm{pump} 
+    = \gCa(\ECa - V) - \frac{Fdk_2}{2}[\ce{P.Ca}] ) 
+    = \gCa(\ECa - V) - \frac{Fdk_2}{2}([\ce{P}]_0 - [\ce{P}] ) \\
+    \frac{\dif\cCa}{\dif t} &
+    = -\frac{2\ICa^\mathrm{chan}}{Fd}     - k_1[\ce{P}][\ce{Ca}] 
+    = \frac{2}{Fd} \left(\gCa(\ECa - V) - k_1[\ce{P}][\ce{Ca}] \right) \\
+    \frac{\dif[\ce{P}]}{\dif t} &
+    =  -k_1[\ce{P}][\ce{Ca}] + k_2[\ce{P.Ca}] 
+    = -k_1[\ce{P}][\ce{Ca}] + k_2([\ce{P}]_0 - [\ce{P}])
+  \end{aligned}
+\end{equation}
+
+This pump is nonlinear, even with fixed $E_{\mathrm{Ca}}$. Thus an
+analytical solution is harder, if not impossible. However, we can say
+the following:
+\begin{itemize}
+\item If $k_2=0$, Ca and voltage will rise during pulse, then voltage
+  will remain steady, but Ca concentration will decline.
+\end{itemize}
+
+
 
 
 \end{document}

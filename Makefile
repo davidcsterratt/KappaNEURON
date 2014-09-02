@@ -12,6 +12,8 @@ build_py:
 	python2.7 -m unittest test.TestCaAccumulation.test_injectCalciumGHK && \
 	python2.7 -m unittest test.TestCaAccumulation.test_injectCalciumPump && \
 	python2.7 -m unittest test.TestCaAccumulation.test_injectCalciumPumpGHK && \
+	python2.7 -m unittest test.TestCaAccumulation.test_injectCalciumPumpGHK && \
+	python2.7 -m unittest test.TestCaAccumulation.test_injectCalciumPump2 && \
 	echo "All tests passed"
 
 install:
