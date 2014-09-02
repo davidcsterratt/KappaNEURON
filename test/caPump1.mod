@@ -1,7 +1,6 @@
 COMMENT
-	calcium accumulation into a volume of area*depth next to the
-	membrane with a decay (time constant tau) to resting level
-	given by the global calcium variable cai0_ca_ion
+  Calcium accumlation into the full volume of the compartment and a
+  linear membrane pump.
 ENDCOMMENT
 
 UNITS {
