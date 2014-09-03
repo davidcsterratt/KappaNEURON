@@ -357,25 +357,23 @@ def _kn_currents(rhs):
     global _db
     if _db is None:
         _db = nrr._numpy_zeros(len(rhs))
-        print "CREATING _db", _db
+        ## print "CREATING _db", _db
 
-    ## This line is necessary to change the voltage
-    print rhs, _db, nrr._curr_scales, nrr._rxd_induced_currents, nrr._curr_ptrs[0][0]
-    print("rhs[0]: %f, _db[1]: %f, _db[1]/nrr._curr_scales[0]: %f" % (rhs[0], _db[1], _db[1]/nrr._curr_scales[0]))
+    ## print rhs, _db, nrr._curr_scales, nrr._rxd_induced_currents, nrr._curr_ptrs[0][0]
+    ## print("rhs[0]: %f, _db[1]: %f, _db[1]/nrr._curr_scales[0]: %f" % (rhs[0], _db[1], _db[1]/nrr._curr_scales[0]))
     
     volumes, surface_area, diffs = nrr.node._get_data()
-    #rhs[0] -= -_db[1]*2*nrr.FARADAY* volumes[1]/surface_area[1]*1e-8 # /nrr._curr_scales[0]/200
+
+    ## This line is necessary to change the voltage
     ## This is absolute current in nanoamps
-    rhs[0] -= -_db[1]*2*nrr.FARADAY* volumes[1]*1e-6 # /nrr._curr_scales[0]/200
-    #if (rhs[0] < 0):
-    #    raise RuntimeError("rhs negative")
+    rhs[0] -= -_db[1]*2*nrr.FARADAY* volumes[1]*1e-6
 
     ## This line alters ica, but does not affect the voltage
     ## nrr._curr_ptrs[0][0] += _db[1]/nrr._curr_scales[0]
 
     # It seems that this line is needed to cancel out the effect of
     # the previous line on the integration
-    print nrr._rxd_induced_currents
+    ## print nrr._rxd_induced_currents
     # nrr._rxd_induced_currents[0] -= _db[1]/nrr._curr_scales[0]
 
 nrr._callbacks[2] = _kn_currents
