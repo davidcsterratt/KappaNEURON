@@ -260,7 +260,7 @@ def _run_kappa_continuous(states, b, dt):
                         Stot1 = kappa_sim.getVariable('Total %s' % (s.name))
                         DeltaStot = Stot1 - Stot0[s.name][i]
                         bnew = DeltaStot/(dt*nrr._conversion_factor*volumes[i])
-                        print "DeltaStot, bnew, b, _db", DeltaStot, bnew, b[i], _db[i]
+                        print("Species %s: DeltaStot=%d, bnew=%f, b=%f, _db=%f" % (s.name, DeltaStot, bnew, b[i], _db[i]))
                         _db[i] = bnew - b[i]
                         print "Change in current:", _db[i]
                         b[i] = bnew
