@@ -1,12 +1,15 @@
 import neuron
+from neuron import h
 import neuron.rxd as nr
 import neuron.rxd.rxd as nrr
 import neuron.rxd.species
 import neuron.rxd.rxdmath
 import neuron.rxd.node
-from neuron.rxd.generalizedReaction import GeneralizedReaction
+from neuron.rxd.generalizedReaction import GeneralizedReaction, molecules_per_mM_um3
+from neuron.rxd.multiCompartmentReaction import MultiCompartmentReaction
 import weakref
 import random
+import itertools
 
 import SpatialKappa
 from py4j.protocol import * 
@@ -16,6 +19,8 @@ import numpy
 import re
 import os, sys
 import warnings
+
+FARADAY = h.FARADAY
 
 verbose = False
 def report(mess):
@@ -123,7 +128,7 @@ def _kn_fixed_step_solve_lumped_influx(raw_dt):
                     ## Flux b has units of mM/ms
                     ## Volumes has units of um3
                     ## _conversion factor has units of molecules mM^-1 um^-3
-                    mu = dt * b[i] * nrr._conversion_factor * volumes[i]
+                    mu = dt * b[i] * molecules_per_mM_um3 * volumes[i]
                     nions = 0
                     if mu!=0:
                         nions = numpy.sign(mu)*poisson.rvs(abs(mu))
@@ -159,7 +164,7 @@ def _kn_fixed_step_solve_lumped_influx(raw_dt):
                 name = s.name
                 for kappa_sim, i in zip(k._kappa_sims, k._indices_dict[s]):
                     states[i] = kappa_sim.getObservation(name) \
-                        /(nrr._conversion_factor * volumes[i])
+                        /(molecules_per_mM_um3 * volumes[i])
 
         report("Updated states")
         report(states)
@@ -215,7 +220,7 @@ def _run_kappa_continuous(states, b, dt):
                     ## Flux b has units of mM/ms
                     ## Volumes has units of um3
                     ## _conversion factor has units of molecules mM^-1 um^-3
-                    flux = b[i] * nrr._conversion_factor * volumes[i]
+                    flux = b[i] * molecules_per_mM_um3 * volumes[i]
                     kappa_sim.setTransitionRate('Create %s' % (s.name), flux)
                     ## kappa_sim.setVariable(flux, 'f%s' % (s.name))
 
@@ -259,7 +264,7 @@ def _run_kappa_continuous(states, b, dt):
                     if (s.charge != 0):
                         Stot1 = kappa_sim.getVariable('Total %s' % (s.name))
                         DeltaStot = Stot1 - Stot0[s.name][i]
-                        bnew = DeltaStot/(dt*nrr._conversion_factor*volumes[i])
+                        bnew = DeltaStot/(dt*molecules_per_mM_um3*volumes[i])
                         print "DeltaStot, bnew, b, _db", DeltaStot, bnew, b[i], _db[i]
                         _db[i] = bnew - b[i]
                         print "Change in current:", _db[i]
@@ -284,7 +289,7 @@ def _run_kappa_continuous(states, b, dt):
                 for kappa_sim, i in zip(k._kappa_sims, k._indices_dict[s]):
                     ## Update concentration
                     states[i] = kappa_sim.getObservation(s.name) \
-                                /(nrr._conversion_factor * volumes[i])
+                                /(molecules_per_mM_um3 * volumes[i])
     return states
 
 
@@ -388,8 +393,8 @@ def setSeed(seed):
 
     # _kappa_sims[0].setSeed(seed)
 
-class Kappa(GeneralizedReaction):
-    def __init__(self, species, kappa_file, regions=None, membrane_flux=False, time_units='ms', verbose=False):
+class Kappa(MultiCompartmentReaction):
+    def __init__(self, species, kappa_file, regions=None, membrane_flux=True, time_units='ms', verbose=False):
         """create a kappa mechanism linked to a species on a given region or set of regions
         if regions is None, then does it on all regions"""
         global gateway
@@ -400,6 +405,8 @@ class Kappa(GeneralizedReaction):
             if s.initial is None:
                 s.initial = 0
                 warnings.warn('Initial concentration of %s not specified; setting to zero' % (s.name), UserWarning)
+        ## This is the species that crosses the membrane
+        self._membrane_species = species[0]
         ## self._species = weakref.ref(species)
         self._involved_species = self._species
         self._kappa_file = os.path.join(os.getcwd(), kappa_file)
@@ -417,9 +424,14 @@ class Kappa(GeneralizedReaction):
         if membrane_flux and regions is None:
             # TODO: rename regions to region?
             raise Exception('if membrane_flux then must specify the (unique) membrane regions')
-        self._update_indices()
+        self._lhs = self._membrane_species[self._regions[0]]
+        self._update_rates()
+        print self._sources
+        # self._update_indices()
+        self._scale_by_area = True
         report('Registering kappa scheme')
         _register_kappa_scheme(self)
+        nrr._register_reaction(self)
         report(_kappa_schemes)
         self._weakref = weakref.ref(self) # Seems to be needed for the destructor
     
@@ -502,17 +514,16 @@ class Kappa(GeneralizedReaction):
             ## in the same place?
         self._mult = [1]
 
-    def _do_memb_scales(self):
-        # TODO: does anyone still call this?
-        # TODO: update self._memb_scales (this is just a dummy value to make things run)
-        self._memb_scales = 1
 
 
     
     def _get_memb_flux(self, states):
-        if self._membrane_flux:
-            raise Exception('membrane flux due to rxd.Rate objects not yet supported')
+        # if self._membrane_flux:
+        if False:
             # TODO: refactor the inside of _evaluate so can construct args in a separate function and just get self._rate() result
+            if nrr._db is None:
+                nrr._db = nrr._numpy_zeros(len(rhs))
+                volumes, surface_area, diffs = nrr.node._get_data()
             rates = self._evaluate(states)[2]
             return self._memb_scales * rates
         else:
@@ -532,7 +543,7 @@ class Kappa(GeneralizedReaction):
             if s:
                 for kappa_sim, i in zip(self._kappa_sims, self._indices_dict[s]):
                     nions = round(states[i] \
-                                  * nrr._conversion_factor * volumes[i])
+                                  * molecules_per_mM_um3 * volumes[i])
                     ## print "Species ", s.name, " conc ", states[i], " nions ", nions
                     try:
                         kappa_sim.getObservation(s.name)
@@ -551,3 +562,95 @@ class Kappa(GeneralizedReaction):
             k = kptr()
             for kappa_sim in k._kappa_sims:
                 kappa_sim.runForTime(float(t_run), True)
+
+    def _update_rates(self):
+        w = weakref.ref(self._lhs)
+        self._sources = [w]
+        print self._sources
+        self._dests = []
+
+
+        
+    def _do_memb_scales(self, cur_map):                    
+        if not self._scale_by_area:
+            areas = numpy.ones(len(areas))
+        else:
+            # TODO: simplify this expression
+            # areas = numpy.array(itertools.chain.from_iterable([list(self._regions[0]._geometry.volumes1d(sec) for sec in self._regions[0].secs)]))
+            areas = numpy.array([1.0 for sec in self._regions[0].secs])
+        neuron_areas = []
+        for sec in self._regions[0].secs:
+            neuron_areas += [h.area((i + 0.5) / sec.nseg, sec=sec) for i in xrange(sec.nseg)]
+        neuron_areas = numpy.array(neuron_areas)
+        # area_ratios is usually a vector of 1s
+        area_ratios = areas / neuron_areas
+        # still needs to be multiplied by the valence of each molecule
+        self._memb_scales = -area_ratios * h.FARADAY / (10000 * molecules_per_mM_um3)
+        #print area_ratios
+        #print self._memb_scales
+        #import sys
+        #sys.exit()
+        
+        # since self._memb_scales is only used to compute currents as seen by the rest of NEURON,
+        # we only use NEURON's areas 
+        #self._memb_scales = volume * molecules_per_mM_um3 / areas
+        
+        
+        if self._membrane_flux:
+            # TODO: don't assume/require always inside/outside on one side...
+            #       if no nrn_region specified, then (make so that) no contribution
+            #       to membrane flux
+            source_regions = [s()._region()._nrn_region for s in self._sources]
+            dest_regions = [d()._region()._nrn_region for d in self._dests]
+            
+            if 'i' in source_regions and 'o' not in source_regions and 'i' not in dest_regions:
+                inside = -1 #'source'
+            elif 'o' in source_regions and 'i' not in source_regions and 'o' not in dest_regions:
+                inside = 1 # 'dest'
+            elif 'i' in dest_regions and 'o' not in dest_regions and 'i' not in source_regions:
+                inside = 1 # 'dest'
+            elif 'o' in dest_regions and 'i' not in dest_regions and 'o' not in source_regions:
+                inside = -1 # 'source'
+            else:
+                raise RxDException('unable to identify which side of reaction is inside (hope to remove the need for this')
+        
+        # dereference the species to get the true species if it's actually a SpeciesOnRegion
+        sources = [s()._species() for s in self._sources]
+        dests = [d()._species() for d in self._dests]
+        if self._membrane_flux:
+            if any(s in dests for s in sources) or any(d in sources for d in dests):
+                # TODO: remove this limitation
+                raise RxDException('current fluxes do not yet support same species on both sides of reaction')
+        
+        # TODO: make so don't need multiplicity (just do in one pass)
+        # TODO: this needs changed when I switch to allowing multiple sides on the left/right (e.g. simplified Na/K exchanger)
+        self._cur_charges = tuple([-inside * s.charge for s in sources if s.name is not None] + [inside * s.charge for s in dests if s.name is not None])
+        self._net_charges = sum(self._cur_charges)
+        
+        self._cur_ptrs = []
+        self._cur_mapped = []
+        
+        for sec in self._regions[0].secs:
+            for i in xrange(sec.nseg):
+                local_ptrs = []
+                local_mapped = []
+                for sp in itertools.chain(self._sources, self._dests):
+                    spname = sp()._species().name
+                    if spname is not None:
+                        name = '_ref_i%s' % (spname)
+                        seg = sec((i + 0.5) / sec.nseg)
+                        local_ptrs.append(seg.__getattribute__(name))
+                        uberlocal_map = [None, None]
+                        if spname + 'i' in cur_map:
+                            uberlocal_map[0] = cur_map[spname + 'i'][seg]
+#                        if spname + 'o' in cur_map:
+#                            uberlocal_map[1] = cur_map[spname + 'o'][seg]
+                        local_mapped.append(uberlocal_map)
+                self._cur_ptrs.append(tuple(local_ptrs))
+                self._cur_mapped.append(tuple(local_mapped))
+
+    def _evaluate(self, states):
+        return ([], [], [])
+
+    def _jacobian_entries(self, states, multiply=1, dx=1.e-10):
+        return ([], [], [])        
