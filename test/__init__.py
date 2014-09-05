@@ -48,6 +48,14 @@ class TestCaAccumulation(unittest.TestCase):
     def setUp(self):
         self.caitonum = self.NA*np.pi*(self.sk.diam**2)/4*self.sk.L*1e-18 
 
+    def get_mode(self, sec):
+        ## Determine if section contains mod pump or kappa pump
+        mode = 'kappa'
+        for mech in sec(0.5):
+            if re.search('caPump', mech.name()):
+                mode = 'mod'
+        return(mode)
+
     def injectCalcium(self, ghk=0, mechanism='caPump1'):
         ## Calcium accumulation mechanism
         self.P  = rxd.Species(self.r, name='P', charge=0, initial=self.P0)
@@ -187,12 +195,8 @@ class TestCaAccumulation(unittest.TestCase):
         i = 0
         for sec in h.allsec():
             ## Determine if section contains mod pump or kappa pump
-            mode = 'kappa'
-            for mech in sec(0.5):
-                if mech.name() == 'caPump1':
-                    mode = 'mod'
+            mode = self.get_mode(sec)
             print mode
-
 
             ## Check theory and simulation match, if using
             ## deterministic ('mod') simulation
@@ -222,10 +226,7 @@ class TestCaAccumulation(unittest.TestCase):
         i = 0
         for sec in h.allsec():
             ## Determine if section contains mod pump or kappa pump
-            mode = 'kappa'
-            for mech in sec(0.5):
-                if mech.name() == 'caPump1':
-                    mode = 'mod'
+            mode = self.get_mode(sec)
             print mode
             
             ## Print some variables
@@ -261,10 +262,7 @@ class TestCaAccumulation(unittest.TestCase):
         i = 0
         for sec in h.allsec():
             ## Determine if section contains mod pump or kappa pump
-            mode = 'kappa'
-            for mech in sec(0.5):
-                if mech.name() == 'caPump1':
-                    mode = 'mod'
+            mode = self.get_mode(sec)
             print mode
 
             ## Check theory and simulation match, if using
@@ -285,10 +283,7 @@ class TestCaAccumulation(unittest.TestCase):
         i = 0
         for sec in h.allsec():
             ## Determine if section contains mod pump or kappa pump
-            mode = 'kappa'
-            for mech in sec(0.5):
-                if mech.name() == 'caPump1':
-                    mode = 'mod'
+            mode = self.get_mode(sec)
             print mode
 
             ## Check theory and simulation match, if using
@@ -308,14 +303,6 @@ class TestCaAccumulation(unittest.TestCase):
                 ## Calcium ion increments should be equal to voltage increments
                 self.assertAlmostEqual(max(abs(vtocai*diffv[1:len(diffv)-1] - diffca[0:len(diffv)-2])), 0, 2)
             i = i + 1
-
-    def get_mode(self, sec):
-        ## Determine if section contains mod pump or kappa pump
-        mode = 'kappa'
-        for mech in sec(0.5):
-            if re.search('caPump', mech.name()):
-                mode = 'mod'
-        return(mode)
 
     def test_injectCalciumPump2(self):
         self.t1 = 2.0
