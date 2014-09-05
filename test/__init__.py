@@ -57,18 +57,23 @@ class TestCaAccumulation(unittest.TestCase):
         return(mode)
 
     def injectCalcium(self, ghk=0, mechanism='caPump1'):
-        ## Calcium accumulation mechanism
-        self.P  = rxd.Species(self.r, name='P', charge=0, initial=self.P0)
-        self.kappa = KappaNEURON.Kappa([self.ca, self.P], self.__module__ + "/" + mechanism + ".ka", self.r, verbose=True)
+        
+        ## Insert calcium pump into mod section
         self.sm.insert(mechanism)
 
-        self.kappa.setVariable('vol', self.sk.L*(self.sk.diam**2)/4*np.pi)
+        ## Insert calcium pump into kappa section
+        if mechanism == 'caPump1':
+            self.kappa = KappaNEURON.Kappa([self.ca], self.__module__ + "/" + mechanism + ".ka", self.r, verbose=True)
+        if mechanism == 'caPump2':
+            self.P  = rxd.Species(self.r, name='P', charge=0, initial=self.P0)
+            self.kappa = KappaNEURON.Kappa([self.ca, self.P], self.__module__ + "/" + mechanism + ".ka", self.r, verbose=True)
+            self.kappa.setVariable('vol', self.sk.L*(self.sk.diam**2)/4*np.pi)
+            self.kappa.setVariable('k2', self.k2)
+            setattr(self.sm(0.5), 'k2_' + mechanism, self.k2)
+
         ## Set variables
         self.kappa.setVariable('k1', self.k1)
         setattr(self.sm(0.5), 'k1_' + mechanism, self.k1)
-        if mechanism == 'caPump2':
-            self.kappa.setVariable('k2', self.k2)
-            setattr(self.sm(0.5), 'k2_' + mechanism, self.k2)
 
         ## Set up recordings
         self.rec_t = h.Vector()
@@ -222,6 +227,7 @@ class TestCaAccumulation(unittest.TestCase):
 
     def test_injectCalciumGHK(self):
         self.injectCalcium(ghk=1)
+        self.do_plot()
         ## Run through both sections
         i = 0
         for sec in h.allsec():
@@ -260,18 +266,25 @@ class TestCaAccumulation(unittest.TestCase):
         self.do_plot()
         ## Run through both sections
         i = 0
+        Deltav = {}
+        Deltaca = {}
         for sec in h.allsec():
             ## Determine if section contains mod pump or kappa pump
             mode = self.get_mode(sec)
             print mode
-
-            ## Check theory and simulation match, if using
-            ## deterministic ('mod') simulation
-            (Deltav_theo, Deltaca_theo) = self.get_Deltav_Deltaca_theo(sec, self.tstop)
-            (Deltav,      Deltaca     ) = self.get_Deltav_Deltaca(sec, i)
+            (Deltav_theo,  Deltaca_theo)  = self.get_Deltav_Deltaca_theo(sec, self.tstop)
+            (Deltav[mode], Deltaca[mode]) = self.get_Deltav_Deltaca(sec, i)
             if mode == 'mod':
-                self.assertAlmostEqual(Deltav, Deltav_theo, 0)
-                self.assertAlmostEqual(Deltaca, Deltaca_theo, 2)
+                ## Check theory and simulation match, if using
+                ## deterministic ('mod') simulation
+                self.assertAlmostEqual(Deltav[mode],  Deltav_theo,  0)
+                self.assertAlmostEqual(Deltaca[mode], Deltaca_theo, 2)
+        ## Check that kappa and deterministic simulations agree to
+        ## within 10%
+        tol = 0.1
+        self.assertLess(abs((Deltav['kappa'] - Deltav['mod'])/(Deltav['mod'] - self.v0)), 0.1)
+        self.assertLess(abs((Deltaca['kappa'] - Deltaca['mod'])/Deltaca['mod']), 0.1)
+        
 
     def test_injectCalciumPumpGHK(self):
         self.t1 = 2

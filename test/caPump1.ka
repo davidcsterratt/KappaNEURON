@@ -1,27 +1,20 @@
 # Simple calcium pump
-# Now with variables to specify the volume.
 
+# Declaration of internal calcium; the name needs to be 'ca' to match
+# up with calcium in NEURON
 %agent: ca(x)
-%agent: P(x)
 
-# Volume in um3
-%var: 'vol' 1
-# Avagadro's constant
-%var: 'NA'  6.02205E23
-# Concentration of one agent in the volume in mM 
-%var: 'agconc' 1E18/('NA' * 'vol')
-
-# Rate constants in /mM-ms or /ms, depending on the number of reactants
+# Rate constants in /ms, since this is a unimolecular reaction
 %var: 'k1' 0.001
 
 # Rules
-'ca extrusion' ca(x), P(x) -> P(x) @ 'k1'
+'ca extrusion' ca(x) ->  @ 'k1'
 
-# Initialise
+# Initialise. This line will be overridden by NEURON, but is useful if
+# running as a stand-alone Kappa file
 %init: 1000 ca(x)
-%init: 1 P(x)
 
+# An observation. This line will be overridden by NEURON, but is useful if
+# running as a stand-alone Kappa file
 %obs: 'ca' ca(x)
-%obs: 'P-Ca' ca(x!1), P(x!1)
-%obs: 'P' P(x)
 
