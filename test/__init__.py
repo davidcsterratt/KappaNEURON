@@ -48,19 +48,32 @@ class TestCaAccumulation(unittest.TestCase):
     def setUp(self):
         self.caitonum = self.NA*np.pi*(self.sk.diam**2)/4*self.sk.L*1e-18 
 
+    def get_mode(self, sec):
+        ## Determine if section contains mod pump or kappa pump
+        mode = 'kappa'
+        for mech in sec(0.5):
+            if re.search('caPump', mech.name()):
+                mode = 'mod'
+        return(mode)
+
     def injectCalcium(self, ghk=0, mechanism='caPump1'):
-        ## Calcium accumulation mechanism
-        self.P  = rxd.Species(self.r, name='P', charge=0, initial=self.P0)
-        self.kappa = KappaNEURON.Kappa([self.ca, self.P], self.__module__ + "/" + mechanism + ".ka", self.r, verbose=True)
+        
+        ## Insert calcium pump into mod section
         self.sm.insert(mechanism)
 
-        self.kappa.setVariable('vol', self.sk.L*(self.sk.diam**2)/4*np.pi)
+        ## Insert calcium pump into kappa section
+        if mechanism == 'caPump1':
+            self.kappa = KappaNEURON.Kappa([self.ca], self.__module__ + "/" + mechanism + ".ka", self.r, verbose=True)
+        if mechanism == 'caPump2':
+            self.P  = rxd.Species(self.r, name='P', charge=0, initial=self.P0)
+            self.kappa = KappaNEURON.Kappa([self.ca, self.P], self.__module__ + "/" + mechanism + ".ka", self.r, verbose=True)
+            self.kappa.setVariable('vol', self.sk.L*(self.sk.diam**2)/4*np.pi)
+            self.kappa.setVariable('k2', self.k2)
+            setattr(self.sm(0.5), 'k2_' + mechanism, self.k2)
+
         ## Set variables
         self.kappa.setVariable('k1', self.k1)
         setattr(self.sm(0.5), 'k1_' + mechanism, self.k1)
-        if mechanism == 'caPump2':
-            self.kappa.setVariable('k2', self.k2)
-            setattr(self.sm(0.5), 'k2_' + mechanism, self.k2)
 
         ## Set up recordings
         self.rec_t = h.Vector()
@@ -177,79 +190,72 @@ class TestCaAccumulation(unittest.TestCase):
         print Deltav, Deltaca
         return(Deltav, Deltaca)
 
-    def test_injectCalcium(self):
-        self.injectCalcium(ghk=0)
-
-        if self.plot:
-            self.do_plot()
-
-        ## Run through both sections
+    def get_stats(self):
+        Deltav       = {}
+        Deltaca      = {}
+        Deltav_theo  = {}
+        Deltaca_theo = {}
+        volbyarea    = {}
+        vtocai       = {}
+        diffv        = {}
+        diffca       = {}
+        
         i = 0
         for sec in h.allsec():
-            ## Determine if section contains mod pump or kappa pump
-            mode = 'kappa'
-            for mech in sec(0.5):
-                if mech.name() == 'caPump1':
-                    mode = 'mod'
-            print mode
-
-
-            ## Check theory and simulation match, if using
-            ## deterministic ('mod') simulation
-            (Deltav_theo, Deltaca_theo) = self.get_Deltav_Deltaca_theo(sec, self.tstop)
-            (Deltav,      Deltaca     ) = self.get_Deltav_Deltaca(sec, i)
-            if mode == 'mod':
-                self.assertAlmostEqual(Deltav, Deltav_theo, 0)
-                self.assertAlmostEqual(Deltaca, Deltaca_theo, 2)
-
-            ## Check voltage and calcium are in sync
-            volbyarea = sec.diam/4
-            vtocai = self.cm/(1E-1*2*h.FARADAY*volbyarea)
-            self.assertAlmostEqual(Deltav, Deltaca/vtocai, 0)
-
-            ## Check all differences are the same
-            (diffv, diffca) = self.get_diffv_diffca(i)
-            if mode == 'kappa':
-                ## All calcium ion increments should be integers
-                self.assertAlmostEqual(max(self.caitonum*diffca - np.round(self.caitonum*diffca)), 0, 2)
-                ## Calcium ion increments should be equal to voltage increments
-                self.assertAlmostEqual(max(abs(vtocai*diffv[1:len(diffv)-1] - diffca[0:len(diffv)-2])), 0, 2)
-            i = i + 1
-
-    def test_injectCalciumGHK(self):
-        self.injectCalcium(ghk=1)
-        ## Run through both sections
-        i = 0
-        for sec in h.allsec():
-            ## Determine if section contains mod pump or kappa pump
-            mode = 'kappa'
-            for mech in sec(0.5):
-                if mech.name() == 'caPump1':
-                    mode = 'mod'
-            print mode
-            
             ## Print some variables
             v1 = sec(0.5).v
             print("Eca=%f, t0=%f, t1=%f, gbar=%f, cm=%f, v0=%f, v1=%f" % (sec(0.5).eca, self.t0, self.t1, self.gbar, self.cm, self.v0, v1))
 
-            ## The theoretical values here don't apply since we are
-            ## using GHK, but get them anyway for information
-            (Deltav_theo, Deltaca_theo) = self.get_Deltav_Deltaca_theo(sec, self.tstop)
-            (Deltav,      Deltaca     ) = self.get_Deltav_Deltaca(sec, i)
+            ## Determine if section contains mod pump or kappa pump
+            mode = self.get_mode(sec)
+            print mode
+            (Deltav_theo[mode],  Deltaca_theo[mode])  = self.get_Deltav_Deltaca_theo(sec, self.tstop)
+            (Deltav[mode],       Deltaca[mode])       = self.get_Deltav_Deltaca(sec, i)
 
-            ## Check voltage and calcium are in sync
-            volbyarea = sec.diam/4
-            vtocai = self.cm/(1E-1*2*h.FARADAY*volbyarea)
-            self.assertAlmostEqual(Deltav, Deltaca/vtocai, 0)
+            volbyarea[mode] = sec.diam/4
+            vtocai[mode] = self.cm/(1E-1*2*h.FARADAY*volbyarea[mode])
 
-            ## Check all differences are the same
-            (diffv, diffca) = self.get_diffv_diffca(i)
-            if mode == 'kappa':
-                ## All calcium ion increments should be integers
-                self.assertAlmostEqual(max(self.caitonum*diffca - np.round(self.caitonum*diffca)), 0, 2)
-                ## Calcium ion increments should be equal to voltage increments
-                self.assertAlmostEqual(max(abs(vtocai*diffv[1:len(diffv)-1] - diffca[0:len(diffv)-2])), 0, 2)
-            i = i + 1
+            (diffv[mode], diffca[mode]) = self.get_diffv_diffca(i)
+            i = i+1
+
+        return(Deltav, Deltaca, Deltav_theo, Deltaca_theo, volbyarea, vtocai, diffv, diffca)
+
+
+    def test_injectCalcium(self):
+        self.injectCalcium(ghk=0)
+        self.do_plot()
+        ## Get data from both sections
+        Deltav, Deltaca, Deltav_theo, Deltaca_theo, volbyarea, vtocai, diffv, diffca = self.get_stats()
+
+        ## Check theory and simulation match, if using
+        ## deterministic ('mod') simulation
+        self.assertAlmostEqual(Deltav['mod'], Deltav_theo['mod'], 0)
+        self.assertAlmostEqual(Deltaca['mod'], Deltaca_theo['mod'], 2)
+
+        ## Calcium and voltage should be in sync
+        for mode in ['mod', 'kappa']:
+            self.assertAlmostEqual(Deltav[mode], Deltaca[mode]/vtocai[mode], 0)
+
+        ## All calcium ion increments should be integers
+        self.assertAlmostEqual(max(self.caitonum*diffca['kappa'] - np.round(self.caitonum*diffca['kappa'])), 0, 2)
+        ## Calcium ion increments should be equal to voltage increments
+        self.assertAlmostEqual(max(abs(vtocai['kappa']*diffv['kappa'][1:len(diffv['kappa'])-1] - diffca['kappa'][0:len(diffv['kappa'])-2])), 0, 2)
+
+
+    def test_injectCalciumGHK(self):
+        self.injectCalcium(ghk=1)
+        self.do_plot()
+        ## Get data from both sections
+        Deltav, Deltaca, Deltav_theo, Deltaca_theo, volbyarea, vtocai, diffv, diffca = self.get_stats()
+
+        ## Calcium and voltage should be in sync
+        for mode in ['mod', 'kappa']:
+            self.assertAlmostEqual(Deltav[mode], Deltaca[mode]/vtocai[mode], 0)
+
+        ## All calcium ion increments should be integers
+        self.assertAlmostEqual(max(self.caitonum*diffca['kappa'] - np.round(self.caitonum*diffca['kappa'])), 0, 2)
+        ## Calcium ion increments should be equal to voltage increments
+        self.assertAlmostEqual(max(abs(vtocai['kappa']*diffv['kappa'][1:len(diffv['kappa'])-1] - diffca['kappa'][0:len(diffv['kappa'])-2])), 0, 2)
 
     def test_injectCalciumPump(self):
         self.t1 = 2
@@ -257,23 +263,24 @@ class TestCaAccumulation(unittest.TestCase):
         self.k1 = 1
         self.injectCalcium(ghk=0)
         self.do_plot()
-        ## Run through both sections
-        i = 0
-        for sec in h.allsec():
-            ## Determine if section contains mod pump or kappa pump
-            mode = 'kappa'
-            for mech in sec(0.5):
-                if mech.name() == 'caPump1':
-                    mode = 'mod'
-            print mode
+        ## Get data from both sections
+        Deltav, Deltaca, Deltav_theo, Deltaca_theo, volbyarea, vtocai, diffv, diffca = self.get_stats()
 
-            ## Check theory and simulation match, if using
-            ## deterministic ('mod') simulation
-            (Deltav_theo, Deltaca_theo) = self.get_Deltav_Deltaca_theo(sec, self.tstop)
-            (Deltav,      Deltaca     ) = self.get_Deltav_Deltaca(sec, i)
-            if mode == 'mod':
-                self.assertAlmostEqual(Deltav, Deltav_theo, 0)
-                self.assertAlmostEqual(Deltaca, Deltaca_theo, 2)
+        ## Check theory and simulation match, if using
+        ## deterministic ('mod') simulation
+        self.assertAlmostEqual(Deltav['mod'],  Deltav_theo['mod'],  0)
+        self.assertAlmostEqual(Deltaca['mod'], Deltaca_theo['mod'], 2)
+
+        ## Calcium and voltage should be in sync
+        for mode in ['mod', 'kappa']:
+            self.assertAlmostEqual(Deltav[mode], Deltaca[mode]/vtocai[mode], 0)
+
+        ## Check that kappa and deterministic simulations agree to
+        ## within 10%
+        tol = 0.1
+        self.assertLess(abs((Deltav['kappa'] - Deltav['mod'])/(Deltav['mod'] - self.v0)), 0.1)
+        self.assertLess(abs((Deltaca['kappa'] - Deltaca['mod'])/Deltaca['mod']), 0.1)
+        
 
     def test_injectCalciumPumpGHK(self):
         self.t1 = 2
@@ -281,41 +288,24 @@ class TestCaAccumulation(unittest.TestCase):
         self.k1 = 1
         self.injectCalcium(ghk=1)
         self.do_plot()
-        ## Run through both sections
-        i = 0
-        for sec in h.allsec():
-            ## Determine if section contains mod pump or kappa pump
-            mode = 'kappa'
-            for mech in sec(0.5):
-                if mech.name() == 'caPump1':
-                    mode = 'mod'
-            print mode
+        ## Get data from both sections
+        Deltav, Deltaca, Deltav_theo, Deltaca_theo, volbyarea, vtocai, diffv, diffca = self.get_stats()
 
-            ## Check theory and simulation match, if using
-            ## deterministic ('mod') simulation
-            (Deltav_theo, Deltaca_theo) = self.get_Deltav_Deltaca_theo(sec, self.tstop)
-            (Deltav,      Deltaca     ) = self.get_Deltav_Deltaca(sec, i)
-            ## Check voltage and calcium are in sync
-            volbyarea = sec.diam/4
-            vtocai = self.cm/(1E-1*2*h.FARADAY*volbyarea)
-            self.assertAlmostEqual(Deltav, Deltaca/vtocai, 0)
+        ## Calcium and voltage should be in sync
+        for mode in ['mod', 'kappa']:
+            self.assertAlmostEqual(Deltav[mode], Deltaca[mode]/vtocai[mode], 0)
 
-            ## Check all differences are the same
-            (diffv, diffca) = self.get_diffv_diffca(i)
-            if mode == 'kappa':
-                ## All calcium ion increments should be integers
-                self.assertAlmostEqual(max(self.caitonum*diffca - np.round(self.caitonum*diffca)), 0, 2)
-                ## Calcium ion increments should be equal to voltage increments
-                self.assertAlmostEqual(max(abs(vtocai*diffv[1:len(diffv)-1] - diffca[0:len(diffv)-2])), 0, 2)
-            i = i + 1
+        ## Check that kappa and deterministic simulations agree to
+        ## within 10%
+        tol = 0.1
+        self.assertLess(abs((Deltav['kappa'] - Deltav['mod'])/(Deltav['mod'] - self.v0)), 0.1)
+        self.assertLess(abs((Deltaca['kappa'] - Deltaca['mod'])/Deltaca['mod']), 0.1)
 
-    def get_mode(self, sec):
-        ## Determine if section contains mod pump or kappa pump
-        mode = 'kappa'
-        for mech in sec(0.5):
-            if re.search('caPump', mech.name()):
-                mode = 'mod'
-        return(mode)
+        ## All calcium ion increments should be integers
+        self.assertAlmostEqual(max(self.caitonum*diffca['kappa'] - np.round(self.caitonum*diffca['kappa'])), 0, 2)
+        ## Calcium ion increments should be equal to voltage increments
+        self.assertAlmostEqual(max(abs(vtocai['kappa']*diffv['kappa'][1:len(diffv['kappa'])-1] - diffca['kappa'][0:len(diffv['kappa'])-2])), 0, 2)
+
 
     def test_injectCalciumPump2(self):
         self.t1 = 2.0
@@ -323,10 +313,9 @@ class TestCaAccumulation(unittest.TestCase):
         self.k1 = 1
         self.k2 = 0
         self.P0 = 0.20 
-
         self.injectCalcium(ghk=0, mechanism='caPump2')
-
         self.do_plot()
+
         ## Run through both sections
         times = np.array(self.rec_t)
         i = 0
@@ -340,12 +329,6 @@ class TestCaAccumulation(unittest.TestCase):
             self.assertGreater(cai[np.where(np.isclose(times, self.t1 + 0.1))],
                                cai[np.where(np.isclose(times, self.tstop))])
 
-    @unittest.skip("skip for now")
-    def test_injectCalcium2(self):
-        init()
-        self.assertEqual(h.t, 0.0)
-        run(3)
-        self.assertAlmostEqual(h.t, 3.0)
 
     def tearDown(self):
         self.kappa = None

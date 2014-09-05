@@ -264,8 +264,8 @@ def _run_kappa_continuous(states, b, dt):
                     if (s.charge != 0):
                         Stot1 = kappa_sim.getVariable('Total %s' % (s.name))
                         DeltaStot = Stot1 - Stot0[s.name][i]
-                        bnew = DeltaStot/(dt*molecules_per_mM_um3*volumes[i])
-                        print "DeltaStot, bnew, b, _db", DeltaStot, bnew, b[i], _db[i]
+                        bnew = DeltaStot/(dt*nrr._conversion_factor*volumes[i])
+                        print("Species %s: DeltaStot=%d, bnew=%f, b=%f, _db=%f" % (s.name, DeltaStot, bnew, b[i], _db[i]))
                         _db[i] = bnew - b[i]
                         print "Change in current:", _db[i]
                         b[i] = bnew
