@@ -45,8 +45,16 @@ class TestCaAccumulation(unittest.TestCase):
     P = False              # Pump species
     P0 = 0 
 
+    tol = 0.01
+    def assertEqualWithinTol(self, a, b, tol=None):
+        if tol == None:
+            tol = self.tol
+        self.assertAlmostEqual(a, b, delta=tol*a)
+        
+
     def setUp(self):
         self.caitonum = self.NA*np.pi*(self.sk.diam**2)/4*self.sk.L*1e-18 
+        h.dt = h.dt/4
 
     def get_mode(self, sec):
         ## Determine if section contains mod pump or kappa pump
@@ -116,7 +124,6 @@ class TestCaAccumulation(unittest.TestCase):
                 seg.t1_capulse = self.t1
 
                 seg.gbar_capulse = self.gbar
-        h.dt = h.dt/20
 
         ## Initialise simulation
         init()
@@ -222,8 +229,11 @@ class TestCaAccumulation(unittest.TestCase):
 
 
     def test_injectCalcium(self):
+        self.tstop = self.t1 + h.dt
         self.injectCalcium(ghk=0)
         self.do_plot()
+        ## Needed for tests involving theoretical voltage and calcium to work
+        self.tstop = self.t1
         ## Get data from both sections
         Deltav, Deltaca, Deltav_theo, Deltaca_theo, volbyarea, vtocai, diffv, diffca = self.get_stats()
 
@@ -273,7 +283,7 @@ class TestCaAccumulation(unittest.TestCase):
 
         ## Calcium and voltage should be in sync
         for mode in ['mod', 'kappa']:
-            self.assertAlmostEqual(Deltav[mode], Deltaca[mode]/vtocai[mode], 0)
+            self.assertEqualWithinTol(Deltav[mode], Deltaca[mode]/vtocai[mode])
 
         ## Check that kappa and deterministic simulations agree to
         ## within 10%
