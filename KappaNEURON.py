@@ -427,7 +427,8 @@ class Kappa(MultiCompartmentReaction):
         self._lhs = self._membrane_species[self._regions[0]]
         self._update_rates()
         print self._sources
-        # self._update_indices()
+        self._update_indices()
+        self._create_kappa_sims()
         self._scale_by_area = True
         report('Registering kappa scheme')
         _register_kappa_scheme(self)
@@ -448,34 +449,8 @@ class Kappa(MultiCompartmentReaction):
         if (len(_kappa_schemes) == 0):
             gateway = None
 
-    def _update_indices(self):
+    def _create_kappa_sims(self):
         global gateway
-
-        # this is called anytime the geometry changes as well as at init
-        
-        self._indices_dict = {}
-        
-        # locate the regions containing all species (including the one
-        # that channges)
-
-        active_regions = self._regions
-        for sptr in self._involved_species:
-            s = sptr()
-            if s:
-                for r in self._regions:
-                    if r in active_regions and not s.indices(r):
-                        del active_regions[active_regions.index(r)]
-            else:
-                active_regions = []
-        
-        # store the indices
-        for sptr in self._involved_species:
-            s = sptr()
-            self._indices_dict[s] = sum([s.indices(r) for r in active_regions], [])
-        ## Check that each species has the same number of elements
-        if (len(set([len(self._indices_dict[s()]) for s in self._involved_species])) != 1):
-            raise Exception('Different numbers of indices for various species') 
-        self._active_regions = active_regions
 
         ## Create the kappa simulations
         if not gateway:
@@ -483,7 +458,7 @@ class Kappa(MultiCompartmentReaction):
 
         self._kappa_sims = []   # Will this destroy things properly?
         for index in self._indices_dict[self._involved_species[0]()]:
-            report("Creating Kappa Simulation in region %s" % (r))
+            report("Creating Kappa Simulation in index %d" % (index))
             kappa_sim = gateway.kappa_sim(self._time_units, verbose)
             try:
                 kappa_sim.loadFile(self._kappa_file)
@@ -518,11 +493,12 @@ class Kappa(MultiCompartmentReaction):
 
     
     def _get_memb_flux(self, states):
-        # if self._membrane_flux:
+        print "_get_memb_flux"
         if False:
+            # if self._membrane_flux:
             # TODO: refactor the inside of _evaluate so can construct args in a separate function and just get self._rate() result
-            if nrr._db is None:
-                nrr._db = nrr._numpy_zeros(len(rhs))
+            if _db is None:
+                _db = nrr._numpy_zeros(len(rhs))
                 volumes, surface_area, diffs = nrr.node._get_data()
             rates = self._evaluate(states)[2]
             return self._memb_scales * rates
