@@ -1,0 +1,208 @@
+#+LATEX_HEADER: \usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+#+OPTIONS: H:2
+
+Notes on NEURON rxd interface and KappaNEURON implementation
+
+
+
+
+* =generalisedReaction= variables and methods to be implemented in KappaNEURON [2/7]
+- This needs KappaNEURON to provide methods for any code in loops in
+  which =_all_reactions= is iterated over.
+
+** DONE =_evaluate(states)=
+- Evaluates states to give rate of change of states
+- *Returns*
+  - =self._indices=     :: Indicies of state variables in the reaction
+       in the global state vector
+  - =self._mult=        :: Set in =_update_indices()=
+  - =self._rate(*args)= :: Rate of change of states in mM/ms (by
+       default) or molecules um^{-2} ms^{-1} (in
+       =multiCompartmentReaction= class, where =self._trans_membrane=
+       is =True=)
+- *KappaNEURON implementation*: As algorithm does not utilise the rate
+  of change of states, returns three empty lists.
+
+** TODO =multiCompartmentReaction._get_memb_flux()= 
+
+- Gets flux across the membrane due to univalent ion in mA/cm^2
+- *Returns*: =self._memb_scales*rates= where =rates= comes from
+  =_evaluate()= and is in molecules/µm^2/ms and =self._memb_scales= is set in
+  =multiCompartmentReaction._do_memb_scales()= as =-area_ratios *
+  FARADAY / (10000 * molecules_per_mM_um3)= where =area_ratios=  is
+  normally 1. 
+  - Thus scaling factor is =FARADAY / (10000 * molecules_per_mM_um3)=,
+    which has units 
+
+   10^4 C mol^{-1}/(10^{3} molecules mol^{-1} dm^{3} um^{-3})
+
+   = 10^4C /(10^{3} molecules 10^15) 
+
+   = 10^{-14} C/molecules
+
+ - Thus the units returned by =get_memb_flux()= are 
+
+   10^{-14} C molecules^{-1} molecules um^{-2} ms^{-1}
+
+   = 10^{-14} C um^{-2} 10^3 s^{-1}
+
+   = 10^{-11} A um^{-2}
+
+   = 10^{-11} A 10^12 10^{-4} cm^{-2}
+
+   = 10^{-3} A cm^{-2}
+
+   = mA cm^{-2}
+
+** DONE =_jacobian_entries()=
+- *Returns*
+  - =_jac_rows= :: Indicies of rows of entries
+  - =_jac_cols= :: Indicies of columns of entries
+  - =data=      :: Values of Jacobian entries in ms^{$-1$} 
+- *KappaNEURON implementation*: As algorithm does not add to Jacobian
+  entries, returns three empty lists.
+
+** TODO =_update_indices()=
+** TODO =generalisedReaction._setup_membrane_fluxes(node_indices, cur_map)=
+- Set up =node_indices=, indices mapping source species
+  =self._sources= and destination sepcies =self._dests= to segment
+  indices
+*** TODO =self._sources=
+*** TODO =self._dests=
+
+** TODO =self._memb_scales=
+
+** TODO =self._mult=
+
+Set in =_update_indices()=, its value depends on the value of
+  =self._trans_membrane= and =self._scale_by_area=:
+
+- *if* =self._trans_membrane= is =True= and =self.scale_by_area= is =True=
+  
+  =-areas / volumes / molecules_per_mM_um3= for =source_indices=
+
+  =areas / volumes / molecules_per_mM_um3= for =dest_indices=
+
+  Units are mol/mM/µm^3, which are dimensionless
+
+- *if* =self._trans_membrane= is =True= and =self.scale_by_area= is
+  =False=
+
+  =-1 / volumes / molecules_per_mM_um3= for =source_indices=
+
+  =1 / volumes / molecules_per_mM_um3= for =dest_indices=
+  
+- *if* =self._trans_membrane= is =False=
+
+  =-1= for =source_indices=
+
+  =1= for =dest_indices=
+
+** =GeneralizedReaction._cur_ptrs=  
+   Pointers to species currents (=ica=, =ik= etc) in =nrn.Segment=
+
+** =GeneralizedReaction._cur_mapped= 
+   Mapping from species conc (=cai=, =cao=) and segment to index in
+     =states()=
+
+
+* =rxd.py= functions
+
+** =_rxd_reaction(states)=
+
+- Return reaction rate in mM/ms
+- *Returns*
+  - =self._mult*rate= :: as returned by =_evaluate()=.
+- *Units* If =self._trans_membrane= is =True= (as in
+  =multiCompartmentReaction=) then the units of =rate= are molecules
+  um^{-2} ms^{-1}. If =self._scale_by_area= is =True= then the units
+  of =self._mult= are um^2/(um^3 molecules mM^{-1} um^{-3}). Thus the
+  units returned by =_rxd_reaction()= are mM ms^{-1}.
+       
+* Variables 
+
+All in =neuron.rxd= namespace
+
+- =rxd._rxd_induced_currents=  :: Transmembrane currents induced by
+     reactions in =_current()= callback
+- =rxd._cur_map=                    :: Map from species conc (=cai=,
+     =cao=) and =nrn.Segment= to index of =rxd._curr_ptrs=
+- =rxd._curr_ptrs=                  :: Pointer to species currents
+     (=ica=, =ik= etc) in =nrn.Segment=
+- =rxd._curr_ptr_vector=            :: Pointer from state indicies to
+     species currents (=ica=, =ik= etc) in =nrn.Segment=
+- =rxd._curr_scales=  ::  Set up in =section1d._setup_currents()=
+     called from =species._setup_currents()=.  Converts from current
+     density to change in
+     concentration. =sign*surface_area[self.indices]*10000./=  
+     =(self.species.charge*FARADAY*volumes[self.indices])=
+
+
+
+* NEURON integration procedure
+
+// Simplified from nrnoc/fadvance.c:
+void* nrn_fixed_step_thread(NrnThread* nth) {
+	double wt;
+	deliver_net_events(nth);
+	wt = nrnmpi_wtime();
+	nrn_random_play(nth);
+	nth->_t += .5 * nth->_dt;
+	fixed_play_continuous(nth);
+  /* Calls nrn_nonvint_block_current() and nrn_nonvint_block_conductance()*/
+	setup_tree_matrix(nth); 
+	nrn_solve(nth);  /* Solve voltage */
+	second_order_cur(nth); n
+	update(nth);
+  /* Updates t by 0.5dt and calls nrn_nonvint_block_fixed_step_solve*/
+  nrn_fixed_step_lastpart(nth); 
+	return (void*)0;
+}
+
+/* Simplified from nrnoc/treeset.c: */
+/* for the fixed step method */
+void* setup_tree_matrix(NrnThread* _nt){
+	nrn_rhs(_nt);
+	nrn_lhs(_nt);
+	nrn_nonvint_block_current(_nt->end, _nt->_actual_rhs, _nt->id);
+	nrn_nonvint_block_conductance(_nt->end, _nt->_actual_d, _nt->id);
+	return (void*)0;
+}
+
+/* Simplified from nrnoc/fadvance.c: */
+void* nrn_fixed_step_lastpart(NrnThread* nth) {
+	CTBEGIN
+	nth->_t += .5 * nth->_dt;
+	fixed_play_continuous(nth);
+	nrn_extra_scatter_gather(0, nth->id);
+	nonvint(nth); 	/* Calls nrn_nonvint_block_fixed_step_solve(_nt->id);*/
+	nrn_ba(nth, AFTER_SOLVE);
+	fixed_record_continuous(nth);
+	CTADD
+	nrn_deliver_events(nth) ; /* up to but not past texit */
+	return (void*)0;
+}
+
+/* Simplified from nrnoc/fadvance.c: */
+void nonvint(NrnThread* _nt)
+{
+	int i;
+	double w;
+	int measure = 0;
+	NrnThreadMembList* tml;
+	if (_nt->id == 0 && nrn_mech_wtime_) { measure = 1; }
+	errno = 0;
+	for (tml = _nt->tml; tml; tml = tml->next) if (memb_func[tml->index].state) {
+		Pvmi s = memb_func[tml->index].state;
+		if (measure) { w = nrnmpi_wtime(); }
+		(*s)(_nt, tml->ml, tml->index);
+		if (measure) { nrn_mech_wtime_[tml->index] += nrnmpi_wtime() - w; }
+		if (errno) {
+			if (nrn_errno_check(i)) {
+hoc_warning("errno set during calculation of states", (char*)0);
+			}
+		}
+	}
+	long_difus_solve(0, _nt); /* if any longitudinal diffusion */
+	nrn_nonvint_block_fixed_step_solve(_nt->id);
+}

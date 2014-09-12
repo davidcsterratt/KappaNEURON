@@ -195,6 +195,7 @@ def _kn_fixed_step_solve_lumped_influx(raw_dt):
         sys.stdout.flush()
 
 def _run_kappa_continuous(states, b, dt):
+    global _db
     #############################################################################
     ## 1. Pass all relevant continous variables to the rule-based simulator
     ##
@@ -213,8 +214,7 @@ def _run_kappa_continuous(states, b, dt):
         for  sptr in k._involved_species:
             s = sptr()
             if (s.charge != 0):
-                name = s.name
-                report("ION: %s" % (name))
+                report("ION: %s" % (s.name))
                 for kappa_sim, i in zip(k._kappa_sims, k._indices_dict[s]):
                     ## Number of ions
                     ## Flux b has units of mM/ms
@@ -222,9 +222,10 @@ def _run_kappa_continuous(states, b, dt):
                     ## _conversion factor has units of molecules mM^-1 um^-3
                     flux = b[i] * molecules_per_mM_um3 * volumes[i]
                     kappa_sim.setTransitionRate('Create %s' % (s.name), flux)
-                    ## kappa_sim.setVariable(flux, 'f%s' % (s.name))
+                    report("Setting %s flux[%d] to b[%d]*NA*vol[%d] = %f*%f*%f = %f" % (s.name, i, i, i,  b[i], molecules_per_mM_um3, volumes[i], flux))
 
-            report("\nPASSING MEMBRANE POTENTIAL TO KAPPA")
+
+            report("PASSING MEMBRANE POTENTIAL TO KAPPA")
             ## TODO: pass membrane potential to kappa
 
         #############################################################################
@@ -244,39 +245,46 @@ def _run_kappa_continuous(states, b, dt):
 
             ## Recording total starting value of each species
             Stot0 = {}
-            for sptr in k._involved_species:
-                s = sptr()
+            for sptr in k._sources:
+                s = sptr()._species()
                 if (s.charge != 0):
                     Stot0[s.name] = {}
                     for kappa_sim, i in zip(k._kappa_sims, k._indices_dict[s]):
                         Stot0[s.name][i] = kappa_sim.getVariable('Total %s' % (s.name))
+                        report("Stot0[%s][%d] = %f" % (s.name, i, Stot0[s.name][i]))
+                        # print(kappa_sim)
 
-            report("\nRUN 1 KAPPA STEP")  
+            report("RUN 1 KAPPA STEP")  
             for kappa_sim in k._kappa_sims:
                 kappa_sim.runForTime(dt, False)     
                 t_kappa = kappa_sim.getTime()
+                report("kappa time now %f" % (t_kappa))
 
             ## Recording total ending value of each species
             for sptr in k._involved_species:
                 s = sptr()
-                for kappa_sim, i in zip(k._kappa_sims, k._indices_dict[s]):
+                for kappa_sim, i, j in zip(k._kappa_sims, k._indices_dict[s], range(len(k._indices_dict[s]))):
                     ## For ions, compute the current
-                    if (s.charge != 0):
+                    if (s.charge == 0):
+                        _db[j] = 0.0
+                    else:
                         Stot1 = kappa_sim.getVariable('Total %s' % (s.name))
+                        report("Stot1[%s][%d] = %f" % (s.name, i, Stot1))
                         DeltaStot = Stot1 - Stot0[s.name][i]
-                        bnew = DeltaStot/(dt*nrr._conversion_factor*volumes[i])
-                        print("Species %s: DeltaStot=%d, bnew=%f, b=%f, _db=%f" % (s.name, DeltaStot, bnew, b[i], _db[i]))
-                        _db[i] = bnew - b[i]
-                        print "Change in current:", _db[i]
+                        bnew = DeltaStot/(dt*molecules_per_mM_um3*volumes[i])
+                        _db[j] = (b[i] - bnew)
+                        report("Species %s: DeltaStot=%d, bnew=%f, b=%f, _db=%f" % (s.name, DeltaStot, bnew, b[i], _db[-1]))
                         b[i] = bnew
 
-        report("Updated states")
+        report("States before update")
         report(states)
         
         #############################################################################
         ## 5. Update the continous variables according to the update step
         #############################################################################
         states[:] += nrr._reaction_matrix_solve(dt, states, nrr._diffusion_matrix_solve(dt, dt * b))
+        report("States after continuous update")
+        report(states)
 
         #############################################################################
         ## 6. Voltage step overrides states, possibly making them negative so put back actual states
@@ -290,6 +298,9 @@ def _run_kappa_continuous(states, b, dt):
                     ## Update concentration
                     states[i] = kappa_sim.getObservation(s.name) \
                                 /(molecules_per_mM_um3 * volumes[i])
+        report("States after kappa update")
+        report(states)
+
     return states
 
 
@@ -360,8 +371,8 @@ nrr._callbacks[4] = _kn_fixed_step_solve
 def _kn_currents(rhs):
     nrr._currents(rhs)
     global _db
-    if _db is None:
-        _db = nrr._numpy_zeros(len(rhs))
+    # if _db is None:
+    #     _db = nrr._numpy_zeros(len(rhs))
         ## print "CREATING _db", _db
 
     ## print rhs, _db, nrr._curr_scales, nrr._rxd_induced_currents, nrr._curr_ptrs[0][0]
@@ -371,7 +382,15 @@ def _kn_currents(rhs):
 
     ## This line is necessary to change the voltage
     ## This is absolute current in nanoamps
-    rhs[0] -= -_db[1]*2*nrr.FARADAY* volumes[1]*1e-6
+    print "\n_kn_currents"
+    print _db
+    print rhs
+    print volumes, surface_area
+    print("rhs[0] = %f" % (_db[0]*2*FARADAY* volumes[1]*1e-6))
+    ## Moved to _get_memb_flux()
+    ## This has units of mA/cm2
+    ## rhs[2] -= 1e-4*_db[0]*2*FARADAY* volumes[1]/surface_area[1]
+    ## print("rhs[2] = %f" % (1e-4*_db[0]*2*FARADAY* volumes[1]/surface_area[1]))
 
     ## This line alters ica, but does not affect the voltage
     ## nrr._curr_ptrs[0][0] += _db[1]/nrr._curr_scales[0]
@@ -489,19 +508,27 @@ class Kappa(MultiCompartmentReaction):
             ## in the same place?
         self._mult = [1]
 
-
-
     
     def _get_memb_flux(self, states):
-        print "_get_memb_flux"
-        if False:
-            # if self._membrane_flux:
+        global _db
+        if _db is None:
+            len_db = 0
+            for sptr in self._sources:
+                s = sptr()._species()
+                # import pdb; pdb.set_trace()
+                len_db += len(self._indices_dict[s])
+            _db = nrr._numpy_zeros(len_db)
+            # _db = nrr._numpy_zeros(len(self._get_args(states)))
+
+        # if True:
+        if self._membrane_flux:
             # TODO: refactor the inside of _evaluate so can construct args in a separate function and just get self._rate() result
-            if _db is None:
-                _db = nrr._numpy_zeros(len(rhs))
-                volumes, surface_area, diffs = nrr.node._get_data()
-            rates = self._evaluate(states)[2]
-            return self._memb_scales * rates
+            volumes, surface_area, diffs = nrr.node._get_data()
+            ## This has units of mA/cm2
+            return 1e-4*_db*FARADAY* volumes[1]/surface_area[1]
+            ## return _db*FARADAY*volumes[1]*1e-6
+            ## rates = self._evaluate(states)[2]
+            ## return self._memb_scales * rates
         else:
             return []
 
@@ -546,7 +573,6 @@ class Kappa(MultiCompartmentReaction):
         self._dests = []
 
 
-        
     def _do_memb_scales(self, cur_map):                    
         if not self._scale_by_area:
             areas = numpy.ones(len(areas))
@@ -561,7 +587,7 @@ class Kappa(MultiCompartmentReaction):
         # area_ratios is usually a vector of 1s
         area_ratios = areas / neuron_areas
         # still needs to be multiplied by the valence of each molecule
-        self._memb_scales = -area_ratios * h.FARADAY / (10000 * molecules_per_mM_um3)
+        self._memb_scales = -area_ratios * FARADAY / (10000 * molecules_per_mM_um3)
         #print area_ratios
         #print self._memb_scales
         #import sys
