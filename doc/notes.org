@@ -27,20 +27,9 @@ Notes on NEURON rxd interface and KappaNEURON implementation
 
 - Gets flux across the membrane due to univalent ion in mA/cm^2
 - *Returns*: =self._memb_scales*rates= where =rates= comes from
-  =_evaluate()= and is in molecules/µm^2/ms and =self._memb_scales= is set in
-  =multiCompartmentReaction._do_memb_scales()= as =-area_ratios *
-  FARADAY / (10000 * molecules_per_mM_um3)= where =area_ratios=  is
-  normally 1. 
-  - Thus scaling factor is =FARADAY / (10000 * molecules_per_mM_um3)=,
-    which has units 
-
-   10^4 C mol^{-1}/(10^{3} molecules mol^{-1} dm^{3} um^{-3})
-
-   = 10^4C /(10^{3} molecules 10^15) 
-
-   = 10^{-14} C/molecules
-
- - Thus the units returned by =get_memb_flux()= are 
+  =_evaluate()= and is in molecules/µm^2/ms and =self._memb_scales=
+  gives the charge per molecule.
+- Thus the units returned by =get_memb_flux()= are 
 
    10^{-14} C molecules^{-1} molecules um^{-2} ms^{-1}
 
@@ -53,6 +42,21 @@ Notes on NEURON rxd interface and KappaNEURON implementation
    = 10^{-3} A cm^{-2}
 
    = mA cm^{-2}
+
+** TODO =self._memb_scales=
+- Charge per molecule in units of 10^{-14} C/molecule, scaled
+  according to areas of membranes.
+- Set in =multiCompartmentReaction._do_memb_scales()=
+- This is  =-area_ratios * FARADAY / (10000 * molecules_per_mM_um3)= where
+  =area_ratios= is normally 1.
+- Thus scaling factor is =FARADAY / (10000 * molecules_per_mM_um3)=,
+    which has units 
+   10^4 C mol^{-1}/(10^{3} molecules mol^{-1} dm^{3} um^{-3})
+
+   = 10^4 C /(10^{3} molecules 10^15) 
+
+   = 10^{-14} C/molecules
+
 
 ** DONE =_jacobian_entries()=
 - *Returns*
@@ -70,7 +74,7 @@ Notes on NEURON rxd interface and KappaNEURON implementation
 *** TODO =self._sources=
 *** TODO =self._dests=
 
-** TODO =self._memb_scales=
+
 
 ** TODO =self._mult=
 
