@@ -379,9 +379,40 @@ def setSeed(seed):
     # _kappa_sims[0].setSeed(seed)
 
 class Kappa(MultiCompartmentReaction):
-    def __init__(self, species, kappa_file, regions=None, membrane_flux=True, time_units='ms', verbose=False):
-        """create a kappa mechanism linked to a species on a given region or set of regions
-        if regions is None, then does it on all regions"""
+    def __init__(self, *args, **kwargs):
+        """Specify a Kappa model spanning the membrane to be added to the system.
+        
+        Use this for, for example, pumps and channels, or interactions between
+        species living in a volume (e.g. the cytosol) and species on a
+        membrane (e.g. the plasma membrane).
+        
+        For each species/state/parameter, you must specify what region you are
+        referring to, as it could be present in multiple regions. You must
+        also specify a `membrane` or a `border` (these are treated as synonyms)
+        that separates the regions involved in your reaction. This is necessary
+        because the default behavior is to scale the reaction rate by the
+        border area, as would be expected if one of the species involved is a
+        pump that is binding to a species in the volume. If this is not the
+        desired behavior, pass the keyword argument `scale_by_area=False`.
+        
+        Pass in `membrane_flux=True` if the reaction produces a current across
+        the plasma membrane that should affect the membrane potential.        
+        
+        .. seealso::
+        
+            :class:`neuron.rxd.multiCompartmentReaction`
+        """
+        
+        # additional keyword arguments
+        species = kwargs.get('species')
+        kappa_file = kwargs.get('kappa_file')
+        regions = kwargs.get('regions', None)
+        membrane_flux = kwargs.get('membrane_flux', True)
+        time_units = kwargs.get('time_units', 'ms')
+        verbose = kwargs.get('verbose', False)
+        membrane = kwargs.get('membrane')
+        scale_by_area = kwargs.get('scale_by_area', True)
+
         global gateway
         self._kappa_sims = []
         self._species = []
