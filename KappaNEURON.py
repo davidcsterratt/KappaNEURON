@@ -480,25 +480,21 @@ class Kappa(MultiCompartmentReaction):
         In KappaNEURON, this flux is determined by the net change in
         ion during the preceeding time step.
         """
-        global _db
-        if _db is None:
-            len_db = 0
-            for sptr in self._sources:
-                s = sptr()._species()
-                # import pdb; pdb.set_trace()
-                len_db += len(self._indices_dict[s])
-            _db = nrr._numpy_zeros(len_db)
-            # _db = nrr._numpy_zeros(len(self._get_args(states)))
-
-        # if True:
         if self._membrane_flux:
-            # TODO: refactor the inside of _evaluate so can construct args in a separate function and just get self._rate() result
+            ## _db has been set in _kn_fixed_step_solve(), unless it's
+            ## the first time step, in which case we need to create it.
+            global _db
+            if _db is None:
+                len_db = 0
+                for sptr in self._sources:
+                    s = sptr()._species()
+                    len_db += len(self._indices_dict[s])
+                    _db = nrr._numpy_zeros(len_db)
+
+            ## TODO: Use the full volumes and surface_area vectors
             volumes, surface_area, diffs = nrr.node._get_data()
             ## This has units of mA/cm2
             return 1e-4*_db*FARADAY* volumes[1]/surface_area[1]
-            ## return _db*FARADAY*volumes[1]*1e-6
-            ## rates = self._evaluate(states)[2]
-            ## return self._memb_scales * rates
         else:
             return []
 
