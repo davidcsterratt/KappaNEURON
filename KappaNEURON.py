@@ -368,40 +368,6 @@ def _kn_fixed_step_solve_continuous_influx(raw_dt):
 
 nrr._callbacks[4] = _kn_fixed_step_solve
 
-def _kn_currents(rhs):
-    nrr._currents(rhs)
-    global _db
-    # if _db is None:
-    #     _db = nrr._numpy_zeros(len(rhs))
-        ## print "CREATING _db", _db
-
-    ## print rhs, _db, nrr._curr_scales, nrr._rxd_induced_currents, nrr._curr_ptrs[0][0]
-    ## print("rhs[0]: %f, _db[1]: %f, _db[1]/nrr._curr_scales[0]: %f" % (rhs[0], _db[1], _db[1]/nrr._curr_scales[0]))
-    
-    volumes, surface_area, diffs = nrr.node._get_data()
-
-    ## This line is necessary to change the voltage
-    ## This is absolute current in nanoamps
-    print "\n_kn_currents"
-    print _db
-    print rhs
-    print volumes, surface_area
-    print("rhs[0] = %f" % (_db[0]*2*FARADAY* volumes[1]*1e-6))
-    ## Moved to _get_memb_flux()
-    ## This has units of mA/cm2
-    ## rhs[2] -= 1e-4*_db[0]*2*FARADAY* volumes[1]/surface_area[1]
-    ## print("rhs[2] = %f" % (1e-4*_db[0]*2*FARADAY* volumes[1]/surface_area[1]))
-
-    ## This line alters ica, but does not affect the voltage
-    ## nrr._curr_ptrs[0][0] += _db[1]/nrr._curr_scales[0]
-
-    # It seems that this line is needed to cancel out the effect of
-    # the previous line on the integration
-    ## print nrr._rxd_induced_currents
-    # nrr._rxd_induced_currents[0] -= _db[1]/nrr._curr_scales[0]
-
-nrr._callbacks[2] = _kn_currents
-
 gateway = None
 
 def setSeed(seed):
@@ -508,8 +474,12 @@ class Kappa(MultiCompartmentReaction):
             ## in the same place?
         self._mult = [1]
 
-    
     def _get_memb_flux(self, states):
+        """Returns the flux across the membrane due to univalent ion in mA/cm^2
+
+        In KappaNEURON, this flux is determined by the net change in
+        ion during the preceeding time step.
+        """
         global _db
         if _db is None:
             len_db = 0
