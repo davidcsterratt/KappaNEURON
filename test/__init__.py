@@ -287,9 +287,9 @@ class TestCaAccumulation(unittest.TestCase):
 
         ## Check that kappa and deterministic simulations agree to
         ## within 10%
-        tol = 0.1
-        self.assertLess(abs((Deltav['kappa'] - Deltav['mod'])/(Deltav['mod'] - self.v0)), 0.1)
-        self.assertLess(abs((Deltaca['kappa'] - Deltaca['mod'])/Deltaca['mod']), 0.1)
+        tol = 0.15
+        self.assertLess(abs((Deltav['kappa'] - Deltav['mod'])/(Deltav['mod'] - self.v0)), tol)
+        self.assertLess(abs((Deltaca['kappa'] - Deltaca['mod'])/Deltaca['mod']), tol)
         
 
     def test_injectCalciumPumpGHK(self):
