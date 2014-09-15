@@ -404,7 +404,8 @@ class Kappa(MultiCompartmentReaction):
         """
         
         # additional keyword arguments
-        species = kwargs.get('species')
+        membrane_species = kwargs.get('membrane_species', [])
+        species = kwargs.get('species', [])
         kappa_file = kwargs.get('kappa_file')
         regions = kwargs.get('regions', None)
         membrane_flux = kwargs.get('membrane_flux', True)
@@ -416,13 +417,13 @@ class Kappa(MultiCompartmentReaction):
         global gateway
         self._kappa_sims = []
         self._species = []
-        for s in species:
+        for s in membrane_species + species:
             self._species.append(weakref.ref(s))
             if s.initial is None:
                 s.initial = 0
                 warnings.warn('Initial concentration of %s not specified; setting to zero' % (s.name), UserWarning)
         ## This is the species that crosses the membrane
-        self._membrane_species = species[0]
+        self._membrane_species = membrane_species
         ## self._species = weakref.ref(species)
         self._involved_species = self._species
         self._kappa_file = os.path.join(os.getcwd(), kappa_file)
@@ -432,7 +433,6 @@ class Kappa(MultiCompartmentReaction):
         self._active_regions = []
         self._trans_membrane = False
         self._membrane_flux = membrane_flux
-        self._time_units = 'ms'
         self._time_units = time_units
         self._verbose = verbose
         if membrane_flux not in (True, False):
@@ -440,9 +440,17 @@ class Kappa(MultiCompartmentReaction):
         if membrane_flux and regions is None:
             # TODO: rename regions to region?
             raise Exception('if membrane_flux then must specify the (unique) membrane regions')
-        self._lhs = self._membrane_species[self._regions[0]]
-        self._update_rates()
-        print self._sources
+        ## Set up the sources for _get_memb_flux(). In
+        ## multicompartmentReaction.py some of this is done in
+        ## _update_rates()
+        self._lhs_items = []
+        self._sources = []
+        for s in self._membrane_species:
+            i = s[self._regions[0]]
+            self._lhs_items.append(i)
+            w = weakref.ref(i)
+            self._sources += [w]
+        self._dests = []
         self._update_indices()
         self._create_kappa_sims()
         self._scale_by_area = True
@@ -562,13 +570,6 @@ class Kappa(MultiCompartmentReaction):
             k = kptr()
             for kappa_sim in k._kappa_sims:
                 kappa_sim.runForTime(float(t_run), True)
-
-    def _update_rates(self):
-        w = weakref.ref(self._lhs)
-        self._sources = [w]
-        print self._sources
-        self._dests = []
-
 
     def _do_memb_scales(self, cur_map):                    
         if not self._scale_by_area:

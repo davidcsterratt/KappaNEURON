@@ -71,10 +71,10 @@ class TestCaAccumulation(unittest.TestCase):
 
         ## Insert calcium pump into kappa section
         if mechanism == 'caPump1':
-            self.kappa = KappaNEURON.Kappa(species=[self.ca], kappa_file=self.__module__ + "/" + mechanism + ".ka", regions=self.r, verbose=True)
+            self.kappa = KappaNEURON.Kappa(membrane_species=[self.ca], kappa_file=self.__module__ + "/" + mechanism + ".ka", regions=self.r, verbose=True)
         if mechanism == 'caPump2':
             self.P  = rxd.Species(self.r, name='P', charge=0, initial=self.P0)
-            self.kappa = KappaNEURON.Kappa(species=[self.ca, self.P], kappa_file=self.__module__ + "/" + mechanism + ".ka", regions=self.r, verbose=True)
+            self.kappa = KappaNEURON.Kappa(membrane_species=[self.ca], species=[self.P], kappa_file=self.__module__ + "/" + mechanism + ".ka", regions=self.r, verbose=True)
             self.kappa.setVariable('vol', self.sk.L*(self.sk.diam**2)/4*np.pi)
             self.kappa.setVariable('k2', self.k2)
             setattr(self.sm(0.5), 'k2_' + mechanism, self.k2)
