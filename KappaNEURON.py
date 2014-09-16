@@ -474,6 +474,7 @@ class Kappa(MultiCompartmentReaction):
             gateway = None
 
     def _create_kappa_sims(self):
+        """Create the kappa simulations."""
         global gateway
 
         ## Create the kappa simulations
@@ -513,6 +514,20 @@ class Kappa(MultiCompartmentReaction):
             ## in the same place?
         self._mult = [1]
 
+    def setVariable(self, variable, value):
+        """Sets a variable in the kappa simuluations."""
+        for kappa_sim in self._kappa_sims:
+            kappa_sim.setVariable(float(value), variable)
+
+    def run_free(self, t_run):
+        """Run kappa simulation free of NEURON, i.e. with NEURON not updating timesteps."""
+        for kptr in _kappa_schemes:
+            k = kptr()
+            for kappa_sim in k._kappa_sims:
+                kappa_sim.runForTime(float(t_run), True)
+
+    ## Overridden functions
+    
     def _get_memb_flux(self, states):
         """Returns the flux across the membrane due to univalent ion in mA/cm^2
 
@@ -537,13 +552,11 @@ class Kappa(MultiCompartmentReaction):
         else:
             return []
 
-    def setVariable(self, variable, value):
-        for kappa_sim in self._kappa_sims:
-            kappa_sim.setVariable(float(value), variable)
-
-    ## This is perhaps an abuse of this function, but it is called at
-    ## init() time
     def re_init(self):
+        """This sets the initial concentration/number of kappa variables.
+        This is perhaps an abuse of this function, but it is called at
+        init() time
+        """
         volumes = nrr.node._get_data()[0]
         states = nrr.node._get_states()[:]
         for sptr in self._involved_species:
@@ -564,14 +577,8 @@ class Kappa(MultiCompartmentReaction):
                         
 
 
-    def run_free(self, t_run):
-        # Run free of neuron
-        for kptr in _kappa_schemes:
-            k = kptr()
-            for kappa_sim in k._kappa_sims:
-                kappa_sim.runForTime(float(t_run), True)
-
-    def _do_memb_scales(self, cur_map):                    
+    def _do_memb_scales(self, cur_map): 
+        """Set up self._memb_scales and cur_map."""
         if not self._scale_by_area:
             areas = numpy.ones(len(areas))
         else:
@@ -650,7 +657,9 @@ class Kappa(MultiCompartmentReaction):
                 self._cur_mapped.append(tuple(local_mapped))
 
     def _evaluate(self, states):
+        """This does nothing in the KappaNEURON class"""
         return ([], [], [])
 
     def _jacobian_entries(self, states, multiply=1, dx=1.e-10):
+        """This does nothing in the KappaNEURON class"""
         return ([], [], [])        
