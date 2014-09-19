@@ -548,7 +548,7 @@ class Kappa(MultiCompartmentReaction):
             ## TODO: Use the full volumes and surface_area vectors
             volumes, surface_area, diffs = nrr.node._get_data()
             ## This has units of mA/cm2
-            return 1e-4*_db*FARADAY* volumes[1]/surface_area[1]
+            return -self._memb_scales*_db*molecules_per_mM_um3
         else:
             return []
 
@@ -582,15 +582,13 @@ class Kappa(MultiCompartmentReaction):
         if not self._scale_by_area:
             areas = numpy.ones(len(areas))
         else:
-            # TODO: simplify this expression
-            # areas = numpy.array(itertools.chain.from_iterable([list(self._regions[0]._geometry.volumes1d(sec) for sec in self._regions[0].secs)]))
-            areas = numpy.array([1.0 for sec in self._regions[0].secs])
+            volumes = numpy.concatenate([list(self._regions[0]._geometry.volumes1d(sec) for sec in self._regions[0].secs)])
         neuron_areas = []
         for sec in self._regions[0].secs:
             neuron_areas += [h.area((i + 0.5) / sec.nseg, sec=sec) for i in xrange(sec.nseg)]
         neuron_areas = numpy.array(neuron_areas)
         # area_ratios is usually a vector of 1s
-        area_ratios = areas / neuron_areas
+        area_ratios = volumes / neuron_areas
         # still needs to be multiplied by the valence of each molecule
         self._memb_scales = -area_ratios * FARADAY / (10000 * molecules_per_mM_um3)
         #print area_ratios
