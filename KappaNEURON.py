@@ -531,7 +531,8 @@ class Kappa(MultiCompartmentReaction):
         """Returns the flux across the membrane due to univalent ion in mA/cm^2
 
         In KappaNEURON, this flux is determined by the net change in
-        ion during the preceeding time step.
+        number of ions during the preceding time step, which is
+        calculated in _kn_fixed_step_solve().
         """
         if self._membrane_flux:
             ## _db has been set in _kn_fixed_step_solve(), unless it's
