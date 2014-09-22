@@ -307,7 +307,6 @@ def _run_kappa_continuous(states, b, dt):
 ## Override the NEURON nonvint _fixed_step_solve callback   
 def _kn_fixed_step_solve_continuous_influx(raw_dt):
     global _kappa_schemes, _db
-    print _db
     
     report("---------------------------------------------------------------------------")
     report("FIXED STEP SOLVE. NEURON time %f" % nrr.h.t)
