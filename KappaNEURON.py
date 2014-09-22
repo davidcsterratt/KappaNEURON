@@ -384,22 +384,31 @@ class Kappa(MultiCompartmentReaction):
         Use this for, for example, pumps and channels, or interactions between
         species living in a volume (e.g. the cytosol) and species on a
         membrane (e.g. the plasma membrane).
-        
-        For each species/state/parameter, you must specify what region you are
-        referring to, as it could be present in multiple regions. You must
-        also specify a `membrane` or a `border` (these are treated as synonyms)
-        that separates the regions involved in your reaction. This is necessary
-        because the default behavior is to scale the reaction rate by the
-        border area, as would be expected if one of the species involved is a
-        pump that is binding to a species in the volume. If this is not the
-        desired behavior, pass the keyword argument `scale_by_area=False`.
-        
-        Pass in `membrane_flux=True` if the reaction produces a current across
-        the plasma membrane that should affect the membrane potential.        
+
+        Keyword arguments:
+
+        membrane_species -- List of rxd.Species defining which species
+        in the Kappa model cross the cell membrane
+
+        species -- List of rxd.Species defining species to observe
+        inside the Kappa model.
+
+        kappa_file -- Name of a Kappa file defining rules. The file
+        should contain agents with the same names as all the
+        membrane_species and observables with names corresponding to
+        names of the rxd.Species in the species argument.
+
+        regions -- List of rxd.Regions in which the Kappa mechanism
+        should be inserted.
+
+        membrane_flux -- Boolean indicating if the reaction should
+        produce a current across the plasma membrane that should
+        affect the membrane potential.
         
         .. seealso::
         
             :class:`neuron.rxd.multiCompartmentReaction`
+
         """
         
         # additional keyword arguments
@@ -409,8 +418,6 @@ class Kappa(MultiCompartmentReaction):
         regions = kwargs.get('regions', None)
         membrane_flux = kwargs.get('membrane_flux', True)
         time_units = kwargs.get('time_units', 'ms')
-        verbose = kwargs.get('verbose', False)
-        membrane = kwargs.get('membrane')
         scale_by_area = kwargs.get('scale_by_area', True)
 
         global gateway
@@ -430,10 +437,10 @@ class Kappa(MultiCompartmentReaction):
             regions = [regions]
         self._regions = regions
         self._active_regions = []
+        self._scale_by_area = scale_by_area
         self._trans_membrane = False
         self._membrane_flux = membrane_flux
         self._time_units = time_units
-        self._verbose = verbose
         if membrane_flux not in (True, False):
             raise Exception('membrane_flux must be either True or False')
         if membrane_flux and regions is None:
@@ -452,7 +459,6 @@ class Kappa(MultiCompartmentReaction):
         self._dests = []
         self._update_indices()
         self._create_kappa_sims()
-        self._scale_by_area = True
         report('Registering kappa scheme')
         _register_kappa_scheme(self)
         nrr._register_reaction(self)
