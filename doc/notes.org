@@ -1,84 +1,23 @@
 #+LATEX_HEADER: \usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
 #+OPTIONS: H:2
 
-Notes on NEURON rxd interface and KappaNEURON implementation
+#+TITLE: Notes on NEURON rxd interface and KappaNEURON implementation
 
-
-
-
-* =generalisedReaction= variables and methods to be implemented in KappaNEURON [2/7]
+* =generalisedReaction= variables and methods to be implemented in KappaNEURON [6/6]
 - This needs KappaNEURON to provide methods for any code in loops in
   which =_all_reactions= is iterated over.
 
-** DONE =_evaluate(states)=
-- Evaluates states to give rate of change of states
-- *Returns*
-  - =self._indices=     :: Indicies of state variables in the reaction
-       in the global state vector
-  - =self._mult=        :: Set in =_update_indices()=
-  - =self._rate(*args)= :: Rate of change of states in mM/ms (by
-       default) or molecules um^{-2} ms^{-1} (in
-       =multiCompartmentReaction= class, where =self._trans_membrane=
-       is =True=)
-- *KappaNEURON implementation*: As algorithm does not utilise the rate
-  of change of states, returns three empty lists.
+** =generalizedReaction._update_indices()=
+- Sets up:
+  - =self._indices_dict= :: Mapping from species onto indices in the
+       state vector.
+  - =self._mult=         ::  Multiplier used in =rxd._rxd_reaction()=
+       to convert output of =self._evaluate()= into units of mM/ms
+       when =self._trans_membrane= is true.
 
-** TODO =multiCompartmentReaction._get_memb_flux()= 
+** =generalizedReaction._mult=
 
-- Gets flux across the membrane due to univalent ion in mA/cm^2
-- *Returns*: =self._memb_scales*rates= where =rates= comes from
-  =_evaluate()= and is in molecules/µm^2/ms and =self._memb_scales=
-  gives the charge per molecule.
-- Thus the units returned by =get_memb_flux()= are 
-
-   10^{-14} C molecules^{-1} molecules um^{-2} ms^{-1}
-
-   = 10^{-14} C um^{-2} 10^3 s^{-1}
-
-   = 10^{-11} A um^{-2}
-
-   = 10^{-11} A 10^12 10^{-4} cm^{-2}
-
-   = 10^{-3} A cm^{-2}
-
-   = mA cm^{-2}
-
-** TODO =self._memb_scales=
-- Charge per molecule in units of 10^{-14} C/molecule, scaled
-  according to areas of membranes.
-- Set in =multiCompartmentReaction._do_memb_scales()=
-- This is  =-area_ratios * FARADAY / (10000 * molecules_per_mM_um3)= where
-  =area_ratios= is normally 1.
-- Thus scaling factor is =FARADAY / (10000 * molecules_per_mM_um3)=,
-    which has units 
-   10^4 C mol^{-1}/(10^{3} molecules mol^{-1} dm^{3} um^{-3})
-
-   = 10^4 C /(10^{3} molecules 10^15) 
-
-   = 10^{-14} C/molecules
-
-
-** DONE =_jacobian_entries()=
-- *Returns*
-  - =_jac_rows= :: Indicies of rows of entries
-  - =_jac_cols= :: Indicies of columns of entries
-  - =data=      :: Values of Jacobian entries in ms^{$-1$} 
-- *KappaNEURON implementation*: As algorithm does not add to Jacobian
-  entries, returns three empty lists.
-
-** TODO =_update_indices()=
-** TODO =generalisedReaction._setup_membrane_fluxes(node_indices, cur_map)=
-- Set up =node_indices=, indices mapping source species
-  =self._sources= and destination sepcies =self._dests= to segment
-  indices
-*** TODO =self._sources=
-*** TODO =self._dests=
-
-
-
-** TODO =self._mult=
-
-Set in =_update_indices()=, its value depends on the value of
+Set in =generalizedReaction._update_indices()=, its value depends on the value of
   =self._trans_membrane= and =self._scale_by_area=:
 
 - *if* =self._trans_membrane= is =True= and =self.scale_by_area= is =True=
@@ -102,13 +41,96 @@ Set in =_update_indices()=, its value depends on the value of
 
   =1= for =dest_indices=
 
-** =GeneralizedReaction._cur_ptrs=  
+** DONE =KappaNEURON._evaluate(states)=
+- Evaluates states to give rate of change of states
+
+- *Returns*
+  - =self._indices=     :: Indicies of state variables in the reaction
+       in the global state vector
+  - =self._mult=        :: Set in =_update_indices()=
+  - =self._rate(*args)= :: Rate of change of states in mM/ms (by
+       default) or molecules um^{-2} ms^{-1} (in
+       =multiCompartmentReaction= class, where =self._trans_membrane=
+       is =True=)
+- *KappaNEURON implementation*: As algorithm does not utilise the rate
+  of change of states, returns three empty lists.
+
+** DONE =KappaNEURON._jacobian_entries()=
+- *Returns*
+  - =_jac_rows= :: Indicies of rows of entries
+  - =_jac_cols= :: Indicies of columns of entries
+  - =data=      :: Values of Jacobian entries in ms^{$-1$} 
+- *KappaNEURON implementation*: As algorithm does not add to Jacobian
+  entries, returns three empty lists.
+
+
+** DONE =KappaNEURON._get_memb_flux()= 
+
+- Gets flux across the membrane due to univalent ion in mA/cm^2
+- *Returns*: =self._memb_scales*rates= where =rates= comes from
+  =_evaluate()= and is in molecules/µm^2/ms and =self._memb_scales=
+  gives the charge per molecule.
+- Thus the units returned by =get_memb_flux()= are 
+
+   10^{-14} C molecules^{-1} molecules um^{-2} ms^{-1}
+
+   = 10^{-14} C um^{-2} 10^3 s^{-1}
+
+   = 10^{-11} A um^{-2}
+
+   = 10^{-11} A 10^12 10^{-4} cm^{-2}
+
+   = 10^{-3} A cm^{-2}
+
+   = mA cm^{-2}
+- *KappaNEURON implementation:* Picks up flux contained in the global
+  variable =_db= which is set in =KappaNEURON._kn_fixed_step_solve()=
+  and which results from the net change in ions during the preceding
+  time step.
+
+** DONE =KappaNEURON._memb_scales=
+- Charge per molecule in units of 10^{-14} C/molecule, scaled
+  according to areas of membranes.
+- Set in =KappaNEURON._do_memb_scales()=
+- This is  =-area_ratios * FARADAY / (10000 * molecules_per_mM_um3)= where
+  =area_ratios= is normally 1.
+- Thus scaling factor is =FARADAY / (10000 * molecules_per_mM_um3)=,
+    which has units 
+   10^4 C mol^{-1}/(10^{3} molecules mol^{-1} dm^{3} um^{-3})
+
+   = 10^4 C /(10^{3} molecules 10^15) 
+
+   = 10^{-14} C/molecules
+
+** DONE =KappaNEURON._do_memb_scales()=
+
+- Set up =self._memb_scales= and sets a current map =rxd._cur_map=
+  used by =rxd._update_node_data()= in which is it is passed to
+  =Species._setup_currents()=. 
+
+- *KappaNEURON implementation:* Small changes from
+  =multicompartmentReaction._do_memb_scales()=: 
+  - Ignore the '=o=' variables in the =cur_map=, otherwise there is a
+    crash
+  - Use =numpy.concatenate()= instead of =itertools.chain= command,
+    which doesn't seem to work
+
+** DONE =self._sources=, =self._dests=
+- List of =weakref= to =SpeciesOnRegion= used in
+  =_setup_membrane_fluxes()= and =_kn_fixed_step_solve()=
+- *KappaNEURON implementation:* Set up in =self.__init__()=.
+
+** =generalisedReaction._setup_membrane_fluxes(node_indices, cur_map)=
+- Set up =node_indices=, indices mapping source species
+  =self._sources= and destination sepcies =self._dests= to segment
+  indices
+
+** =generalizedReaction._cur_ptrs=  
    Pointers to species currents (=ica=, =ik= etc) in =nrn.Segment=
 
-** =GeneralizedReaction._cur_mapped= 
+** =generalizedReaction._cur_mapped= 
    Mapping from species conc (=cai=, =cao=) and segment to index in
      =states()=
-
 
 * =rxd.py= functions
 
@@ -145,6 +167,7 @@ All in =neuron.rxd= namespace
 
 * NEURON integration procedure
 
+#+BEGIN_SRC c++
 // Simplified from nrnoc/fadvance.c:
 void* nrn_fixed_step_thread(NrnThread* nth) {
 	double wt;
@@ -162,6 +185,7 @@ void* nrn_fixed_step_thread(NrnThread* nth) {
   nrn_fixed_step_lastpart(nth); 
 	return (void*)0;
 }
+
 
 /* Simplified from nrnoc/treeset.c: */
 /* for the fixed step method */
@@ -210,3 +234,4 @@ hoc_warning("errno set during calculation of states", (char*)0);
 	long_difus_solve(0, _nt); /* if any longitudinal diffusion */
 	nrn_nonvint_block_fixed_step_solve(_nt->id);
 }
+#+END_SRC
