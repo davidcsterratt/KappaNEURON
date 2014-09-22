@@ -520,12 +520,29 @@ class Kappa(MultiCompartmentReaction):
         self._mult = [1]
 
     def setVariable(self, variable, value):
-        """Sets a variable in the kappa simuluations."""
+        """Sets a variable in the Kappa simuluations.
+
+        Keyword arguments:
+
+        variable -- String corresponding to %var described in kappa_file.
+
+        value -- Float to set the variable to.
+
+        """
         for kappa_sim in self._kappa_sims:
             kappa_sim.setVariable(float(value), variable)
 
     def run_free(self, t_run):
-        """Run kappa simulation free of NEURON, i.e. with NEURON not updating timesteps."""
+        """Run Kappa simulations free of NEURON
+
+        During run_free() invocations, there is no passing or
+        receiving of fluxes between NEURON and Kappa.
+
+        Keyword arguments:
+
+        t_run -- Time in millseconds for which to run.
+
+        """
         for kptr in _kappa_schemes:
             k = kptr()
             for kappa_sim in k._kappa_sims:
@@ -559,9 +576,11 @@ class Kappa(MultiCompartmentReaction):
             return []
 
     def re_init(self):
-        """This sets the initial concentration/number of kappa variables.
+        """Sets the initial concentration/number of kappa variables.  
+
         This is perhaps an abuse of this function, but it is called at
-        init() time
+        init() time.
+
         """
         volumes = nrr.node._get_data()[0]
         states = nrr.node._get_states()[:]
