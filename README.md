@@ -20,16 +20,16 @@ Biology 2014
 ## Installation and testing ##
 
 * First install NEURON from source according to the commands in
-  [INSTALL-neuron][INSTALL-neuron]
-* Then follow the instructions in [INSTALL][INSTALL]
+  [doc/INSTALL-neuron][INSTALL-neuron]
+* Then follow the instructions in [doc/INSTALL.md][INSTALL]
 
 [SpatialKappa]: https://github.com/davidcsterratt/SpatialKappa "SpatialKappa"
 
 [NEURON]: http://neuron.yale.edu/neuron/ "NEURON"
 
-[INSTALL-neuron]: INSTALL-neuron "NEURON installation instructions"
+[INSTALL-neuron]: doc/INSTALL-neuron "NEURON installation instructions"
 
-[INSTALL]: INSTALL "KappaNEURON installation instructions"
+[INSTALL]: doc/INSTALL.md "KappaNEURON installation instructions"
 
 <!--  LocalWords:  KappaNEURON SpatialKappa KappNEURON
  -->
