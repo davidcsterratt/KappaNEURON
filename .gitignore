@@ -7,3 +7,4 @@ x86_64
 *.aux
 *.log
 auto
+build
