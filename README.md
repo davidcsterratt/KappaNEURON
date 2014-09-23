@@ -11,7 +11,7 @@ the postsynaptic proteome in the context of the spine head.
 ![KappNEURON demonstration simulation of postsynaptic proteome in context of spine head - first 6 seconds](doc/figs/neuron_kappa_Very_short_6000.png)
 ![KappNEURON demonstration simulation of postsynaptic proteome in context of spine head - first 65 seconds](doc/figs/neuron_kappa_Very_short_65000.png)
 
-## Futher details ##
+## Further details ##
 
 * Draft paper to be published in the proceedings of Hybrid Systems
 Biology 2014
@@ -26,3 +26,10 @@ Biology 2014
 [SpatialKappa]: https://github.com/davidcsterratt/SpatialKappa "SpatialKappa"
 
 [NEURON]: http://neuron.yale.edu/neuron/ "NEURON"
+
+[INSTALL-neuron]: INSTALL-neuron "NEURON installation instructions"
+
+[INSTALL]: INSTALL "KappaNEURON installation instructions"
+
+<!--  LocalWords:  KappaNEURON SpatialKappa KappNEURON
+ -->
