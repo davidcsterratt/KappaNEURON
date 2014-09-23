@@ -8,13 +8,9 @@ embedded in neurons.
 For example, the package facilitates simulation of dynamic models of
 the postsynaptic proteome in the context of the spine head.
 
-![doc/figs/neuron_kappa_Very_short_6000.png](KappNEURON demonstration
- simulation of postsynaptic proteome in context of spine head - first
- 6 seconds)
-![doc/figs/neuron_kappa_Very_short_65000.png](KappNEURON demonstration
- simulation of postsynaptic proteome in context of spine head - first 65 seconds)
-
-
+![KappNEURON demonstration simulation of postsynaptic proteome in context of spine head - first 6 seconds](doc/figs/neuron_kappa_Very_short_6000.png)
+ 
+![KappNEURON demonstration simulation of postsynaptic proteome in context of spine head - first 65 seconds](doc/figs/neuron_kappa_Very_short_65000.png)
 
 [SpatialKappa]: https://github.com/davidcsterratt/SpatialKappa "SpatialKappa"
 
