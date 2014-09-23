@@ -7,11 +7,7 @@ import numpy
 import random
 import os
 
-## Time for equilibriation in seconds
-t_equil = 1
-
-## Neuron
-
+## Create Neuron
 h.celsius = 34                  # Temperature
 g_pas = 0.0001               # Gives membrane time constant of 10ms
 
@@ -41,25 +37,26 @@ sh.diam = 0.8
 sh.g_pas = g_pas
 sh.connect(sn, 1, 0)
 
-# Synapse
+## Create stimuluse to trigger synapse containing Kappa mechanism
+## paired with action potential
 synstim = h.NetStim()
 synstim.start = 20
-#synstim.start = t_equil*1000 + 10
 synstim.noise = 0
 synstim.number = 25
 synstim.interval = 200
 
+## Create the AMPA and NMDA synapses
 ampasyn     = h.AmpaSyn(sh(0.5))
 ampanetcon  = h.NetCon(synstim, ampasyn)
-ampanetcon.weight[0] = 0.20E-3     # From the ddsp work
+ampanetcon.weight[0] = 0.20E-3
 
 nmdasyn     = h.NmdaSynUrak(sh(0.5))
 h.K0_NmdaSynUrak =  2.57                   
 h.delta_NmdaSynUrak = 0.96
 nmdanetcon  = h.NetCon(synstim, nmdasyn)
-nmdanetcon.weight[0] = 0.045E-3     # From the ddsp work
+nmdanetcon.weight[0] = 0.045E-3
 
-## Used to initiate action potential
+## Used to initiate action potential 1ms after the synaptic stimulus
 apinit = h.ExpSyn(dend(0))
 apinit.tau = 0.3/3
 apinit.e = 0
@@ -67,12 +64,11 @@ apinitcon = h.NetCon(synstim, apinit)
 apinitcon.weight[0] = 3*0.4/70 # 0.4nA/70mV = 0.4/70 uS
 apinitcon.delay = 1
 
-
+## Create synaptic bombardment
 class MyAmpaSyn():
     def __init__(self):
         self.stim = h.NetStim()
         self.stim.start = 20
-        #stim.start = t_equil*1000 + 10
         self.stim.noise = 1
         self.stim.number = 400
         self.stim.interval = 20
@@ -85,7 +81,6 @@ synlist = []
 for i in range(1, 50):
     synlist.append(MyAmpaSyn())
 
-
 ## This setting of parameters gives a calcium influx and pump
 ## activation that is more-or-less scale-independent
 vol = sh.L*numpy.pi*(sh.diam/2)**2
@@ -93,12 +88,10 @@ N_A = 6.02205E23 # Avogadro's constant
 # Concentration of one agent in the volume in mM 
 agconc = 1E18/(N_A * vol)
 
-## Reaction-diffusion mechanism
-## This appears to integrate the incoming Ca
-# WHERE the dynamics will take place
+## Create region where the dynamics will take place
 r = rxd.Region([sh], nrn_region='i')
 
-# WHO are the actors
+## Create species
 ca         = rxd.Species(r, name='ca'        , charge=2, initial=0.001)
 Glu        = rxd.Species(r, name='Glu'       , charge=1, initial=0)
 NMDA       = rxd.Species(r, name='NMDA'      , charge=0, initial=19*agconc)
@@ -112,20 +105,12 @@ KCaCaM2C   = rxd.Species(r, name='KCaCaM2C'  , charge=0)
 CaMKIIp    = rxd.Species(r, name='CaMKIIp'   , charge=0)
 stargazinp = rxd.Species(r, name='stargazinp', charge=0)
 
-#  KCaCaM2C, , CaCB
-kappa = KappaNEURON.Kappa([ca, Glu, NMDA, CB, cam, CaMKII, CaCB, CaCaMC, CaCaMN, KCaCaM2C, CaMKIIp, stargazinp], "simple-psd-pepke-kappa-nmda.ka", r, time_units="ms", verbose=True)
+## Create Kappa simulation defined in caPump.ka in the context of
+## the spine. Since Calcium crosses the membrane it is given in
+## the membrane_species argument, whereas the pump molecule is
+## defined in the species argument as it is purely internal. 
+kappa = KappaNEURON.Kappa(membrane_species=[ca], species=[Glu, NMDA, CB, cam, CaMKII, CaCB, CaCaMC, CaCaMN, KCaCaM2C, CaMKIIp, stargazinp], kappa_file='simple-psd-pepke-kappa-nmda.ka', regions=r)
 rxd.rxd.verbose=False
-## This setting of parameters gives a calcium influx and pump
-## activation that is more-or-less scale-independent
-vol = sh.L*numpy.pi*(sh.diam/2)**2
-
-## Reaction-diffusion mechanism
-## This appears to integrate the incoming Ca
-# WHERE the dynamics will take place
-#r = rxd.Region([sh], nrn_region='i')
-
-# WHO are the actors
-#ca = rxd.Species(r, name='ca', charge=2, initial=0.01)
 
 ## Record Time from NEURON (neuron.h._ref_t)
 rec_t = h.Vector()
@@ -164,15 +149,10 @@ rec_stargazinpi.record(sh(0.5)._ref_stargazinpi)
 init()
 print("Running kappa-only to initialise")
 ## FIXME: put in some read-out to check when system has equilibriated.
-# kappa.run_free(120*1000)
 kappa.run_free(1000)
-# for i in range(1,t_equil):
-#     run(h.t + 10)
-#     kappa.run_free(990)
-#     h.t = h.t + 990
 print("Running NEURON-kappa")
 run(6000)
-if (0):
+if (1):
     for i in range(1,60):
         print("Running kappa-only")
         kappa.run_free(990)
