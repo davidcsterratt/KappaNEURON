@@ -27,7 +27,7 @@ def run(diam=0.2,
     ## the membrane_species argument, whereas the pump molecule is
     ## defined in the species argument as it is purely internal. 
     KappaNEURON.mode='continuous_influx'
-    kappa = KappaNEURON.Kappa(membrane_species=[ca], species=[P], kappa_file='caPump.ka', regions=r)
+    kappa = KappaNEURON.Kappa(membrane_species=[ca], species=[P], kappa_file='caPump2.ka', regions=r)
     ## Set variables in the Kappa simulation
     vol = sh.L*numpy.pi*(sh.diam/2)**2
     kappa.setVariable('k1', 47.3)
