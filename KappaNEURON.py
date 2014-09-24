@@ -597,11 +597,12 @@ class Kappa(MultiCompartmentReaction):
                     try:
                         kappa_sim.getVariable(s.name)
                     except:
-                        raise NameError('There is no observable in %s called %s; add a line like this:\n%%obs: \'%s\' <complex definition> ' % (self._kappa_file, s.name, s.name))
-                    try:
-                        kappa_sim.setAgentInitialValue(s.name, nions)
-                    except Py4JJavaError as e:
-                        raise NameError('Error setting initial value of agent %s to %d\n%s' % (s.name, nions,  str(e.java_exception)))
+                        raise NameError('There is no observable or variable in %s called %s; add a line like this:\n%%obs: \'%s\' <complex definition> ' % (self._kappa_file, s.name, s.name))
+                    if kappa_sim.isAgent(s.name):
+                        try:
+                            kappa_sim.setAgentInitialValue(s.name, nions)
+                        except Py4JJavaError as e:
+                            raise NameError('Error setting initial value of agent %s to %d\n%s' % (s.name, nions,  str(e.java_exception)))
                         
 
 
