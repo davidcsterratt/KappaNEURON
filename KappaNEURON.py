@@ -444,7 +444,6 @@ class Kappa(MultiCompartmentReaction):
         if membrane_flux not in (True, False):
             raise Exception('membrane_flux must be either True or False')
         if membrane_flux and regions is None:
-            # TODO: rename regions to region?
             raise Exception('if membrane_flux then must specify the (unique) membrane regions')
         ## Set up the sources for _get_memb_flux(). In
         ## multicompartmentReaction.py some of this is done in
@@ -496,23 +495,26 @@ class Kappa(MultiCompartmentReaction):
                 java_err = re.sub(r'java.lang.IllegalStateException: ', r'', str(e.java_exception))
                 errstr = 'Error in kappa file %s: %s' % (self._kappa_file, java_err)
                 raise RuntimeError(errstr)
-            
-            if (mode == 'continuous_influx'):
-                s = self._involved_species[0]()
-                ## Get description of agent
-                agent = kappa_sim.getAgentMap(s.name)
-                link_names = agent[s.name].keys()
-                if (len(link_names) > 1):
-                    errstr = 'Error in kappa file %s: Agent %s has more than one site' % (self._kappa_file, s.name)
-                    raise RuntimeError()
                 
-                link_name = link_names[0]
-
-                ## Add transition to create 
-                kappa_sim.addTransition('Create %s' % (s.name), {}, agent, 0.0)
-
-                ## Add variable to measure total species
-                kappa_sim.addVariableMap('Total %s' % (s.name), {s.name: {link_name: {'l': '?'}}})
+            ## Set up transitions to create membrane species in Kappa
+            ## simulation and measure the total amount of the agent
+            ## corresponding to the membrane species
+            if (mode == 'continuous_influx'):
+                for s in self._membrane_species:
+                    ## Get description of agent
+                    agent = kappa_sim.getAgentMap(s.name)
+                    link_names = agent[s.name].keys()
+                    if (len(link_names) > 1):
+                        errstr = 'Error in kappa file %s: Agent %s has more than one site' % (self._kappa_file, s.name)
+                        raise RuntimeError()
+                    
+                    link_name = link_names[0]
+                    
+                    ## Add transition to create 
+                    kappa_sim.addTransition('Create %s' % (s.name), {}, agent, 0.0)
+                    
+                    ## Add variable to measure total species
+                    kappa_sim.addVariableMap('Total %s' % (s.name), {s.name: {link_name: {'l': '?'}}})
 
             self._kappa_sims.append(kappa_sim)
             ## TODO: Should we check if we are inserting two kappa schemes
