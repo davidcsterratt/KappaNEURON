@@ -5,12 +5,12 @@ from neuron import rxd
 import KappaNEURON
 
 def run(diam=0.2, 
-        gcalbar=0.05,
+        gbar=0.05,
         gamma2=1,
         P0=0.2,
         vclamp=False):
     # Make spine head in NEURON
-    sh = make_spine_head(diam=diam, gcalbar=gcalbar)
+    sh = make_spine_head(diam=diam, gbar=gbar)
 
     ## Create region where the dynamics will take place
     r = rxd.Region([sh], nrn_region='i')

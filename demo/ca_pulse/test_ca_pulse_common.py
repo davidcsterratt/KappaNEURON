@@ -6,8 +6,9 @@ import re
 import matplotlib.pyplot as plt
 import numpy
 
+vinit = -70
 
-def make_spine_head(L=0.1, diam=0.2, gcalbar=0.05):
+def make_spine_head(L=0.1, diam=0.2, gbar=0.05):
     # Spine Head
     sh = h.Section()
     sh.insert("pas")                # Passive channel
@@ -17,8 +18,11 @@ def make_spine_head(L=0.1, diam=0.2, gcalbar=0.05):
 
     ## This setting of parameters gives a calcium influx and pump
     ## activation that is more-or-less scale-independent
-    sh.gcalbar_capulse = gcalbar*sh.diam
-
+    sh.gbar_capulse = gbar # *sh.diam
+    sh.fghk_capulse = 1         # Use GHK
+    sh.t0_capulse = 5
+    sh.t1_capulse = 10
+    
     return(sh)
 
 def insert_vclamp(sh):
@@ -33,6 +37,7 @@ def insert_vclamp(sh):
     return(stim)
 
 def run_and_save(sh, rec_Pi, dataname='test_ca_pulse_mod'):
+    global vinit
     init()
     ## Record Time from NEURON (neuron.h._ref_t)
     rec_t = h.Vector()
@@ -75,19 +80,20 @@ def plot_records(tcp_mod, tcp):
     ax[0].plot(tcp['t'],     tcp['voltages'],   'r')
     ax[0].set_xlabel("")
     ax[0].set_ylabel("V (mV)")
-    ax[0].axis(ymin=-80, ymax=50)
+    ax[0].axis(ymin=-100, ymax=0)
     ax[0].xaxis.set_ticklabels([])
-    ax[0].yaxis.set_ticks([-80, 0])
+    ax[0].yaxis.set_ticks([-100, 0])
 
     icamin = min(numpy.concatenate([tcp_mod['ica'], tcp['ica']]))
+    icamax = max(numpy.concatenate([tcp_mod['ica'], tcp['ica']]))
     ax[1].plot(tcp_mod['t'], tcp_mod['ica'])
     ax[1].plot(tcp['t'],     tcp['ica'],   'r')
     ax[1].set_xlabel("")
     ax[1].set_ylabel("ICa (mA/cm2)")
     ax[1].axis(ymin=icamin*1.1,
-               ymax=-0.1*icamin)
+               ymax=icamax*1.1)
     ax[1].xaxis.set_ticklabels([])
-    ax[1].yaxis.set_ticks([0, -0.1])
+    ax[1].yaxis.set_ticks([0.1, 0, -0.2])
 
     caimax = max(numpy.concatenate([tcp_mod['cai'], tcp['cai']]))
     ax[2].plot(tcp_mod['t'], tcp_mod['cai'])
@@ -95,8 +101,8 @@ def plot_records(tcp_mod, tcp):
     ax[2].set_xlabel("")
     ax[2].set_ylabel("[Ca] (mM)")
     ax[2].axis(ymin=-0.1*caimax, ymax=caimax*1.1)
-    ax[2].xaxis.set_ticklabels([])
-    ax[2].yaxis.set_ticks([0, 0.020])
+    ##ax[2].xaxis.set_ticklabels([])
+    ##ax[2].yaxis.set_ticks([0, 0.020])
 
     Pimax = max(numpy.concatenate([tcp_mod['Pi'], tcp['Pi']]))
     ax[3].plot(tcp_mod['t'], tcp_mod['Pi'])
@@ -110,17 +116,17 @@ def plot_records(tcp_mod, tcp):
     
     return fig, ax
 
-def compare_traces(diam=0.2, gcalbar=0.05, 
-                   gamma2=1, P0=0.2, vclamp=False):
+def compare_traces(diam=0.2, gbar=0.001, 
+                   gamma2=0.1, P0=0.2, vclamp=False):
     import test_ca_pulse_mod
     test_ca_pulse_mod.run(diam=diam, 
-                          gcalbar=gcalbar,
+                          gbar=gbar,
                           gamma2=gamma2,
                           P0=P0,
                           vclamp=vclamp)
     import test_ca_pulse
     test_ca_pulse.run(diam=diam, 
-                      gcalbar=gcalbar,
+                      gbar=gbar,
                       gamma2=gamma2,
                       P0=P0,
                       vclamp=vclamp)
@@ -130,7 +136,7 @@ def compare_traces(diam=0.2, gcalbar=0.05,
 
     fig, ax = plot_records(tcp_mod, tcp)
 
-    filename = re.sub('\.', '_', 'compare_ca_pulse-diam:%1.1f-gcalbar:%1.3f-gamma2:%1.3f-P0:%1.3f' % (diam, gcalbar, gamma2, P0)) + '.pdf'
+    filename = re.sub('\.', '_', 'compare_ca_pulse-diam:%1.1f-gbar:%1.3f-gamma2:%1.3f-P0:%1.3f' % (diam, gbar, gamma2, P0)) + '.pdf'
     fig.savefig('%s' % filename, format='pdf')
 
     print('Ca Discrepancy: ' + str(max(abs(tcp_mod['cai'] - tcp['cai']))))
