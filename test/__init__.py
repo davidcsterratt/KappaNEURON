@@ -46,6 +46,8 @@ class TestCaAccumulation(unittest.TestCase):
     P0 = 0 
 
     tol = 0.01
+    KappaNEURON.verbose = False
+
     def assertEqualWithinTol(self, a, b, tol=None):
         if tol == None:
             tol = self.tol
@@ -106,7 +108,6 @@ class TestCaAccumulation(unittest.TestCase):
                     self.rec_Pi[-1].record(sec(0.5)._ref_Pi)
         
         KappaNEURON.progress = False
-        KappaNEURON.verbose = False
 
         self.assertIsInstance(self.sk, nrn.Section)
         self.assertEqual(self.ca.initial, 0.0)
@@ -338,7 +339,29 @@ class TestCaAccumulation(unittest.TestCase):
             cai = np.array(self.rec_cai[i])
             self.assertGreater(cai[np.where(np.isclose(times, self.t1 + 0.1))],
                                cai[np.where(np.isclose(times, self.tstop))])
+            i += 1
 
+    def test_injectCalciumPump2k2(self):
+        self.t1 = 2.0
+        self.tstop = 5.0
+        self.k1 = 1
+        self.k2 = 10
+        self.P0 = 0.20 
+        self.injectCalcium(ghk=0, mechanism='caPump2')
+        self.do_plot()
+        ## Run through both sections
+        times = np.array(self.rec_t)
+        i = 0
+        for sec in h.allsec():
+            mode = self.get_mode(sec)
+            print mode
+            v = np.array(self.rec_v[i])
+            self.assertGreater(v[np.where(np.isclose(times, self.t1 + 0.1))],
+                                   v[np.where(np.isclose(times, self.tstop))])
+            cai = np.array(self.rec_cai[i])
+            self.assertGreater(cai[np.where(np.isclose(times, self.t1 + 0.1))],
+                               cai[np.where(np.isclose(times, self.tstop))])
+            i += 1
 
     def tearDown(self):
         self.kappa = None
