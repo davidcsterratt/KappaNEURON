@@ -55,7 +55,9 @@ nrr._fih = neuron.h.FInitializeHandler(_kn_init)
 
 mode = 'lumped_influx' # 'continuous_influx'
 mode = 'continuous_influx'
+
 _db = None
+global _db 
 
 def _kn_fixed_step_solve(raw_dt):
     if (mode == 'lumped_influx'):
@@ -259,22 +261,22 @@ def _run_kappa_continuous(states, b, dt):
                 t_kappa = kappa_sim.getTime()
                 report("kappa time now %f" % (t_kappa))
 
-            ## Recording total ending value of each species
-            for sptr in k._involved_species:
-                s = sptr()
-                for kappa_sim, i, j in zip(k._kappa_sims, k._indices_dict[s], range(len(k._indices_dict[s]))):
+            ## Recording total ending value of each membrane species
+            _db = numpy.zeros(len(_db))
+            for s in k._membrane_species:
+                for kappa_sim, i, cur_maps in zip(k._kappa_sims, k._indices_dict[s], k._cur_mapped):
                     ## For ions, compute the current
-                    if (s.charge == 0):
-                        _db[j] = 0.0
-                    else:
-                        Stot1 = kappa_sim.getVariable('Total %s' % (s.name))
-                        report("Stot1[%s][%d] = %f" % (s.name, i, Stot1))
-                        DeltaStot = Stot1 - Stot0[s.name][i]
-                        bnew = DeltaStot/(dt*molecules_per_mM_um3*volumes[i])
-                        _db[j] = (b[i] - bnew)
-                        report("Species %s: DeltaStot=%d, bnew=%f, b=%f, _db=%f" % (s.name, DeltaStot, bnew, b[i], _db[-1]))
-                        b[i] = bnew
-
+                    Stot1 = kappa_sim.getVariable('Total %s' % (s.name))
+                    report("Stot1[%s][%d] = %f" % (s.name, i, Stot1))
+                    DeltaStot = Stot1 - Stot0[s.name][i]
+                    bnew = DeltaStot/(dt*molecules_per_mM_um3*volumes[i])
+                    for cur_map_i in cur_maps:
+                        for sign, c in zip([-1, 1], cur_map_i):
+                            if c is not None:
+                                _db[c] += sign * (bnew - b[i])
+                    report("Species %s: DeltaStot=%d, bnew=%f, b=%f, _db=%f" % (s.name, DeltaStot, bnew, b[i], _db[-1]))
+                    b[i] = bnew
+        
         report("States before update")
         report(states)
         
