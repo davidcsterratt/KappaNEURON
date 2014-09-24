@@ -163,7 +163,7 @@ def _kn_fixed_step_solve_lumped_influx(raw_dt):
                 s = sptr()
                 name = s.name
                 for kappa_sim, i in zip(k._kappa_sims, k._indices_dict[s]):
-                    states[i] = kappa_sim.getObservation(name) \
+                    states[i] = kappa_sim.getVariable(name) \
                         /(molecules_per_mM_um3 * volumes[i])
 
         report("Updated states")
@@ -252,7 +252,6 @@ def _run_kappa_continuous(states, b, dt):
                     for kappa_sim, i in zip(k._kappa_sims, k._indices_dict[s]):
                         Stot0[s.name][i] = kappa_sim.getVariable('Total %s' % (s.name))
                         report("Stot0[%s][%d] = %f" % (s.name, i, Stot0[s.name][i]))
-                        # print(kappa_sim)
 
             report("RUN 1 KAPPA STEP")  
             for kappa_sim in k._kappa_sims:
@@ -296,7 +295,7 @@ def _run_kappa_continuous(states, b, dt):
                 s = sptr()
                 for kappa_sim, i in zip(k._kappa_sims, k._indices_dict[s]):
                     ## Update concentration
-                    states[i] = kappa_sim.getObservation(s.name) \
+                    states[i] = kappa_sim.getVariable(s.name) \
                                 /(molecules_per_mM_um3 * volumes[i])
         report("States after kappa update")
         report(states)
@@ -515,6 +514,8 @@ class Kappa(MultiCompartmentReaction):
                     
                     ## Add variable to measure total species
                     kappa_sim.addVariableMap('Total %s' % (s.name), {s.name: {link_name: {'l': '?'}}})
+                    ## Add observation variable
+                    kappa_sim.addVariableMap('%s' % (s.name), {s.name: {}})
 
             self._kappa_sims.append(kappa_sim)
             ## TODO: Should we check if we are inserting two kappa schemes
@@ -594,7 +595,7 @@ class Kappa(MultiCompartmentReaction):
                                   * molecules_per_mM_um3 * volumes[i])
                     ## print "Species ", s.name, " conc ", states[i], " nions ", nions
                     try:
-                        kappa_sim.getObservation(s.name)
+                        kappa_sim.getVariable(s.name)
                     except:
                         raise NameError('There is no observable in %s called %s; add a line like this:\n%%obs: \'%s\' <complex definition> ' % (self._kappa_file, s.name, s.name))
                     try:

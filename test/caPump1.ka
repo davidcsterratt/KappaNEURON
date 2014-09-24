@@ -14,7 +14,7 @@
 # running as a stand-alone Kappa file
 %init: 1000 ca(x)
 
-# An observation. This line will be overridden by NEURON, but is useful if
+# An observation. This line is not needed by NEURON but is useful if
 # running as a stand-alone Kappa file
-%obs: 'ca' ca(x)
+# %obs: 'ca' ca(x)
 
