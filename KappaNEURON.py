@@ -121,8 +121,7 @@ def _kn_fixed_step_solve_lumped_influx(raw_dt):
             ## This should work for multiple species working, but has only
             ## been tested for ca
             report("\nADDING FLUXES TO KAPPA")
-            for  sptr in k._involved_species:
-                s = sptr()
+            for  s in k._membrane_species:
                 name = s.name
                 report("ION: %s" % (name))
                 for kappa_sim, i in zip(k._kappa_sims, k._indices_dict[s]):
@@ -213,19 +212,16 @@ def _run_kappa_continuous(states, b, dt):
     for kptr in _kappa_schemes:
         k = kptr()
         report("\nPASSING FLUXES TO KAPPA")
-        for  sptr in k._involved_species:
-            s = sptr()
-            if (s.charge != 0):
-                report("ION: %s" % (s.name))
-                for kappa_sim, i in zip(k._kappa_sims, k._indices_dict[s]):
-                    ## Number of ions
-                    ## Flux b has units of mM/ms
-                    ## Volumes has units of um3
-                    ## _conversion factor has units of molecules mM^-1 um^-3
-                    flux = b[i] * molecules_per_mM_um3 * volumes[i]
-                    kappa_sim.setTransitionRate('Create %s' % (s.name), flux)
-                    report("Setting %s flux[%d] to b[%d]*NA*vol[%d] = %f*%f*%f = %f" % (s.name, i, i, i,  b[i], molecules_per_mM_um3, volumes[i], flux))
-
+        for s in k._membrane_species:
+            report("ION: %s" % (s.name))
+            for kappa_sim, i in zip(k._kappa_sims, k._indices_dict[s]):
+                ## Number of ions
+                ## Flux b has units of mM/ms
+                ## Volumes has units of um3
+                ## _conversion factor has units of molecules mM^-1 um^-3
+                flux = b[i] * molecules_per_mM_um3 * volumes[i]
+                kappa_sim.setTransitionRate('Create %s' % (s.name), flux)
+                report("Setting %s flux[%d] to b[%d]*NA*vol[%d] = %f*%f*%f = %f" % (s.name, i, i, i,  b[i], molecules_per_mM_um3, volumes[i], flux))
 
             report("PASSING MEMBRANE POTENTIAL TO KAPPA")
             ## TODO: pass membrane potential to kappa
