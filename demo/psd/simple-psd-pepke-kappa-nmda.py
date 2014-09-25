@@ -93,7 +93,7 @@ r = rxd.Region([sh], nrn_region='i')
 
 ## Create species
 ca         = rxd.Species(r, name='ca'        , charge=2, initial=0.001)
-Glu        = rxd.Species(r, name='Glu'       , charge=1, initial=0)
+Glu        = rxd.Species(r, name='Glu'       , charge=0, initial=0)
 NMDA       = rxd.Species(r, name='NMDA'      , charge=0, initial=19*agconc)
 CB         = rxd.Species(r, name='CB'        , charge=0, initial=0.100) # Faas &al
 cam        = rxd.Species(r, name='CaM'       , charge=0, initial=0.030) # Fass &al, Pepke &al
