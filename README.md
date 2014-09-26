@@ -30,7 +30,7 @@ Authorship & License
 --------------------
 
 KappaNEURON is Copyright © 2013-2014 David C. Sterratt
-<david.c.sterratt@ed.ac.uk> and is released under the
+<<david.c.sterratt@ed.ac.uk>> and is released under the
 [GPL Version 3](http://www.gnu.org/copyleft/gpl.html).
 
 We thank Anatoly Sorokin for his help with SpatialKappa and Vincent
