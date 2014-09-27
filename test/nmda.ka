@@ -1,0 +1,22 @@
+# Simple calcium pump with NMDA syanpse
+
+# Declaration of internal calcium; the name needs to be 'ca' to match
+# up with calcium in NEURON
+%agent: ca(x)
+%agent: glu(b)
+
+
+# Rules
+'ca extrusion' ca(x)  ->  @ 5
+# Clear glu quickly from the cleft wihtin about 100uS
+'glu clearance'    glu(b) ->  @ 10 
+
+# Initialise. This line will be overridden by NEURON, but is useful if
+# running as a stand-alone Kappa file
+%init: 1 ca(x)
+%init: 1 glu(b)
+
+# An observation. This line is not needed by NEURON but is useful if
+# running as a stand-alone Kappa file
+# %obs: 'ca' ca(x)
+
