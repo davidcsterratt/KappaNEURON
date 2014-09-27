@@ -8,3 +8,6 @@ x86_64
 *.log
 auto
 build
+doc/notes.tex
+figs
+debug
