@@ -52,7 +52,6 @@ class TestCaAccumulation(unittest.TestCase):
         if tol == None:
             tol = self.tol
         self.assertAlmostEqual(a, b, delta=tol*a)
-        
 
     def setUp(self):
         self.caitonum = self.NA*np.pi*(self.sk.diam**2)/4*self.sk.L*1e-18 
@@ -228,6 +227,12 @@ class TestCaAccumulation(unittest.TestCase):
 
         return(Deltav, Deltaca, Deltav_theo, Deltaca_theo, volbyarea, vtocai, diffv, diffca)
 
+    def test_startup(self):
+        mechanism = 'caPump1'
+        self.kappa = KappaNEURON.Kappa(membrane_species=[self.ca], kappa_file=self.__module__ + "/" + mechanism + ".ka", regions=self.r)
+        self.assertIsInstance(self.kappa._kappa_fluxes[0], KappaNEURON.KappaFlux)
+        init()
+        self.assertEqual(rxd.rxd._curr_indices, [1])
 
     def test_injectCalcium(self):
         self.tstop = self.t1 + h.dt

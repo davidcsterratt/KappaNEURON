@@ -56,9 +56,6 @@ nrr._fih = neuron.h.FInitializeHandler(_kn_init)
 mode = 'lumped_influx' # 'continuous_influx'
 mode = 'continuous_influx'
 
-_db = None
-global _db 
-
 def _kn_fixed_step_solve(raw_dt):
     if (mode == 'lumped_influx'):
         _kn_fixed_step_solve_lumped_influx(raw_dt)
@@ -196,7 +193,6 @@ def _kn_fixed_step_solve_lumped_influx(raw_dt):
         sys.stdout.flush()
 
 def _run_kappa_continuous(states, b, dt):
-    global _db
     #############################################################################
     ## 1. Pass all relevant continous variables to the rule-based simulator
     ##
@@ -243,9 +239,9 @@ def _run_kappa_continuous(states, b, dt):
 
             ## Recording total starting value of each species
             Stot0 = {}
-            for sptr in k._sources:
-                s = sptr()._species()
-                if (s.charge != 0):
+            for f in k._kappa_fluxes:
+                for sptr in f._sources:
+                    s = sptr()._species()
                     Stot0[s.name] = {}
                     for kappa_sim, i in zip(k._kappa_sims, k._indices_dict[s]):
                         Stot0[s.name][i] = kappa_sim.getVariable('Total %s' % (s.name))
@@ -258,20 +254,19 @@ def _run_kappa_continuous(states, b, dt):
                 report("kappa time now %f" % (t_kappa))
 
             ## Recording total ending value of each membrane species
-            _db = numpy.zeros(len(_db))
-            for s in k._membrane_species:
-                for kappa_sim, i, cur_maps in zip(k._kappa_sims, k._indices_dict[s], k._cur_mapped):
-                    ## For ions, compute the current
-                    Stot1 = kappa_sim.getVariable('Total %s' % (s.name))
-                    report("Stot1[%s][%d] = %f" % (s.name, i, Stot1))
-                    DeltaStot = Stot1 - Stot0[s.name][i]
-                    bnew = DeltaStot/(dt*molecules_per_mM_um3*volumes[i])
-                    for cur_map_i in cur_maps:
-                        for sign, c in zip([-1, 1], cur_map_i):
-                            if c is not None:
-                                _db[c] += sign * (bnew - b[i])
-                    report("Species %s: DeltaStot=%d, bnew=%f, b=%f, _db=%f" % (s.name, DeltaStot, bnew, b[i], _db[-1]))
-                    b[i] = bnew
+            for f in k._kappa_fluxes:
+                f._memb_flux = []
+                for sptr in f._sources:
+                    s = sptr()._species()
+                    for kappa_sim, i in zip(k._kappa_sims, k._indices_dict[s]):
+                        ## For ions, compute the current
+                        Stot1 = kappa_sim.getVariable('Total %s' % (s.name))
+                        report("Stot1[%s][%d] = %f" % (s.name, i, Stot1))
+                        DeltaStot = Stot1 - Stot0[s.name][i]
+                        bnew = DeltaStot/(dt*molecules_per_mM_um3*volumes[i])
+                        f._memb_flux.append(-(bnew - b[i]))
+                        report("Species %s: DeltaStot=%d, bnew=%f, b=%f, _memb_flux=%f" % (s.name, DeltaStot, bnew, b[i], f._memb_flux[-1]))
+                        b[i] = bnew
         
         report("States before update")
         report(states)
@@ -303,7 +298,7 @@ def _run_kappa_continuous(states, b, dt):
 
 ## Override the NEURON nonvint _fixed_step_solve callback   
 def _kn_fixed_step_solve_continuous_influx(raw_dt):
-    global _kappa_schemes, _db
+    global _kappa_schemes
     
     report("---------------------------------------------------------------------------")
     report("FIXED STEP SOLVE. NEURON time %f" % nrr.h.t)
@@ -374,7 +369,7 @@ def setSeed(seed):
 
     # _kappa_sims[0].setSeed(seed)
 
-class Kappa(MultiCompartmentReaction):
+class Kappa(GeneralizedReaction):
     def __init__(self, *args, **kwargs):
         """Specify a Kappa model spanning the membrane to be added to the system.
         
@@ -436,22 +431,20 @@ class Kappa(MultiCompartmentReaction):
         self._active_regions = []
         self._scale_by_area = scale_by_area
         self._trans_membrane = False
-        self._membrane_flux = membrane_flux
+        self._membrane_flux = False
         self._time_units = time_units
         if membrane_flux not in (True, False):
             raise Exception('membrane_flux must be either True or False')
         if membrane_flux and regions is None:
             raise Exception('if membrane_flux then must specify the (unique) membrane regions')
-        ## Set up the sources for _get_memb_flux(). In
-        ## multicompartmentReaction.py some of this is done in
-        ## _update_rates()
-        self._lhs_items = []
-        self._sources = []
+        ## Create KappaFlux objects
+        self._kappa_fluxes = []
         for s in self._membrane_species:
-            i = s[self._regions[0]]
-            self._lhs_items.append(i)
-            w = weakref.ref(i)
-            self._sources += [w]
+            self._kappa_fluxes.append(KappaFlux(membrane_species=[s], 
+                                                regions=self._regions,
+                                                membrane_flux=membrane_flux,
+                                                kappa_parent=self))
+        self._sources = []
         self._dests = []
         self._update_indices()
         self._create_kappa_sims()
@@ -550,32 +543,6 @@ class Kappa(MultiCompartmentReaction):
                 kappa_sim.runForTime(float(t_run), True)
 
     ## Overridden functions
-    
-    def _get_memb_flux(self, states):
-        """Returns the flux across the membrane due to univalent ion in mA/cm^2
-
-        In KappaNEURON, this flux is determined by the net change in
-        number of ions during the preceding time step, which is
-        calculated in _kn_fixed_step_solve().
-        """
-        if self._membrane_flux:
-            ## _db has been set in _kn_fixed_step_solve(), unless it's
-            ## the first time step, in which case we need to create it.
-            global _db
-            if _db is None:
-                len_db = 0
-                for sptr in self._sources:
-                    s = sptr()._species()
-                    len_db += len(self._indices_dict[s])
-                    _db = nrr._numpy_zeros(len_db)
-
-            ## TODO: Use the full volumes and surface_area vectors
-            volumes, surface_area, diffs = nrr.node._get_data()
-            ## This has units of mA/cm2
-            return -self._memb_scales*_db*molecules_per_mM_um3
-        else:
-            return []
-
     def re_init(self):
         """Sets the initial concentration/number of kappa variables.  
 
@@ -601,8 +568,124 @@ class Kappa(MultiCompartmentReaction):
                             kappa_sim.setAgentInitialValue(s.name, nions)
                         except Py4JJavaError as e:
                             raise NameError('Error setting initial value of agent %s to %d\n%s' % (s.name, nions,  str(e.java_exception)))
-                        
 
+    def _evaluate(self, states):
+        """This does nothing in the KappaNEURON class"""
+        return ([], [], [])
+
+    def _jacobian_entries(self, states, multiply=1, dx=1.e-10):
+        """This does nothing in the KappaNEURON class"""
+        return ([], [], [])        
+
+
+class KappaFlux(MultiCompartmentReaction):
+    def __init__(self, *args, **kwargs):
+        """Specify a KappaFlux spanning the membrane to be added to the system.
+        
+        Use this for, for example, pumps and channels, or interactions between
+        species living in a volume (e.g. the cytosol) and species on a
+        membrane (e.g. the plasma membrane).
+
+        Keyword arguments:
+
+        membrane_species -- List of rxd.Species defining which species
+        in the Kappa model cross the cell membrane
+
+        species -- List of rxd.Species defining species to observe
+        inside the Kappa model.
+
+        regions -- List of rxd.Regions in which the Kappa mechanism
+        should be inserted.
+
+        membrane_flux -- Boolean indicating if the reaction should
+        produce a current across the plasma membrane that should
+        affect the membrane potential.
+        
+        .. seealso::
+        
+            :class:`neuron.rxd.multiCompartmentReaction`
+
+        """
+        
+        # additional keyword arguments
+        membrane_species = kwargs.get('membrane_species', [])
+        regions = kwargs.get('regions', None)
+        kappa_parent = kwargs.get('kappa_parent', None)
+        membrane_flux = kwargs.get('membrane_flux', True)
+        scale_by_area = kwargs.get('scale_by_area', True)
+
+        self._species = []
+        for s in membrane_species:
+            self._species.append(weakref.ref(s))
+            if s.initial is None:
+                s.initial = 0
+                warnings.warn('Initial concentration of %s not specified; setting to zero' % (s.name), UserWarning)
+        ## This is the species that crosses the membrane
+        self._membrane_species = membrane_species
+        ## self._species = weakref.ref(species)
+        self._involved_species = self._species
+        self._kappa_parent = kappa_parent
+        if not hasattr(regions, '__len__'):
+            regions = [regions]
+        self._regions = regions
+        self._active_regions = []
+        self._scale_by_area = scale_by_area
+        self._trans_membrane = False
+        self._membrane_flux = membrane_flux
+        if membrane_flux not in (True, False):
+            raise Exception('membrane_flux must be either True or False')
+        if membrane_flux and regions is None:
+            raise Exception('if membrane_flux then must specify the (unique) membrane regions')
+        self._memb_flux = None
+        ## Set up the sources for _get_memb_flux(). In
+        ## multicompartmentReaction.py some of this is done in
+        ## _update_rates()
+        self._lhs_items = []
+        self._sources = []
+        for s in self._membrane_species:
+            i = s[self._regions[0]]
+            self._lhs_items.append(i)
+            w = weakref.ref(i)
+            self._sources += [w]
+        self._dests = []
+        self._update_indices()
+        nrr._register_reaction(self)
+        self._weakref = weakref.ref(self) # Seems to be needed for the destructor
+
+    def __repr__(self):
+        return 'KappaFlux(%r, kappa_parent=%r, regions=%r, membrane_flux=%r)' % (self._involved_species, self._kappa_parent, self._regions, self._membrane_flux)
+
+    def _evaluate(self, states):
+        """This does nothing in the KappaNEURON class"""
+        return ([], [], [])
+
+    def _jacobian_entries(self, states, multiply=1, dx=1.e-10):
+        """This does nothing in the KappaNEURON class"""
+        return ([], [], [])        
+    
+    def _get_memb_flux(self, states):
+        """Returns the flux across the membrane due to univalent ion in mA/cm^2
+
+        In KappaNEURON, this flux is determined by the net change in
+        number of ions during the preceding time step, which is
+        calculated in _kn_fixed_step_solve().
+        """
+        if self._membrane_flux:
+            ## _memb_flux has been set in _kn_fixed_step_solve(), unless it's
+            ## the first time step, in which case we need to create it.
+            if self._memb_flux is None:
+                len_memb_flux = 0
+                for sptr in self._sources:
+                    s = sptr()._species()
+                    len_memb_flux += len(self._indices_dict[s])
+                    self._memb_flux = nrr._numpy_zeros(len_memb_flux)
+
+            ## TODO: Use the full volumes and surface_area vectors
+            volumes, surface_area, diffs = nrr.node._get_data()
+            ## This has units of mA/cm2
+            return -self._memb_scales*self._memb_flux*molecules_per_mM_um3
+        else:
+            return []
 
     def _do_memb_scales(self, cur_map): 
         """Set up self._memb_scales and cur_map."""
@@ -681,10 +764,3 @@ class Kappa(MultiCompartmentReaction):
                 self._cur_ptrs.append(tuple(local_ptrs))
                 self._cur_mapped.append(tuple(local_mapped))
 
-    def _evaluate(self, states):
-        """This does nothing in the KappaNEURON class"""
-        return ([], [], [])
-
-    def _jacobian_entries(self, states, multiply=1, dx=1.e-10):
-        """This does nothing in the KappaNEURON class"""
-        return ([], [], [])        
