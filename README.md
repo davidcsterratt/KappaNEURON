@@ -19,7 +19,7 @@ Further details
   Biology 2014.
 * [Presentation given to Hybrid Systems Biology 2014](doc/2014-07-24-rb-compartmental-method.pdf)
 
-Installation and testing
+Installation & testing
 ------------------------
 
 * First install NEURON from source according to the commands in
@@ -30,6 +30,8 @@ Authorship & License
 --------------------
 
 KappaNEURON is Copyright © 2013-2014 David C. Sterratt
+<<david.c.sterratt@ed.ac.uk>> and is released under the
+[GPL Version 3](http://www.gnu.org/copyleft/gpl.html).
 
 We thank Anatoly Sorokin for his help with SpatialKappa and Vincent
 Danos for helpful discussions.
