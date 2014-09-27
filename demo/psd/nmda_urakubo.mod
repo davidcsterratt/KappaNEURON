@@ -70,11 +70,11 @@ INITIAL {
 
 BREAKPOINT {
     b = mgblock(v)		: b is the block by magnesium at this voltage
-    : Single channe conductnace * conversion factor * concentration of NMDAi * block factor
+    : Single channel conductnace * conversion factor * concentration of NMDAi * block factor
     g = 0.045E-3(uS) *conv * NMDAi * b 
     : It's not possible to create a flux of an uncharged molecule;
-    : therefore glutamate has to be created as a current, which will
-    : feeds into rule-based simulation.
+    : therefore glutamate has to be created as a current, which feeds
+    : into the rule-based simulation.
     iGlu = fGlu*-0.0001
     : The currents need to be corrected for area of spine, assuming
     : that the synapse is on a spine. Also, effect of the glutamate
@@ -87,9 +87,14 @@ BREAKPOINT {
 
 NET_RECEIVE(weight (uS)) {
     if (flag == 0) {
+        : If flag==0, an event has been received from a netstim.
         fGlu = 1
+        : This sends an event which arrives in 0.1ms with flag = 1.
         net_send(0.1, 1)
     } else {
+        : If flag==1, an event has been recived from this mod
+        : file. Thus there will have been a 0.1ms long pulse of
+        : glutamate.
         fGlu = 0
     }
 }
