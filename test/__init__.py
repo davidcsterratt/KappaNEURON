@@ -234,7 +234,78 @@ class TestCaAccumulation(unittest.TestCase):
         init()
         self.assertEqual(rxd.rxd._curr_indices, [1])
 
-    def test_two_membrane_species(self):
+    def test_twoMembraneSpecies(self):
+        self.napulse = h.NaPulse(self.sk(0.5))
+        ## import pdb; pdb.set_trace()
+        self.napulse.t0 = 0.5
+        self.napulse.t1 = 1.2
+        self.sk(0.5).t0_capulse = 1.0
+        self.sk(0.5).t1_capulse = 1.5
+        self.sk(0.5).fghk_capulse = 1
+        self.sk(0.5).gbar_capulse = 0.0001
+        self.na   = rxd.Species(self.r, name='na', charge=1, initial=0)
+        self.kappa = KappaNEURON.Kappa(membrane_species=[self.ca, self.na], kappa_file=self.__module__ + "/" + "napulse.ka", regions=self.r)
+        self.assertIsInstance(self.kappa._kappa_fluxes[0], KappaNEURON.KappaFlux)
+        self.assertIsInstance(self.kappa._kappa_fluxes[1], KappaNEURON.KappaFlux)
+        
+        ## Set up recordings
+        self.rec_t = h.Vector()
+        self.rec_t.record(h._ref_t)
+        self.rec_cai = []
+        self.rec_nai = []
+        self.rec_v = []
+        for sec in [self.sk]:
+            self.rec_cai.append(h.Vector())
+            self.rec_cai[-1].record(sec(0.5)._ref_cai)
+            self.rec_nai.append(h.Vector())
+            self.rec_nai[-1].record(sec(0.5)._ref_nai)
+            self.rec_v.append(h.Vector())
+            self.rec_v[-1].record(sec(0.5)._ref_v)
+
+        init()
+        ## Mapping from _curr_ptr_storage and _rxd_induced_currents
+        ## onto state vector b in _rxd_reaction
+        self.assertEqual(rxd.rxd._curr_indices, [4, 1])
+        ## Check length of get_memb_flux
+        self.assertEqual(len(self.kappa._kappa_fluxes[0]._get_memb_flux(rxd.rxd._node_get_states())), 1)
+        self.assertEqual(len(self.kappa._kappa_fluxes[1]._get_memb_flux(rxd.rxd._node_get_states())), 1)
+        ## Check length of _cur_ptrs
+        self.assertEqual(len(self.kappa._kappa_fluxes[0]._cur_ptrs), 1)
+        self.assertEqual(len(self.kappa._kappa_fluxes[1]._cur_ptrs), 1)
+        ## Check length of _cur_mapped
+        self.assertEqual(len(self.kappa._kappa_fluxes[0]._cur_mapped), 1)
+        self.assertEqual(len(self.kappa._kappa_fluxes[1]._cur_mapped), 1)
+        ## Check length of first element of _cur_mapped is same as length of _cur_ptrs
+        self.assertEqual(len(self.kappa._kappa_fluxes[0]._cur_mapped[0]), 
+                         len(self.kappa._kappa_fluxes[0]._cur_ptrs[0]))
+        self.assertEqual(len(self.kappa._kappa_fluxes[1]._cur_mapped[0]), 
+                         len(self.kappa._kappa_fluxes[1]._cur_ptrs[0]))
+        ## Check net charges are correct for Ca (2) and Na (1)
+        self.assertEqual(self.kappa._kappa_fluxes[0]._net_charges, 2)
+        self.assertEqual(self.kappa._kappa_fluxes[1]._net_charges, 1)
+
+        run(3)
+        times = np.array(self.rec_t)
+        cai = numpy.array(self.rec_cai[0])
+        nai = numpy.array(self.rec_nai[0])
+
+        plt.subplots_adjust(left=0.25)
+        nrow = 3
+        fig, ax = plt.subplots(nrows=3, ncols=1, figsize=(2.25*2, 2.5*2))
+        ax[0].plot(self.rec_t, self.rec_v[0])
+        ax[1].plot(self.rec_t, cai)
+        ax[2].plot(self.rec_t, nai)
+        fig.show()
+        inds = np.where((times >= self.napulse.t0) & (times <= self.napulse.t1))
+        self.assertGreater(max(nai[inds]), 0)
+        inds = np.where((times >= self.sk.t0_capulse) & (times <= self.sk.t1_capulse))
+        self.assertGreater(max(cai[inds]), 0)
+
+    def test_twoMembraneSpeciesOneUncharged(self):
+        """In this test we would like to give the Glutamate zero charge, so
+        that there is no effect on the membrane potential.
+
+        """ 
         self.glupulse = h.GluPulse(self.sk(0.5))
         ## import pdb; pdb.set_trace()
         self.glupulse.t0 = 0.5
@@ -243,10 +314,10 @@ class TestCaAccumulation(unittest.TestCase):
         self.sk(0.5).t1_capulse = 1.5
         self.sk(0.5).fghk_capulse = 1
         self.sk(0.5).gbar_capulse = 0.0001
-        self.glu   = rxd.Species(self.r, name='glu', charge=1, initial=0)
+        self.glu   = KappaNEURON.UnchargedSpecies(self.r, name='glu', initial=0)
         self.kappa = KappaNEURON.Kappa(membrane_species=[self.ca, self.glu], kappa_file=self.__module__ + "/" + "nmda.ka", regions=self.r)
         self.assertIsInstance(self.kappa._kappa_fluxes[0], KappaNEURON.KappaFlux)
-        self.assertIsInstance(self.kappa._kappa_fluxes[1], KappaNEURON.KappaFlux)
+        # self.assertExists(self.kappa._kappa_fluxes[1])
         
         ## Set up recordings
         self.rec_t = h.Vector()
@@ -267,39 +338,35 @@ class TestCaAccumulation(unittest.TestCase):
         ## onto state vector b in _rxd_reaction
         self.assertEqual(rxd.rxd._curr_indices, [1, 4])
         ## Check length of get_memb_flux
+        self.assertEqual(self.kappa._kappa_fluxes[0]._membrane_flux, True)
+        self.assertEqual(self.kappa._kappa_fluxes[1]._membrane_flux, False)
+        ## Check membrane species are correct
+        self.assertEqual(self.kappa._kappa_fluxes[0]._membrane_species[0], self.ca)
+        self.assertEqual(self.kappa._kappa_fluxes[1]._membrane_species[0], self.glu)
+        ## Check length of get_memb_flux
         self.assertEqual(len(self.kappa._kappa_fluxes[0]._get_memb_flux(rxd.rxd._node_get_states())), 1)
-        self.assertEqual(len(self.kappa._kappa_fluxes[1]._get_memb_flux(rxd.rxd._node_get_states())), 1)
         ## Check length of _cur_ptrs
         self.assertEqual(len(self.kappa._kappa_fluxes[0]._cur_ptrs), 1)
-        self.assertEqual(len(self.kappa._kappa_fluxes[1]._cur_ptrs), 1)
         ## Check length of _cur_mapped
         self.assertEqual(len(self.kappa._kappa_fluxes[0]._cur_mapped), 1)
-        self.assertEqual(len(self.kappa._kappa_fluxes[1]._cur_mapped), 1)
         ## Check length of first element of _cur_mapped is same as length of _cur_ptrs
         self.assertEqual(len(self.kappa._kappa_fluxes[0]._cur_mapped[0]), 
                          len(self.kappa._kappa_fluxes[0]._cur_ptrs[0]))
-        self.assertEqual(len(self.kappa._kappa_fluxes[1]._cur_mapped[0]), 
-                         len(self.kappa._kappa_fluxes[1]._cur_ptrs[0]))
         ## Check net charges are correct for Ca (2) and Glu (1)
         self.assertEqual(self.kappa._kappa_fluxes[0]._net_charges, 2)
-        self.assertEqual(self.kappa._kappa_fluxes[1]._net_charges, 1)
+        self.kappa._kappa_fluxes[1]._net_charges = 1
+        # self.assertEqual(self.kappa._kappa_fluxes[1]._net_charges, 0)
 
         run(3)
-        times = np.array(self.rec_t)
-        cai = numpy.array(self.rec_cai[0])
-        glui = numpy.array(self.rec_glui[0])
-
+        # self.assertEqual(self.kappa._kappa_fluxes[1]._net_charges, 0)
         plt.subplots_adjust(left=0.25)
         nrow = 3
         fig, ax = plt.subplots(nrows=3, ncols=1, figsize=(2.25*2, 2.5*2))
         ax[0].plot(self.rec_t, self.rec_v[0])
-        ax[1].plot(self.rec_t, cai)
-        ax[2].plot(self.rec_t, glui)
+        ax[1].plot(self.rec_t, self.rec_cai[0])
+        ax[2].plot(self.rec_t, self.rec_glui[0])
         fig.show()
-        inds = np.where((times >= self.glupulse.t0) & (times <= self.glupulse.t1))
-        self.assertGreater(max(glui[inds]), 0)
-        inds = np.where((times >= self.sk.t0_capulse) & (times <= self.sk.t1_capulse))
-        self.assertGreater(max(cai[inds]), 0)
+
 
     def test_injectCalcium(self):
         self.tstop = self.t1 + h.dt

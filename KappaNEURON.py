@@ -5,6 +5,7 @@ import neuron.rxd.rxd as nrr
 import neuron.rxd.species
 import neuron.rxd.rxdmath
 import neuron.rxd.node
+from neuron.rxd.species import Species
 from neuron.rxd.generalizedReaction import GeneralizedReaction, molecules_per_mM_um3
 from neuron.rxd.multiCompartmentReaction import MultiCompartmentReaction
 import weakref
@@ -369,6 +370,11 @@ def setSeed(seed):
 
     # _kappa_sims[0].setSeed(seed)
 
+class UnchargedSpecies(Species):
+    def __init__(self, regions=None, d=0, name=None, initial=None):
+        Species.__init__(self, regions=regions, d=d, name=name, initial=initial, charge=1)
+
+
 class Kappa(GeneralizedReaction):
     def __init__(self, *args, **kwargs):
         """Specify a Kappa model spanning the membrane to be added to the system.
@@ -648,6 +654,8 @@ class KappaFlux(MultiCompartmentReaction):
             w = weakref.ref(i)
             self._sources += [w]
         self._dests = []
+        if isinstance(self._membrane_species[0], UnchargedSpecies):
+            self._membrane_flux = False
         self._update_indices()
         nrr._register_reaction(self)
         self._weakref = weakref.ref(self) # Seems to be needed for the destructor

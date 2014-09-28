@@ -1,11 +1,10 @@
-TITLE Glutamate injection pulse
-: Sets Glu current to iglubar between t0 and t1; conductance is 0 otherwise
+TITLE Sodium injection pulse
+: Sets Glu current to inabar between t0 and t1; conductance is 0 otherwise
 
 NEURON {
-	  POINT_PROCESS GluPulse
-    USEION glu  WRITE iglu VALENCE 1
-    NONSPECIFIC_CURRENT i
-    RANGE t0, t1, iglu, i
+	  POINT_PROCESS NaPulse
+    USEION na WRITE ina
+    RANGE t0, t1, ina
 }
 
 UNITS {
@@ -16,25 +15,22 @@ PARAMETER {		:parameters that can be entered when function is called in cell-set
 	  celsius = 34	    (degC)
     t0 = 1            (ms)           : Start time of pulse
     t1 = 2            (ms)           : End time of pulse
-    iglubar = -0.0001 (nA)           : Amplitude of glutamate pulse
-    : iglubar = -0.0000 (nA)           : Amplitude of glutamate pulse
+    inabar = -0.0001 (nA)           : Amplitude of natamate pulse
+    : inabar = -0.0000 (nA)           : Amplitude of natamate pulse
 }
 
 ASSIGNED {                       : parameters needed to solve DE
-    i      (nA)
-	  iglu   (nA)
+	  ina   (nA)
 }
 
 INITIAL {                        : initialize the following parameter using rates()
-	  iglu = 0
-    i = 0
+	  ina = 0
 }
 
 BREAKPOINT {
     if ((t >= t0) && (t <= t1)) {
-        iglu = iglubar
+        ina = inabar
     } else {
-        iglu = 0
+        ina = 0
     }
-    i = -iglu
 }
