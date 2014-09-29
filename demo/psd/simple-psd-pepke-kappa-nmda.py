@@ -93,7 +93,7 @@ r = rxd.Region([sh], nrn_region='i')
 
 ## Create species
 ca         = rxd.Species(r, name='ca'        , charge=2, initial=0.001)
-Glu        = rxd.Species(r, name='Glu'       , charge=0, initial=0)
+Glu        = KappaNEURON.UnchargedSpecies(r, name='Glu', initial=0)
 NMDA       = rxd.Species(r, name='NMDA'      , charge=0, initial=19*agconc)
 CB         = rxd.Species(r, name='CB'        , charge=0, initial=0.100) # Faas &al
 cam        = rxd.Species(r, name='CaM'       , charge=0, initial=0.030) # Fass &al, Pepke &al
@@ -109,7 +109,7 @@ stargazinp = rxd.Species(r, name='stargazinp', charge=0)
 ## the spine. Since Calcium crosses the membrane it is given in
 ## the membrane_species argument, whereas the pump molecule is
 ## defined in the species argument as it is purely internal. 
-kappa = KappaNEURON.Kappa(membrane_species=[ca], species=[Glu, NMDA, CB, cam, CaMKII, CaCB, CaCaMC, CaCaMN, KCaCaM2C, CaMKIIp, stargazinp], kappa_file='simple-psd-pepke-kappa-nmda.ka', regions=r)
+kappa = KappaNEURON.Kappa(membrane_species=[ca, Glu], species=[NMDA, CB, cam, CaMKII, CaCB, CaCaMC, CaCaMN, KCaCaM2C, CaMKIIp, stargazinp], kappa_file='simple-psd-pepke-kappa-nmda.ka', regions=r)
 rxd.rxd.verbose=False
 
 ## Record Time from NEURON (neuron.h._ref_t)
@@ -124,6 +124,9 @@ rec_cai.record(sh(0.5)._ref_cai)
 ## Record ica from spine head
 rec_ica = h.Vector()
 rec_ica.record(sh(0.5)._ref_ica)
+## Record iGlu from spine head
+rec_iGlu = h.Vector()
+rec_iGlu.record(sh(0.5)._ref_iGlu)
 ## Record Ca bound to CB from spine head
 rec_CaCBi = h.Vector()
 rec_CaCBi.record(sh(0.5)._ref_CaCBi)
@@ -149,10 +152,10 @@ rec_stargazinpi.record(sh(0.5)._ref_stargazinpi)
 init()
 print("Running kappa-only to initialise")
 ## FIXME: put in some read-out to check when system has equilibriated.
-kappa.run_free(1000)
+kappa.run_free(100)
 print("Running NEURON-kappa")
 run(6000)
-if (1):
+if (0):
     for i in range(1,60):
         print("Running kappa-only")
         kappa.run_free(990)
@@ -182,7 +185,7 @@ def plot_data(tmax=None):
     if (tmax == None): 
         tmax = max(times[0])
     
-    fig, (ax1, ax2, ax3, ax4) = plt.subplots(nrows=4, ncols=1)
+    fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(nrows=5, ncols=1)
     ax1.plot(times[0], voltages[0])
     ax1.set_xlabel("Time [ms]")
     ax1.set_ylabel("V [mV]")
@@ -218,6 +221,8 @@ def plot_data(tmax=None):
     ax4.axis(xmin=0, xmax=tmax)
     ax4.axis(ymin=0, ymax=0.001)
 
+    ax5.plot(times[0], numpy.array(rec_iGlu))
+
     fig.show() # If the interpreter stops now: close the figure.
     # For interactive plotting, see `Part 1` -> `ipython`
     try:
@@ -227,14 +232,14 @@ def plot_data(tmax=None):
         
     fig.savefig("figs/simple-psd-pepke-kappa-nmda.pdf", format='pdf')
 
-numpy.savez("simple-psd-pepke-kappa-nmda", t=times[0], cai=rec_cai, 
-            cami=cami[0], ica=ica[0], voltages=voltages[0], 
-            diam=sh.diam, Glu=numpy.array(Glu), 
-            NMDA=numpy.array(NMDA), CB=numpy.array(CB),
-            cam=numpy.array(cam), CaMKII=numpy.array(CaMKII), 
-            CaCB=numpy.array(CaCB), CaCaMC=numpy.array(CaCaMC), 
-            CaCaMN=numpy.array(CaCaMN), KCaCaM2C=numpy.array(KCaCaM2C),
-            CaMKIIp=numpy.array(CaMKIIp), stargazinp=numpy.array(stargazinp))
+# numpy.savez("simple-psd-pepke-kappa-nmda", t=times[0], cai=rec_cai, 
+#             cami=cami[0], ica=ica[0], voltages=voltages[0], 
+#             diam=sh.diam, Glu=numpy.array(Glu), 
+#             NMDA=numpy.array(NMDA), CB=numpy.array(CB),
+#             cam=numpy.array(cam), CaMKII=numpy.array(CaMKII), 
+#             CaCB=numpy.array(CaCB), CaCaMC=numpy.array(CaCaMC), 
+#             CaCaMN=numpy.array(CaCaMN), KCaCaM2C=numpy.array(KCaCaM2C),
+#             CaMKIIp=numpy.array(CaMKIIp), stargazinp=numpy.array(stargazinp))
 
 numpy.savez("simple-psd-pepke-kappa-nmda-comp", times=times, rec_cai=rec_cai, 
             cami=cami, ica=ica, voltages=voltages, 
