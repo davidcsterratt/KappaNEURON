@@ -4,6 +4,7 @@ from neuron import *
 from subprocess import call
 import re
 import matplotlib.pyplot as plt
+import matplotlib
 import numpy
 
 vinit = -70
@@ -72,9 +73,12 @@ def run_and_save(sh, rec_Pi, dataname='test_ca_pulse_mod'):
     numpy.savez(dataname, t=times[0], cai=cai[0], Pi=Pi[0], ica=ica[0], voltages=voltages[0], diam=sh.diam)
 
 def plot_records(tcp_mod, tcp):
+    font = {'family' : 'normal',
+            'size'   : 8}
+    matplotlib.rc('font', **font)
     # figsize=(2.25, 3)
-    fig, ax = plt.subplots(nrows=4, ncols=1, figsize=(2.25*2, 2.5*2))
-    plt.subplots_adjust(left=0.18, top=0.95, bottom=0.1)
+    fig, ax = plt.subplots(nrows=4, ncols=1, figsize=(2.35,2.8))
+    plt.subplots_adjust(left=0.25, top=0.95, bottom=0.15,right=0.95)
 
     ax[0].plot(tcp['t'],     tcp['voltages'],     'r')
     ax[0].plot(tcp_mod['t'], tcp_mod['voltages'], 'b')
@@ -114,7 +118,7 @@ def plot_records(tcp_mod, tcp):
     ax[3].yaxis.set_ticks([0, 0.20])
 
     fig.show()
-    
+    fig.set_size_inches(2.35,2.6)
     return fig, ax
 
 def compare_traces(diam=0.2, gbar=0.001, 
