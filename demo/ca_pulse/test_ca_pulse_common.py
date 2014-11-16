@@ -74,7 +74,7 @@ def run_and_save(sh, rec_Pi, dataname='test_ca_pulse_mod'):
 
 def plot_records(tcp_mod, tcp):
     font = {'family' : 'normal',
-            'size'   : 8}
+            'size'   : 7}
     matplotlib.rc('font', **font)
     # figsize=(2.25, 3)
     fig, ax = plt.subplots(nrows=4, ncols=1, figsize=(2.35,2.8))

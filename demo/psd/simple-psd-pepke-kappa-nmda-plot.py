@@ -6,7 +6,7 @@ from matplotlib.font_manager import FontProperties
 dat = numpy.load("simple-psd-pepke-kappa-nmda-comp.npz")
 def plot_data(dat, tmax=None, legend=True):
     font = {'family' : 'normal',
-            'size'   : 8}
+            'size'   : 7}
     matplotlib.rc('font', **font)
 
     times = dat['times'][0]*1E-3
