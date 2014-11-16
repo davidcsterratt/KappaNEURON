@@ -40,10 +40,10 @@ sh.connect(sn, 1, 0)
 ## Create stimuluse to trigger synapse containing Kappa mechanism
 ## paired with action potential
 synstim = h.NetStim()
-synstim.start = 20
+synstim.start = 100
 synstim.noise = 0
-synstim.number = 25
-synstim.interval = 200
+synstim.number = 10
+synstim.interval = 50
 
 ## Create the AMPA and NMDA synapses
 ampasyn     = h.AmpaSyn(sh(0.5))
@@ -155,7 +155,7 @@ print("Running kappa-only to initialise")
 kappa.run_free(100)
 print("Running NEURON-kappa")
 run(6000)
-if (1):
+if (0):
     for i in range(1,60):
         print("Running kappa-only")
         kappa.run_free(990)
