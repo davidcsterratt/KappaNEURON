@@ -14,12 +14,14 @@ the postsynaptic proteome in the context of the spine head.
 Further details
 ---------------
 
-* Sterratt, D. C., Sorokina, O. and Armstrong, J. D. (in
-  press). ‘Integration of rule-based models and compartmental models
-  of neurons’. Lecture Notes in Bioinformatics 7699.  Presented to the
-  Third International Workshop on Hybrid Systems Biology Vienna,
-  Austria, July 23-24, 2014 at the International Conference on
-  Computer-Aided Verification 2014.  Preprint at <a title="Abstract"
+* Sterratt, D. C., Sorokina, O. and Armstrong,
+  J. D. (2015). ‘Integration of rule-based models and compartmental
+  models of neurons’. Lecture Notes in Bioinformatics 7699: 143-158.
+  Presented to the Third International Workshop on Hybrid Systems
+  Biology Vienna, Austria, July 23-24, 2014 at the International
+  Conference on Computer-Aided
+  Verification 2014. [doi:0.1007/978-3-319-27656-4 9](http://dx.doi.org/0.1007/978-3-319-27656-4
+  9).  Preprint at <a title="Abstract"
   href="http://arxiv.org/abs/1411.4980">arXiv:1411.4980</a>
 * [Presentation given to Hybrid Systems Biology 2014](doc/2014-07-24-rb-compartmental-method.pdf)
 
