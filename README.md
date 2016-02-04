@@ -20,8 +20,7 @@ Further details
   Presented to the Third International Workshop on Hybrid Systems
   Biology Vienna, Austria, July 23-24, 2014 at the International
   Conference on Computer-Aided
-  Verification 2014. [doi:0.1007/978-3-319-27656-4 9](http://dx.doi.org/0.1007/978-3-319-27656-4
-  9).  Preprint at <a title="Abstract"
+  Verification 2014. [doi:10.1007/978-3-319-27656-4_9](http://dx.doi.org/10.1007/978-3-319-27656-4_9).  Preprint at <a title="Abstract"
   href="http://arxiv.org/abs/1411.4980">arXiv:1411.4980</a>
 * [Presentation given to Hybrid Systems Biology 2014](doc/2014-07-24-rb-compartmental-method.pdf)
 
