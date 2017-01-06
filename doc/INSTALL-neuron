@@ -84,6 +84,7 @@ fi
 make -j ${NCPU}
 make install
 
+cd ..
 # Python packages are installed in ${NRNPREFIX}/lib/python
 
 echo "Branch \"$branch\" (Date: ${DATE}) has been installed in ${NRNPREFIX}"
