@@ -32,34 +32,22 @@ fi
 echo "Branch \"$branch\" will be checked out.."
 echo "...and installed in ${NRNPREFIX}"
 
-echo "checking for bison"
-BISON=`which bison`
-NO_BISON=$?
-if [ ${NO_BISON} -eq 1 ]; then
-    sudo apt-get install bison 
-fi
-echo "checking for hg"
-HG=`which hg`
-NO_HG=$?
-if [ ${NO_HG} -eq 1 ]; then
-   sudo apt-get install mercurial
-fi
-GCC=`which gcc`
-NO_GCC=$?
-if [ ${NO_GCC} -eq 1 ]; then
-   sudo apt-get install build-essential
-fi
-ACLOCAL=`which aclocal`
-NO_ACLOCAL=$?
-if [ ${NO_ACLOCAL} -eq 1 ]; then
-   sudo apt-get install automake
-fi
-LIBTOOLIZE=`which libtoolize`
-NO_LIBTOOLIZE=$?
-if [ ${NO_LIBTOOLIZE} -eq 1 ]; then
-   sudo apt-get install libtool
-fi
-
+function installpkg {
+    echo -n "checking for $1 ... "
+    PKG=`which $1`
+    NO_PKG=$?
+    if [ ${NO_PKG} -eq 1 ]; then
+        echo
+        sudo apt-get install $1
+    else
+        echo "present"
+    fi
+}
+installpkg bison bison
+installpkg hg mercurial
+installpkg gcc build-essential
+installpkg aclocal automake
+installpkg libtoolize libtool
 
 mkdir ${PREFIX}/src
 cd ${PREFIX}/src
