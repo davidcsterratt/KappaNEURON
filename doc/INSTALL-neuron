@@ -42,6 +42,7 @@ function installpkg {
     fi
 }
 installpkg /usr/bin/bison bison
+installpkg /usr/bin/flex flex
 installpkg /usr/bin/hg mercurial
 installpkg /usr/bin/gcc build-essential
 installpkg /usr/bin/aclocal automake
