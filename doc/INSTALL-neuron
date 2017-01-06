@@ -52,7 +52,7 @@ fi
 ACLOCAL=`which aclocal`
 NO_ACLOCAL=$?
 if [ ${NO_ACLOCAL} -eq 1 ]; then
-   sudo apt-get install aclocal
+   sudo apt-get install automake
 fi
 
 
