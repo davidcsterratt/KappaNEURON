@@ -47,6 +47,7 @@ installpkg /usr/bin/gcc build-essential
 installpkg /usr/bin/aclocal automake
 installpkg /usr/bin/libtoolize libtool
 installpkg /usr/include/X11/Xlib.h libx11-dev
+installpkg /usr/include/python2.7/Python.h libpython2.7-dev
 
 mkdir neuron-build
 cd neuron-build
