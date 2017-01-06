@@ -1,7 +1,7 @@
 KappaNEURON Installation
 ========================
 
-1. Install NEURON with python2.7 - see INSTALL-neuron for details
+1. Install NEURON with python2.7 - see [INSTALL-neuron](./INSTALL-neuron) for details
 
 2. Get latest version of NEURON-compatible SpatialKappa:
 
