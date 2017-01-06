@@ -1,32 +1,90 @@
-NRNPREFIX=${HOME}
+#!/bin/bash
+# Script to checkout and install branch of Neuron
+# Branches have names such as "Release 7.4"
+# By default, the working version is installed.
 
-sudo apt-get install hg bison
+NCPU=4
+version=$1
+DATE=$2
+PREFIX=${HOME}/nrn
 
-cd ${NRNPREFIX}/src
+## Defaults. Set version to version known to work.
+if [ "x$version" == "x" ] && [ "x$DATE" == "x" ]; then
+    version="trunk"
+    DATE="2014-09-23"
+fi
+
+if [ "x$version" == "x" ] || [ "x$version" == "xtrunk"]; then 
+    branch=trunk
+    if [ "x${DATE}" == "x" ]; then
+        NRNPREFIX=${PREFIX}/${branch}
+    else
+        NRNPREFIX=${PREFIX}/${branch}-${DATE}
+    fi
+else
+    branch="Release ${version}"
+    if [ "x${DATE}" == "x" ]; then
+        NRNPREFIX=${PREFIX}/${version}
+    else
+        NRNPREFIX=${PREFIX}/${version}-${DATE}
+    fi
+fi
+echo "Branch \"$branch\" will be checked out.."
+echo "...and installed in ${NRNPREFIX}"
+
+echo "checking for bison"
+BISON=`which bison`
+NO_BISON=$?
+if [ ${NO_BISON} -eq 1 ]; then
+    sudo apt-get install bison
+fi
+echo "checking for hg"
+HG=`which hg`
+NO_HG=$?
+if [ ${NO_HG} -eq 1 ]; then
+   sudo apt-get install hg
+fi
+
+mkdir ${PREFIX}/src
+cd ${PREFIX}/src
 mkdir neuron
 cd neuron
 # Install neuron
 if [ -d iv ] ; then
    cd iv
    hg pull
+   cd ..
 else
    hg clone http://www.neuron.yale.edu/hg/neuron/iv # skip this if you don't want the GUI
 fi
 if [ -d nrn ] ; then
    cd nrn
    hg pull
+   cd ..
 else 
    hg clone http://www.neuron.yale.edu/hg/neuron/nrn
 fi
+
 cd iv/
 ./build.sh 
-./configure --prefix=$NRNPREFIX
-make 
+./configure --prefix=$NRNPREFIX/iv
+make -j ${NCPU}
 make install
+
 cd ../nrn
+if [ "x${DATE}" != "x" ]; then
+    hg update -d ${DATE}
+else
+    hg update "${branch}"
+fi
 ./build.sh
-./configure --prefix=$NRNPREFIX --with-iv=$NRNPREFIX  --with-nrnpython=/usr/bin/python2.7
-make
+./configure --prefix=$NRNPREFIX/nrn --with-iv=$NRNPREFIX/iv  --with-nrnpython=/usr/bin/python2.7
+make -j ${NCPU}
 make install
 
 # Python packages are installed in ${NRNPREFIX}/lib/python
+
+echo "Branch \"$branch\" (Date: ${DATE}) has been installed in ${NRNPREFIX}"
+
+## Test
+${NRNPREFIX}/nrn/x86_64/bin/nrngui 
