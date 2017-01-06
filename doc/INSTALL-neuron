@@ -37,8 +37,12 @@ function installpkg {
     if [ -e $1 ]; then
         echo "present"
     else
-        echo
-        sudo apt-get install $2
+        if [ -x "/usr/bin/apt-get" ]; then
+            echo
+            sudo apt-get install $2
+        else
+            echo "perhaps not present - check package equivalent to Debian $2 is installed"
+        fi
     fi
 }
 installpkg /usr/bin/bison bison
@@ -51,6 +55,7 @@ installpkg /usr/include/X11/Xlib.h libx11-dev
 installpkg /usr/include/X11/extensions/Xext.h libxext-dev
 installpkg /usr/include/python2.7/Python.h libpython2.7-dev
 installpkg /usr/include/ncurses.h ncurses-dev
+installpkg /usr/lib/python2.7/dist-packages/scipy/version.py python-scipy
 
 mkdir neuron-build
 cd neuron-build
