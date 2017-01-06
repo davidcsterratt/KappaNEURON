@@ -34,20 +34,19 @@ echo "...and installed in ${NRNPREFIX}"
 
 function installpkg {
     echo -n "checking for $1 ... "
-    PKG=`which $1`
-    NO_PKG=$?
-    if [ ${NO_PKG} -eq 1 ]; then
+    if [ -e $1 ]; then
+        echo "present"
+    else
         echo
         sudo apt-get install $1
-    else
-        echo "present"
     fi
 }
-installpkg bison bison
-installpkg hg mercurial
-installpkg gcc build-essential
-installpkg aclocal automake
-installpkg libtoolize libtool
+installpkg /usr/bin/bison bison
+installpkg /usr/bin/hg mercurial
+installpkg /usr/bin/gcc build-essential
+installpkg /usr/bin/aclocal automake
+installpkg /usr/bin/libtoolize libtool
+installpkg /usr/include/X11/Xlib.h libx11-dev
 
 mkdir neuron-build
 cd neuron-build
