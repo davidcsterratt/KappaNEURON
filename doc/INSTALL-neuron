@@ -49,10 +49,8 @@ installpkg gcc build-essential
 installpkg aclocal automake
 installpkg libtoolize libtool
 
-mkdir ${PREFIX}/src
-cd ${PREFIX}/src
-mkdir neuron
-cd neuron
+mkdir neuron-build
+cd neuron-build
 # Install neuron
 if [ -d iv ] ; then
    cd iv
