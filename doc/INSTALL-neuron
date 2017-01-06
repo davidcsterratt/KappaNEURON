@@ -36,14 +36,25 @@ echo "checking for bison"
 BISON=`which bison`
 NO_BISON=$?
 if [ ${NO_BISON} -eq 1 ]; then
-    sudo apt-get install bison
+    sudo apt-get install bison 
 fi
 echo "checking for hg"
 HG=`which hg`
 NO_HG=$?
 if [ ${NO_HG} -eq 1 ]; then
-   sudo apt-get install hg
+   sudo apt-get install mercurial
 fi
+GCC=`which gcc`
+NO_GCC=$?
+if [ ${NO_GCC} -eq 1 ]; then
+   sudo apt-get install build-essential
+fi
+ACLOCAL=`which aclocal`
+NO_ACLOCAL=$?
+if [ ${NO_ACLOCAL} -eq 1 ]; then
+   sudo apt-get install aclocal
+fi
+
 
 mkdir ${PREFIX}/src
 cd ${PREFIX}/src
