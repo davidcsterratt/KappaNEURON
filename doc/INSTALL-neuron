@@ -54,6 +54,11 @@ NO_ACLOCAL=$?
 if [ ${NO_ACLOCAL} -eq 1 ]; then
    sudo apt-get install automake
 fi
+LIBTOOLIZE=`which libtoolize`
+NO_LIBTOOLIZE=$?
+if [ ${NO_LIBTOOLIZE} -eq 1 ]; then
+   sudo apt-get install libtool
+fi
 
 
 mkdir ${PREFIX}/src
