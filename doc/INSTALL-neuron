@@ -38,7 +38,7 @@ function installpkg {
         echo "present"
     else
         echo
-        sudo apt-get install $1
+        sudo apt-get install $2
     fi
 }
 installpkg /usr/bin/bison bison
