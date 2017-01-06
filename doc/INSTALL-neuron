@@ -99,3 +99,20 @@ echo "Branch \"$branch\" (Date: ${DATE}) has been installed in ${NRNPREFIX}"
 
 ## Test
 ${NRNPREFIX}/nrn/x86_64/bin/nrngui 
+
+echo "To test python"
+echo "--------------"
+echo
+echo "1. Add the neuron package to your PYTHONPATH:"
+echo "   export PYTHONPATH=${NRNPREFIX}/nrn/lib/python/:\$PYTHONPATH"
+echo
+echo "2. Try the following:"
+echo
+echo "   python2.7"
+echo "   import neuron"
+echo "   import neuron.rxd.rxd"
+echo
+
+
+echo "   export PYTHONPATH=${NRNPREFIX}/nrn/lib/python/:'$PYTHONPATH'"
+
