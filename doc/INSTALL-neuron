@@ -56,6 +56,7 @@ installpkg /usr/include/X11/extensions/Xext.h libxext-dev
 installpkg /usr/include/python2.7/Python.h libpython2.7-dev
 installpkg /usr/include/ncurses.h ncurses-dev
 installpkg /usr/lib/python2.7/dist-packages/scipy/version.py python-scipy
+installpkg /usr/share/pyshared/matplotlib/__init__.py python-matlplotlib
 
 mkdir neuron-build
 cd neuron-build
