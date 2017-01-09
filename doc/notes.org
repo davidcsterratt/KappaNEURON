@@ -162,6 +162,8 @@ All in =neuron.rxd= namespace
      density to change in
      concentration. =sign*surface_area[self.indices]*10000./=  
      =(self.species.charge*FARADAY*volumes[self.indices])=
+- =rxd._curr_indices=  :: Mapping from =_curr_ptr_storage= and =_rxd_induced_currents=
+     onto state vector b in =_rxd_reaction()=
 
 
 
