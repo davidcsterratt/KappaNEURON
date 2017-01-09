@@ -24,7 +24,7 @@ KappaNEURON Installation
 
         git clone https://github.com/davidcsterratt/SpatialKappa
    
-   Follow the SpatialKappa install instructions, including
+   Follow the [SpatialKappa install instructions](https://github.com/davidcsterratt/SpatialKappa/blob/master/README.md), including
    installation of the python interface. Make a note of the directory
    in which you installed NEURON.
    
