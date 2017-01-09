@@ -27,14 +27,15 @@ Further details
 Installation & testing
 ------------------------
 
-* First install NEURON from source according to the commands in
-  [doc/INSTALL-neuron][INSTALL-neuron]
-* Then follow the instructions in [doc/INSTALL.md][INSTALL]
+* To install, follow the instructions in [doc/INSTALL.md][INSTALL]
+* KappaNEURON has been tested on Ubuntu 14.04 (gcc version 4.8.4,
+  python 2.7, openjdk 7) with py4j 0.10.4 and NEURON from the trunk of
+  its mercurial repository on 2014-09-23.
 
 Authorship & License
 --------------------
 
-KappaNEURON is Copyright © 2013-2014 David C. Sterratt
+KappaNEURON is Copyright © 2013-2014, 2017 David C. Sterratt
 <<david.c.sterratt@ed.ac.uk>> and is released under the
 [GPL Version 3](http://www.gnu.org/copyleft/gpl.html).
 

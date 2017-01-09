@@ -1,9 +1,26 @@
 KappaNEURON Installation
 ========================
 
-1. Install NEURON with python2.7 - see [INSTALL-neuron](./INSTALL-neuron) for details
+1. Install NEURON from the trunk of its mercurial repository
+   2014-09-23 with python2.7. The script
+   [INSTALL-neuron](./INSTALL-neuron) for will do this on Ubuntu
+   14.04:
 
-2. Get latest version of NEURON-compatible SpatialKappa:
+        ./INSTALL-neuron
+        ls
+
+   By default the script installs NEURON in
+   `$HOME/nrn/trunk-2014-09-23/nrn/`. The script also installs
+   required packages for installation of NEURON and for
+   KappaNEURON. The script ends by suggesting a change to the
+   `$PYTHONPATH` environment variable, e.g.:
+
+        export PYTHONPATH=$HOME/nrn/trunk-2014-09-23/nrn/lib/python/:$PYTHONPATH
+        
+   This should be added to your shell configuration, e.g. `~/.profile`
+   or `~/.bash_profile`.
+        
+2. Get the latest version of NEURON-compatible SpatialKappa:
 
         git clone https://github.com/davidcsterratt/SpatialKappa
    
@@ -16,7 +33,7 @@ KappaNEURON Installation
         python2.7 setup.py install
 
    You can install in a different prefix too, but then you will need
-   to make sure that ${PREFIX}/lib/python2.7 is in the $PYTHONPATH
+   to make sure that `${PREFIX}/lib/python2.7` is in the `$PYTHONPATH`
    environment variable. E.g.
 
         PREFIX=/home/username 
@@ -32,13 +49,14 @@ To run all tests from a Linux/Unix environment, run
 
 from the KappaNEURON directory.
 
-You may need to set the PYTHONPATH using the NRNPREFIX directory in
-which NEURON was installed. e.g.:
+If the `$PYTHONPATH` has not been set as described under step 1 of
+*KappaNEURON Installation*, it will need to be set to include the
+`$NRNPREFIX` directory in which NEURON was installed. e.g.:
 
     PYTHONPATH=${NRNPREFIX}/lib/python:${PYTHONPATH} python2.7 -i test_ca_pulse.py
 
-If make is not available on your system, you can try running the
-following commands:
+If `make` is not available on your system, try running the following
+commands:
 
     ./test/nrnivmodl.py
 	python2.7 -i -m unittest test.TestCaAccumulation.test_injectCalcium
