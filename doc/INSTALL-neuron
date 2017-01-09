@@ -115,5 +115,5 @@ echo "   import neuron.rxd.rxd"
 echo
 
 
-echo "   export PYTHONPATH=${NRNPREFIX}/nrn/lib/python/:'$PYTHONPATH'"
+echo "   export PYTHONPATH=${NRNPREFIX}/nrn/lib/python/:\$PYTHONPATH"
 
