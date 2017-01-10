@@ -182,19 +182,29 @@ class TestCaAccumulation(unittest.TestCase):
         tau = self.cm/(1000.0*self.gbar + self.k1*self.cm)
         vinf = (1000.0*self.gbar*eca + self.cm*self.k1*self.v0)/(1000.0*self.gbar + self.cm*self.k1)
         Deltav_theo = (vinf - self.v0)*(1-np.exp(-(t - self.t0)/tau))
+        Deltav_theo1 = (vinf - self.v0)*(1-np.exp(-(self.t1 - self.t0)/tau))
         if isinstance(Deltav_theo, numpy.ndarray):
             Deltav_theo[np.where(t < self.t0)] = 0.0
         Deltaca_theo = Deltav_theo*vtocai
+        Deltaca_theo1 = Deltav_theo1*vtocai
         if verbose:
             print "eca= %f; tau=%f; vinf=%f; Deltav_theo=%f; Deltaca_theo=%f" % (eca, tau, vinf, Deltav_theo, Deltaca_theo)
+        print 'Theoretical voltage and Ca changes between start and end of injection:'
+        print "  v(t1) -   v(t0) = %10.6f - %10.6f = %10.6f" % (self.v0 + Deltav_theo1, self.v0, Deltav_theo1)
+        print "cai(t1) - cai(t0) = %10.6f - %10.6f = %10.6f" % (Deltaca_theo1, 0, Deltaca_theo1)
+        print
+        
         return(Deltav_theo, Deltaca_theo)
 
     def get_Deltav_Deltaca(self, sec, i):
         v1 = sec(0.5).v
-        print 'Actual voltage and Ca difference:'
         Deltav = v1 - self.v0
         Deltaca = sec(0.5).cai - self.rec_cai[i][0]
-        print Deltav, Deltaca
+        print 'Simulated voltage and Ca changes between start and end of injection:'
+        print "  v(t1) -   v(t0) = %10.6f - %10.6f = %10.6f" % (v1, self.v0, Deltav)
+        print "cai(t1) - cai(t0) = %10.6f - %10.6f = %10.6f" % (sec(0.5).cai, self.rec_cai[i][0], Deltaca)
+        print
+        
         return(Deltav, Deltaca)
 
     def get_stats(self):
@@ -209,13 +219,16 @@ class TestCaAccumulation(unittest.TestCase):
         
         i = 0
         for sec in h.allsec():
-            ## Print some variables
-            v1 = sec(0.5).v
-            print("Eca=%f, t0=%f, t1=%f, gbar=%f, cm=%f, v0=%f, v1=%f" % (sec(0.5).eca, self.t0, self.t1, self.gbar, self.cm, self.v0, v1))
-
             ## Determine if section contains mod pump or kappa pump
             mode = self.get_mode(sec)
-            print mode
+            print "======================================================================"
+            print "Section " + sec.name() + " contains " +  mode + " pump"
+            print "----------------------------------------------------------------------"
+            ## Print some variables
+            v1 = sec(0.5).v
+            print("t0=%f, t1=%f, gbar=%f, cm=%f" % (self.t0, self.t1, self.gbar, self.cm))
+            print("Eca=%f, v0=%f, v1=%f" % (sec(0.5).eca, self.v0, v1))
+            print
             (Deltav_theo[mode],  Deltaca_theo[mode])  = self.get_Deltav_Deltaca_theo(sec, self.tstop)
             (Deltav[mode],       Deltaca[mode])       = self.get_Deltav_Deltaca(sec, i)
 
@@ -223,6 +236,7 @@ class TestCaAccumulation(unittest.TestCase):
             vtocai[mode] = self.cm/(1E-1*2*h.FARADAY*volbyarea[mode])
 
             (diffv[mode], diffca[mode]) = self.get_diffv_diffca(i)
+            print "----------------------------------------------------------------------"
             i = i+1
 
         return(Deltav, Deltaca, Deltav_theo, Deltaca_theo, volbyarea, vtocai, diffv, diffca)
