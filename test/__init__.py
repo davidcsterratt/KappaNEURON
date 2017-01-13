@@ -127,13 +127,20 @@ class TestCaAccumulation(unittest.TestCase):
 
         ## Initialise simulation
         init()
+        print("init() has been run")
         eca0 = self.sk(0.5).eca
+        print("kappa section: ECa = %f; cai = %f; cao = %f" % (self.sk(0.5).eca, self.sk(0.5).cai, self.sk(0.5).cao))
+        print("mod section:   ECa = %f; cai = %f; cao = %f" % (self.sm(0.5).eca, self.sm(0.5).cai, self.sm(0.5).cao))
         self.v0 = self.sk(0.5).v
         self.assertEqual(h.t, 0.0)
         self.assertEqual(self.sk(0.5).cai, 0.00005)
 
         ## Run
         run(self.tstop)
+        print("After run()")
+        print("kappa section: ECa = %f; cai = %f; cao = %f" % (self.sk(0.5).eca, self.sk(0.5).cai, self.sk(0.5).cao))
+        print("mod section:   ECa = %f; cai = %f; cao = %f" % (self.sm(0.5).eca, self.sm(0.5).cai, self.sm(0.5).cao))
+
         self.assertAlmostEqual(h.t, self.tstop)
         self.assertGreater(self.sk(0.5).cai, 0.0)
         if (ghk == 0):
