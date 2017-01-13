@@ -86,7 +86,19 @@ deterministic simulation).
 
 # Postsynaptic proteome #
 
-FIXME: Write this up.
+This demonstration contains a spine attached to a dendritic shaft. The
+spine contains NMDA receptors, acitivated by glutamate, as described
+in the Kappa file `simple-psd-pepke-kappa-nmda.ka`. This allows
+calcium influx, which then binds to calbindin and calmodulin.
+Calcium-calmodulin complex binds to CaMKII monomers. CaMKII monomers
+can bind and phosphorylate each other. The model of CaM-CaMKII comes
+from Pepke et al (2010) PLoS Comp. Biol. 2
+http://dx.doi.org/10.1371/journal.pcbi.1000675 . Other sources are
+named in the Kappa file.
+
+    cd demo/ca_pulse
+    ${NRNPREFIX}/x86_64/bin/nrnivmodl
+    python2.7 -i simple-psd-pepke-kappa-nmda.py
 
 <!--  LocalWords:  KappaNEURON SpatialKappa py PYTHONPATH NRNPREFIX
  -->
