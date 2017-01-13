@@ -93,10 +93,7 @@ def _kn_fixed_step_solve_lumped_influx(raw_dt):
     b = nrr._rxd_reaction(states) - nrr._diffusion_matrix * states
     report(b)
     
-    dim = nrr.region._sim_dimension
-    if dim is None:
-        return
-    elif dim == 1:
+    if not nrr.species._has_3d:
         states[:] += nrr._reaction_matrix_solve(dt, states, nrr._diffusion_matrix_solve(dt, dt * b))
 
         ## Go through each kappa scheme. The region belonging to each
@@ -173,7 +170,7 @@ def _kn_fixed_step_solve_lumped_influx(raw_dt):
 
         # TODO: refactor so this isn't in section1d... probably belongs in node
         nrr._section1d_transfer_to_legacy()
-    elif dim == 3:
+    else:
         # the actual advance via implicit euler
         n = len(states)
         m = _scipy_sparse_eye(n, n) - dt * _euler_matrix
@@ -327,10 +324,7 @@ def _kn_fixed_step_solve_continuous_influx(raw_dt):
     b = nrr._rxd_reaction(states) - nrr._diffusion_matrix * states
     report(b)
     
-    dim = nrr.region._sim_dimension
-    if dim is None:
-        return
-    elif dim == 1:
+    if not nrr.species._has_3d:
         states = _run_kappa_continuous(states, b, dt)
 
         # clear the zero-volume "nodes"
@@ -338,7 +332,7 @@ def _kn_fixed_step_solve_continuous_influx(raw_dt):
 
         # TODO: refactor so this isn't in section1d... probably belongs in node
         nrr._section1d_transfer_to_legacy()
-    elif dim == 3:
+    else:
         # the actual advance via implicit euler
         n = len(states)
         m = _scipy_sparse_eye(n, n) - dt * _euler_matrix
