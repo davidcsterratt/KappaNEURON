@@ -21,7 +21,7 @@ class TestCaAccumulation(unittest.TestCase):
     sk.L=0.2
     sk.diam=0.5
     r = rxd.Region([sk], nrn_region='i')
-    ca = rxd.Species(r, name='ca', charge=2, initial=0.0)
+    ca = rxd.Species(r, name='ca', charge=2, initial=0.00005)
 
     ## Set up a mod simulation of one compartment
     sm = h.Section()
@@ -109,7 +109,7 @@ class TestCaAccumulation(unittest.TestCase):
         KappaNEURON.progress = False
 
         self.assertIsInstance(self.sk, nrn.Section)
-        self.assertEqual(self.ca.initial, 0.0)
+        self.assertEqual(self.ca.initial, 0.00005)
         for sec in h.allsec():
             ## This forces eca to be a constant, rather than being
             ## computed from Nernst equation at every time step
@@ -130,7 +130,8 @@ class TestCaAccumulation(unittest.TestCase):
         eca0 = self.sk(0.5).eca
         self.v0 = self.sk(0.5).v
         self.assertEqual(h.t, 0.0)
-        self.assertEqual(self.sk(0.5).cai, 0.0)
+        self.assertEqual(self.sk(0.5).cai, 0.00005)
+
         ## Run
         run(self.tstop)
         self.assertAlmostEqual(h.t, self.tstop)
