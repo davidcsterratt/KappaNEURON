@@ -117,7 +117,7 @@ class TestCaAccumulation(unittest.TestCase):
             if (ghk == 1):
                 sec.fghk_capulse = 1
             else:
-                sec.push(); h('ion_style("ca_ion", 3, 1, 0, 0, 1)') ; h.pop_section()
+                h.ion_style("ca_ion", 3, 1, 0, 0, 1, sec=sec)
                 
             for seg in sec:
                 seg.t0_capulse = self.t0
