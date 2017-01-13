@@ -41,18 +41,12 @@ def _unregister_kappa_scheme(weakref_r):
     global _kappa_schemes
     _kappa_schemes.remove(weakref_r)
 
-def _kn_init(): 
-    nrr._init()
+def _kn_init():
     global _kappa_schemes
     # update Kappa schemes
     for kptr in _kappa_schemes:
         k = kptr()
         if k is not None: k.re_init()
-
-#
-# register the initialization handler and the advance handler
-#
-nrr._fih = neuron.h.FInitializeHandler(_kn_init)
 
 mode = 'lumped_influx' # 'continuous_influx'
 mode = 'continuous_influx'
@@ -65,6 +59,7 @@ def _kn_fixed_step_solve(raw_dt):
 
 ## Override the NEURON nonvint _fixed_step_solve callback   
 def _kn_fixed_step_solve_lumped_influx(raw_dt):
+    nrr.initializer._do_init()
     global _kappa_schemes
     
     report("---------------------------------------------------------------------------")
@@ -296,6 +291,7 @@ def _run_kappa_continuous(states, b, dt):
 
 ## Override the NEURON nonvint _fixed_step_solve callback   
 def _kn_fixed_step_solve_continuous_influx(raw_dt):
+    nrr.initializer._do_init()
     global _kappa_schemes
     
     report("---------------------------------------------------------------------------")
@@ -446,13 +442,32 @@ class Kappa(GeneralizedReaction):
                                                 kappa_parent=self))
         self._sources = []
         self._dests = []
-        self._update_indices()
+
+        # FIXME: Need to work out the correct order of
+        # initialisation. In reaction.py self._do_init() and
+        # self.update_indices() run at the very end of the
+        # constructor.  It seems to be necessary to _update_indices()
+        # before creating the kappa sims with _create_kappa_sims()
+        # 
+        # initialize self if the rest of rxd is already initialized
+        if nrr.initializer.is_initialized():
+            self._update_indices()
+
         self._create_kappa_sims()
         report('Registering kappa scheme')
         _register_kappa_scheme(self)
         nrr._register_reaction(self)
         report(_kappa_schemes)
+        if nrr.initializer.is_initialized():
+            self._do_init()
         self._weakref = weakref.ref(self) # Seems to be needed for the destructor
+
+        
+    def _do_init(self):
+        _kn_init()
+        report("Kappa is initialized")
+        # self._update_rates()
+    
     
     def __repr__(self):
         return 'Kappa(%r, kappa_file=%r, regions=%r, membrane_flux=%r)' % (self._involved_species, self._kappa_file, self._regions, self._membrane_flux)
