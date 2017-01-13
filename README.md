@@ -28,9 +28,13 @@ Installation & testing
 ------------------------
 
 * To install, follow the instructions in [doc/INSTALL.md][INSTALL]
-* KappaNEURON has been tested on Ubuntu 14.04 (gcc version 4.8.4,
-  python 2.7, openjdk 7) with py4j 0.10.4 and NEURON from the trunk of
-  its mercurial repository on 2014-09-23.
+* KappaNEURON has been tested on the following combinations of software:
+
+| KappaNEURON | OS           |   gcc | Python | Java      |   py4j | NEURON                                              | 
+|-------------|--------------|-------|--------|-----------|--------|-----------------------------------------------------| 
+|       0.1.0 | Ubuntu 14.04 | 4.8.4 |    2.7 | openjdk 7 | 0.10.4 | trunk of  NEURON mercurial repository on 2014-09-23 | 
+|       0.2.0 | Ubuntu 14.04 | 4.8.4 |    2.7 | openjdk 7 | 0.10.4 | 7.4 as of 2017-01-13                                | 
+|       0.2.0 | Ubuntu 14.06 | 5.4.0 |    2.7 | openjdk 7 | 0.10.4 | 7.4 as of 2017-01-13                                | 
 
 Authorship & License
 --------------------
