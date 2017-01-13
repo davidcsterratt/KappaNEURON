@@ -135,6 +135,13 @@ class TestCaAccumulation(unittest.TestCase):
         self.assertEqual(h.t, 0.0)
         self.assertEqual(self.sk(0.5).cai, 0.00005)
 
+        ## FIXME: Should we need to run this *after* init()? Maybe
+        ## this is an issue with the rxd.species code rather than
+        ## ours, since ion_style() is called within the init sequence
+        ## there.
+        if (ghk == 0):
+            h.ion_style("ca_ion", 3, 1, 0, 0, 1, sec=self.sk)
+
         ## Run
         run(self.tstop)
         print("After run()")
