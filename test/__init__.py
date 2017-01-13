@@ -154,15 +154,15 @@ class TestCaAccumulation(unittest.TestCase):
     def do_plot(self):
         plt.subplots_adjust(left=0.25)
         nrow = 3
-        if (not self.P):
+        if (self.P):
             nrow = 4
-        fig, ax = plt.subplots(nrows=4, ncols=1, figsize=(2.25*2, 2.5*2))
+        fig, ax = plt.subplots(nrows=nrow, ncols=1, figsize=(2.25*2, 2.5*2))
         i = 0
+        labels=['kappa', 'mod']
         for sec in h.allsec():
             (diffv, diffca) = self.get_diffv_diffca(i)
-            ax[0].plot(self.rec_t, self.rec_v[i], color='br'[i])
+            ax[0].plot(self.rec_t, self.rec_v[i], color='br'[i], label=labels[i])
             (Deltav_theo, Deltaca_theo) = self.get_Deltav_Deltaca_theo(sec, np.array(self.rec_t))
-            ax[0].plot(self.rec_t, Deltav_theo + self.v0, color='g')
             ax[1].plot(self.rec_t, self.rec_cai[i], color='br'[i])
             ax[2].plot(diffv[1:len(diffv)-1], self.caitonum*diffca[0:len(diffv)-2], 'o', color='br'[i])
             if (self.P0 > 0):
@@ -170,6 +170,16 @@ class TestCaAccumulation(unittest.TestCase):
             fig.show()        
             i = i + 1
 
+        ax[0].set_xlabel("time (ms)")
+        ax[0].set_ylabel("V (mV)")
+        ax[0].plot(self.rec_t, Deltav_theo + self.v0, color='g', label='theo')
+        ax[0].legend(loc='upper left')
+        ax[1].set_xlabel("time (ms)")
+        ax[1].set_ylabel("Ca (mM)")
+        ax[2].set_xlabel("Delta V")
+        ax[2].set_ylabel("Delta #Ca ions")
+
+            
     def get_Deltav_Deltaca_theo(self, sec, t, verbose=False):
         eca = sec(0.5).eca
         volbyarea = sec.diam/4
