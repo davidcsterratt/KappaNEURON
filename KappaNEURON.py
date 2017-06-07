@@ -48,143 +48,6 @@ def _kn_init():
         k = kptr()
         if k is not None: k.re_init()
 
-mode = 'lumped_influx' # 'continuous_influx'
-mode = 'continuous_influx'
-
-def _kn_fixed_step_solve(raw_dt):
-    if (mode == 'lumped_influx'):
-        _kn_fixed_step_solve_lumped_influx(raw_dt)
-    else:
-        _kn_fixed_step_solve_continuous_influx(raw_dt)
-
-## Override the NEURON nonvint _fixed_step_solve callback   
-def _kn_fixed_step_solve_lumped_influx(raw_dt):
-    nrr.initializer._do_init()
-    global _kappa_schemes
-    
-    report("---------------------------------------------------------------------------")
-    report("FIXED STEP SOLVE. NEURON time %f" % nrr.h.t)
-    report("states")
-
-    # allow for skipping certain fixed steps
-    # warning: this risks numerical errors!
-    fixed_step_factor = nrr.options.fixed_step_factor
-    nrr._fixed_step_count += 1
-    if nrr._fixed_step_count % fixed_step_factor: return
-    dt = fixed_step_factor * raw_dt
-    
-    # TODO: this probably shouldn't be here
-    if nrr._diffusion_matrix is None and nrr._euler_matrix is None: nrr._setup_matrices()
-
-    states = nrr._node_get_states()[:]
-    report(states)
-
-    report("flux b")
-    ## DCS: This gets fluxes (from ica, ik etc) and computes changes
-    ## due to reactions
-
-    ## DCS FIXME: This is different from the old rxd.py file - need check what
-    ## the difference is
-    b = nrr._rxd_reaction(states) - nrr._diffusion_matrix * states
-    report(b)
-    
-    if not nrr.species._has_3d:
-        states[:] += nrr._reaction_matrix_solve(dt, states, nrr._diffusion_matrix_solve(dt, dt * b))
-
-        ## Go through each kappa scheme. The region belonging to each
-        ## kappa scheme should not overlap with any other kappa scheme's
-        ## region.
-        volumes = nrr.node._get_data()[0]
-        for kptr in _kappa_schemes:
-            k = kptr()
-
-            ## Now we want add any fluxes to the kappa sims and update the
-            ## quantities seen in NEURON.
-
-            ## There is one kappa_sim for each active region in the kappa
-            ## scheme.
-
-            report("\nRUN 0.5 KAPPA STEP")
-            for kappa_sim in k._kappa_sims:
-                kappa_sim.runForTime(dt/2, False)      # Second argument is "time per
-
-            ## This should work for multiple species working, but has only
-            ## been tested for ca
-            report("\nADDING FLUXES TO KAPPA")
-            for  s in k._membrane_species:
-                name = s.name
-                report("ION: %s" % (name))
-                for kappa_sim, i in zip(k._kappa_sims, k._indices_dict[s]):
-                    ## Number of ions
-                    ## Flux b has units of mM/ms
-                    ## Volumes has units of um3
-                    ## _conversion factor has units of molecules mM^-1 um^-3
-                    mu = dt * b[i] * molecules_per_mM_um3 * volumes[i]
-                    nions = 0
-                    if mu!=0:
-                        nions = numpy.sign(mu)*poisson.rvs(abs(mu))
-                    report("index %d; volume: %f ; flux %f ; # ions: %s; mu: %f\n" % (i, volumes[i], b[i], nions, mu))
-                    try:
-                        kappa_sim.addAgent(name, nions)
-                    except Py4JJavaError as e:
-                        java_err = re.sub(r'java.lang.IllegalStateException: ', r'', str(e.java_exception))
-                        errstr = 'Problem adding agents, probably trying to add too many in one step; try reducing number of agents by reducing surface area or current density:\n%s' % (java_err)
-                        raise RuntimeError(errstr)
-
-                    t_kappa = kappa_sim.getTime()
-                    discrepancy = nrr.h.t - t_kappa
-                    report('Kappa Time %f; NEURON time %f; Discrepancy %f' % (t_kappa, nrr.h.t, discrepancy))
-
-
-            report("\nRUN 0.5 KAPPA STEP")  
-            for kappa_sim in k._kappa_sims:
-                kappa_sim.runForTime(dt/2, False)      # Second argument is "time per
-                t_kappa = kappa_sim.getTime()
-                discrepancy = nrr.h.t - t_kappa + dt/2
-                report('Kappa Time %f; NEURON time %f; Discrepancy %f' % (t_kappa, nrr.h.t, discrepancy))
-                ## This code is commented out because it doesn't work
-                ## if run_free has been used; this makes NEURON and
-                ## SpatialKappa time go out of sync
-                ## 
-                ## if (abs(discrepancy) > 1e-3):
-                ##     raise NameError('NEURON time (%f) does not match Kappa time (%f). Discrepancy = %f ' % (nrr.h.t + dt/2, t_kappa, discrepancy))
-
-            ## Update states
-            for  sptr in k._involved_species:
-                s = sptr()
-                name = s.name
-                for kappa_sim, i in zip(k._kappa_sims, k._indices_dict[s]):
-                    states[i] = kappa_sim.getVariable(name) \
-                        /(molecules_per_mM_um3 * volumes[i])
-
-        report("Updated states")
-        report(states)
-
-        # clear the zero-volume "nodes"
-        states[nrr._zero_volume_indices] = 0
-
-        # TODO: refactor so this isn't in section1d... probably belongs in node
-        nrr._section1d_transfer_to_legacy()
-    else:
-        # the actual advance via implicit euler
-        n = len(states)
-        m = _scipy_sparse_eye(n, n) - dt * _euler_matrix
-        # removed diagonal preconditioner since tests showed no improvement in convergence
-        result, info = _scipy_sparse_linalg_bicgstab(m, dt * b)
-        assert(info == 0)
-        states[:] += result
-
-        for sr in nrr._species_get_all_species().values():
-            s = sr()
-            if s is not None: s._transfer_to_legacy()
-    
-    t = nrr.h.t + dt
-    if progress:
-        sys.stdout.write("\rTime = %12.5f/%5.5f [%3.3f%%]" % (t, neuron.h.tstop, t/neuron.h.tstop*100))
-        if (abs(t - neuron.h.tstop) < 1E-6):
-            sys.stdout.write("\n")
-        sys.stdout.flush()
-
 def _run_kappa_continuous(states, b, dt):
     #############################################################################
     ## 1. Pass all relevant continous variables to the rule-based simulator
@@ -290,7 +153,7 @@ def _run_kappa_continuous(states, b, dt):
 
 
 ## Override the NEURON nonvint _fixed_step_solve callback   
-def _kn_fixed_step_solve_continuous_influx(raw_dt):
+def _kn_fixed_step_solve(raw_dt):
     nrr.initializer._do_init()
     global _kappa_schemes
     
@@ -504,24 +367,23 @@ class Kappa(GeneralizedReaction):
             ## Set up transitions to create membrane species in Kappa
             ## simulation and measure the total amount of the agent
             ## corresponding to the membrane species
-            if (mode == 'continuous_influx'):
-                for s in self._membrane_species:
-                    ## Get description of agent
-                    agent = kappa_sim.getAgentMap(s.name)
-                    link_names = agent[s.name].keys()
-                    if (len(link_names) > 1):
-                        errstr = 'Error in kappa file %s: Agent %s has more than one site' % (self._kappa_file, s.name)
-                        raise RuntimeError()
-                    
-                    link_name = link_names[0]
-                    
-                    ## Add transition to create 
-                    kappa_sim.addTransition('Create %s' % (s.name), {}, agent, 0.0)
-                    
-                    ## Add variable to measure total species
-                    kappa_sim.addVariableMap('Total %s' % (s.name), {s.name: {link_name: {'l': '?'}}})
-                    ## Add observation variable
-                    kappa_sim.addVariableMap('%s' % (s.name), {s.name: {}})
+            for s in self._membrane_species:
+                ## Get description of agent
+                agent = kappa_sim.getAgentMap(s.name)
+                link_names = agent[s.name].keys()
+                if (len(link_names) > 1):
+                    errstr = 'Error in kappa file %s: Agent %s has more than one site' % (self._kappa_file, s.name)
+                    raise RuntimeError()
+                
+                link_name = link_names[0]
+                
+                ## Add transition to create 
+                kappa_sim.addTransition('Create %s' % (s.name), {}, agent, 0.0)
+                
+                ## Add variable to measure total species
+                kappa_sim.addVariableMap('Total %s' % (s.name), {s.name: {link_name: {'l': '?'}}})
+                ## Add observation variable
+                kappa_sim.addVariableMap('%s' % (s.name), {s.name: {}})
 
             self._kappa_sims.append(kappa_sim)
             ## TODO: Should we check if we are inserting two kappa schemes
@@ -554,6 +416,13 @@ class Kappa(GeneralizedReaction):
         """
         for kptr in _kappa_schemes:
             k = kptr()
+            # for s in k._membrane_species:
+            #     report("ION: %s" % (s.name))
+            #     for kappa_sim, i in zip(k._kappa_sims, k._indices_dict[s]):
+            #         kappa_sim.setTransitionRate('Create %s' % (s.name), 0.0)
+            #         ## report("Setting %s flux[%d] to b[%d]*NA*vol[%d] = %f*%f*%f = %f" % (s.name, i, i, i,  b[i], molecules_per_mM_um3, volumes[i], flux))
+
+            # print(k)
             for kappa_sim in k._kappa_sims:
                 kappa_sim.runForTime(float(t_run), True)
 
@@ -565,6 +434,7 @@ class Kappa(GeneralizedReaction):
         init() time.
 
         """
+        report("KappaNEURON.re_init()")
         volumes = nrr.node._get_data()[0]
         states = nrr.node._get_states()[:]
         for sptr in self._involved_species:
@@ -580,6 +450,7 @@ class Kappa(GeneralizedReaction):
                         raise NameError('There is no observable or variable in %s called %s; add a line like this:\n%%obs: \'%s\' <complex definition> ' % (self._kappa_file, s.name, s.name))
                     if kappa_sim.isAgent(s.name):
                         try:
+                            report("Trying to set initial value of " + s.name)
                             kappa_sim.setAgentInitialValue(s.name, nions)
                         except Py4JJavaError as e:
                             raise NameError('Error setting initial value of agent %s to %d\n%s' % (s.name, nions,  str(e.java_exception)))
@@ -780,4 +651,3 @@ class KappaFlux(MultiCompartmentReaction):
                         local_mapped.append(uberlocal_map)
                 self._cur_ptrs.append(tuple(local_ptrs))
                 self._cur_mapped.append(tuple(local_mapped))
-
