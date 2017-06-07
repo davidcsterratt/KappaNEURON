@@ -232,9 +232,9 @@ class Kappa(GeneralizedReaction):
     def __init__(self, *args, **kwargs):
         """Specify a Kappa model spanning the membrane to be added to the system.
         
-        Use this for, for example, pumps and channels, or interactions between
-        species living in a volume (e.g. the cytosol) and species on a
-        membrane (e.g. the plasma membrane).
+        This can be used for pumps and channels, or interactions
+        between species living in a volume (e.g. the cytosol) and
+        species on a membrane (e.g. the plasma membrane).
 
         Keyword arguments:
 
@@ -255,6 +255,10 @@ class Kappa(GeneralizedReaction):
         membrane_flux -- Boolean indicating if the reaction should
         produce a current across the plasma membrane that should
         affect the membrane potential.
+
+        time_units -- The units in which rate constants in the Kappa
+        file are defined. Can be milliseconds ("ms") or or seconds
+        ("s").
         
         .. seealso::
         
@@ -575,6 +579,7 @@ class KappaFlux(MultiCompartmentReaction):
         else:
             return []
 
+    ## See multiCompartmentalReaction.py for template
     def _do_memb_scales(self, cur_map): 
         """Set up self._memb_scales and cur_map."""
         if not self._scale_by_area:
