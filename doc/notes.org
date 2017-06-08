@@ -3,11 +3,79 @@
 
 #+TITLE: Notes on NEURON rxd interface and KappaNEURON implementation
 
-* =generalisedReaction= variables and methods to be implemented in KappaNEURON [6/6]
-- This needs KappaNEURON to provide methods for any code in loops in
-  which =_all_reactions= is iterated over.
+* Overview of rxd module in NEURON 7.4
 
-** =generalizedReaction._update_indices()=
+
+
+The =rxd= module sets up biochemical reactions using a
+=generalizedReaction= abstract class from which classes such as
+=Reaction=, =Rate= and =MultiCompartmentReaction= are derived. These
+classes associate =Species= objects with =Region= objects and set up
+the equations for Species concentrations that are passed to NEURON's
+solver. 
+
+Communication with the NEURON solver is achieved via the
+=neuron.nonvint_block_supervisor= module, which is used, in
+=rxd._do_nbs_register()=, to register a vector callback functions
+defined in the =rxd= module.
+
+The =generalizedReaction._get_memb_flux()= method is called
+from =rxd._currents()=, which passes information about induced
+currents back to NEURON's solver.
+
+* Overview of KappaNEURON in NEURON 7.4
+
+Essentially, KappaNEURON sets up Kappa simulations and maps the
+variables in these simulations to variables that exist in NEURON. At
+the start of a deterministic timestep, transmembrane fluxes that
+originate in NEURON, e.g. calcium transmembrane currents, are passed
+to the the appropriate variable in the appropriate Kappa
+simuation. The Kappa simulation is then advanced in time, and the
+change in variables is sent back to NEURON at the end of the time
+step, and mapped back to the relevant variable in NEURON. To achieve
+all this, there is quite a lot of fiddly mapping of data structures
+from Kappa to NEURON and vice-versa, and various other NEURON
+functions have to be overridden.
+
+The KappaNEURON module overwrites the fourth callback function
+(=rxd._fixed_step_solve()=) defined by =rxd._callbacks= by replacing it
+with a funtion =_kn_fixed_step_solve()=. This is called at each
+timestep of the deterministic solver. After reading the =states= of
+variables and any fluxes across the membrane =b= from NEURON, it calls
+=_run_kappa_continuous()=. This function sets the transition rates in
+the creation rules of each Kappa simulation (stored in a =Kappa=
+object), and passes the voltage to Kappa. Then Kappa is run. The Kappa
+variables are mapped back to =states=, and then passed back to
+NEURON. The transmembrane fluxes induced by any Kappa rules that
+control ionic flow through the membrane are stored in the =_memb_flux=
+variable of =KappaFlux= objects which are members of the associated
+=Kappa= object.
+
+To achieve the model specification, and mapping of variables the
+module defines two classes =Kappa=, derived from =GeneralizedReaction=
+and =KappaFlux=, derived from =MultiCompartmentalReaction=.
+
+** =Kappa= class
+
+This class reads a Kappa file, and starts the Kappa solver (currently
+SpatialKappa). It also creates =KappaFlux= objects for each species
+that crosses the membrane. Typically this will be calcium. 
+
+When a =Kappa= object is instantiated, it is registered with
+=neuron.rxd.rxd._register_reaction()=, which means that various of its
+member functions are called at each timestep. As these functions are
+used to set up the derivatives and Jacobian in deterministic
+equations, they will mostly return zeros.
+
+** =KappaFlux= class
+
+The =KappaFlux= object references the =Kappa= object, and implements
+=_get_memb_flux()= to communicate fluxes at each NEURON time
+step. This returns =_memb_flux= mentioned above.
+
+* =generalisedReaction= methods not overridden by KappaNEURON classes
+
+** =_update_indices()=
 - Sets up:
   - =self._indices_dict= :: Mapping from species onto indices in the
        state vector.
@@ -15,7 +83,7 @@
        to convert output of =self._evaluate()= into units of mM/ms
        when =self._trans_membrane= is true.
 
-** =generalizedReaction._mult=
+** =_mult=
 
 Set in =generalizedReaction._update_indices()=, its value depends on the value of
   =self._trans_membrane= and =self._scale_by_area=:
@@ -41,7 +109,16 @@ Set in =generalizedReaction._update_indices()=, its value depends on the value o
 
   =1= for =dest_indices=
 
-** DONE =KappaNEURON._evaluate(states)=
+
+** =_setup_membrane_fluxes(node_indices, cur_map)=
+- Set up =node_indices=, indices mapping source species
+  =self._sources= and destination sepcies =self._dests= to segment
+  indices
+
+
+* =generalisedReaction= methods overridden by =Kappa= and =KappaFlux= classes that return null
+
+** =_evaluate(states)=
 - Evaluates states to give rate of change of states
 
 - *Returns*
@@ -55,7 +132,7 @@ Set in =generalizedReaction._update_indices()=, its value depends on the value o
 - *KappaNEURON implementation*: As algorithm does not utilise the rate
   of change of states, returns three empty lists.
 
-** DONE =KappaNEURON._jacobian_entries()=
+** =_jacobian_entries()=
 - *Returns*
   - =_jac_rows= :: Indicies of rows of entries
   - =_jac_cols= :: Indicies of columns of entries
@@ -64,7 +141,11 @@ Set in =generalizedReaction._update_indices()=, its value depends on the value o
   entries, returns three empty lists.
 
 
-** DONE =KappaNEURON._get_memb_flux()= 
+* =MultiCompartmentalReaction= variables and methods to be overridden in KappaFlux class
+- This needs KappaNEURON to provide methods for any code in loops in
+  which =_all_reactions= is iterated over.
+
+** =_get_memb_flux()= 
 
 - Gets flux across the membrane due to univalent ion in mA/cm^2
 - *Returns*: =self._memb_scales*rates= where =rates= comes from
@@ -83,12 +164,12 @@ Set in =generalizedReaction._update_indices()=, its value depends on the value o
    = 10^{-3} A cm^{-2}
 
    = mA cm^{-2}
-- *KappaNEURON implementation:* Picks up flux contained in the global
-  variable =_db= which is set in =KappaNEURON._kn_fixed_step_solve()=
-  and which results from the net change in ions during the preceding
-  time step.
+- *KappaNEURON implementation:* Picks up flux contained in member
+  variable =_memb_flux= which is set in
+  =KappaNEURON._kn_fixed_step_solve()= and which results from the net
+  change in ions during the preceding time step.
 
-** DONE =KappaNEURON._memb_scales=
+** =_memb_scales=
 - Charge per molecule in units of 10^{-14} C/molecule, scaled
   according to areas of membranes.
 - Set in =KappaNEURON._do_memb_scales()=
@@ -102,7 +183,7 @@ Set in =generalizedReaction._update_indices()=, its value depends on the value o
 
    = 10^{-14} C/molecules
 
-** DONE =KappaNEURON._do_memb_scales()=
+** =_do_memb_scales()=
 
 - Set up =self._memb_scales= and sets a current map =rxd._cur_map=
   used by =rxd._update_node_data()= in which is it is passed to
@@ -115,22 +196,18 @@ Set in =generalizedReaction._update_indices()=, its value depends on the value o
   - Use =numpy.concatenate()= instead of =itertools.chain= command,
     which doesn't seem to work
 
-** DONE =self._sources=, =self._dests=
+** =_sources=, =_dests=
 - List of =weakref= to =SpeciesOnRegion= used in
   =_setup_membrane_fluxes()= and =_kn_fixed_step_solve()=
 - *KappaNEURON implementation:* Set up in =self.__init__()=.
 
-** =generalisedReaction._setup_membrane_fluxes(node_indices, cur_map)=
-- Set up =node_indices=, indices mapping source species
-  =self._sources= and destination sepcies =self._dests= to segment
-  indices
-
-** =generalizedReaction._cur_ptrs=  
-   Pointers to species currents (=ica=, =ik= etc) in =nrn.Segment=
-
-** =generalizedReaction._cur_mapped= 
+** =_cur_ptrs=  
+   Pointers to species currents (=ica=, =ik= etc) in =nrn.Segment=.
+   Set up in =_do_memb_scales()=
+   
+** =_cur_mapped= 
    Mapping from species conc (=cai=, =cao=) and segment to index in
-     =states()=
+     =states()=.  Set up in =_do_memb_scales()=
 
 * =rxd.py= functions
 
