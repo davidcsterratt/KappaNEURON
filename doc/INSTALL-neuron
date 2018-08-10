@@ -10,8 +10,7 @@ PREFIX=${HOME}/nrn
 
 ## Defaults. Set version to version known to work.
 if [ "x$version" == "x" ] && [ "x$DATE" == "x" ]; then
-    version="trunk"
-    DATE="2014-09-23"
+    version="7.4"
 fi
 
 if [ "x$version" == "x" ] || [ "x$version" == "xtrunk"]; then 
