@@ -273,7 +273,6 @@ class Kappa(GeneralizedReaction):
         regions = kwargs.get('regions', None)
         membrane_flux = kwargs.get('membrane_flux', True)
         time_units = kwargs.get('time_units', 'ms')
-        scale_by_area = kwargs.get('scale_by_area', True)
 
         global gateway
         self._kappa_sims = []
@@ -292,7 +291,6 @@ class Kappa(GeneralizedReaction):
             regions = [regions]
         self._regions = regions
         self._active_regions = []
-        self._scale_by_area = scale_by_area
         self._trans_membrane = False
         self._membrane_flux = False
         self._time_units = time_units
@@ -548,11 +546,11 @@ class KappaFlux(MultiCompartmentReaction):
         return 'KappaFlux(%r, kappa_parent=%r, regions=%r, membrane_flux=%r)' % (self._involved_species, self._kappa_parent, self._regions, self._membrane_flux)
 
     def _evaluate(self, states):
-        """This does nothing in the KappaNEURON class"""
+        """This does nothing in the KappaFlux class"""
         return ([], [], [])
 
     def _jacobian_entries(self, states, multiply=1, dx=1.e-10):
-        """This does nothing in the KappaNEURON class"""
+        """This does nothing in the KappaFlux class"""
         return ([], [], [])        
     
     def _get_memb_flux(self, states):
