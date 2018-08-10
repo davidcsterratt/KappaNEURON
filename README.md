@@ -27,8 +27,12 @@ Further details
 Installation & testing
 ------------------------
 
-* To install, follow the instructions in [doc/INSTALL.md][INSTALL]
-* KappaNEURON has been tested on the following combinations of software:
+1. Install NEURON v. 7.4 with python enabled, follow the instructions
+   in step 1 of [KappaNEURON installation from source][INSTALL]
+
+2. Run `pip install KappaNEURON`
+
+KappaNEURON has been tested on the following combinations of software:
 
 | KappaNEURON | OS           |   gcc | Python | Java      |   py4j | NEURON                                              | 
 |-------------|--------------|-------|--------|-----------|--------|-----------------------------------------------------| 

@@ -72,10 +72,10 @@ class TestCaAccumulation(unittest.TestCase):
 
         ## Insert calcium pump into kappa section
         if mechanism == 'caPump1':
-            self.kappa = KappaNEURON.Kappa(membrane_species=[self.ca], kappa_file=self.__module__ + "/" + mechanism + ".ka", regions=self.r)
+            self.kappa = KappaNEURON.Kappa(membrane_species=[self.ca], kappa_file=os.path.dirname(KappaNEURON.__file__) + "/tests/" + mechanism + ".ka", regions=self.r)
         if mechanism == 'caPump2':
             self.P  = rxd.Species(self.r, name='P', charge=0, initial=self.P0)
-            self.kappa = KappaNEURON.Kappa(membrane_species=[self.ca], species=[self.P], kappa_file=self.__module__ + "/" + mechanism + ".ka", regions=self.r)
+            self.kappa = KappaNEURON.Kappa(membrane_species=[self.ca], species=[self.P], kappa_file=os.path.dirname(KappaNEURON.__file__) + "/tests/" + mechanism + ".ka", regions=self.r)
             self.kappa.setVariable('vol', self.sk.L*(self.sk.diam**2)/4*np.pi)
             self.kappa.setVariable('k2', self.k2)
             setattr(self.sm(0.5), 'k2_' + mechanism, self.k2)
@@ -268,7 +268,7 @@ class TestCaAccumulation(unittest.TestCase):
 
     def test_startup(self):
         mechanism = 'caPump1'
-        self.kappa = KappaNEURON.Kappa(membrane_species=[self.ca], kappa_file=self.__module__ + "/" + mechanism + ".ka", regions=self.r)
+        self.kappa = KappaNEURON.Kappa(membrane_species=[self.ca], kappa_file=os.path.dirname(KappaNEURON.__file__) + "/tests/" + mechanism + ".ka", regions=self.r)
         self.assertIsInstance(self.kappa._kappa_fluxes[0], KappaNEURON.KappaFlux)
         init()
         self.assertEqual(rxd.rxd._curr_indices, [1])
@@ -283,7 +283,7 @@ class TestCaAccumulation(unittest.TestCase):
         self.sk(0.5).fghk_capulse = 1
         self.sk(0.5).gbar_capulse = 0.0001
         self.na   = rxd.Species(self.r, name='na', charge=1, initial=0)
-        self.kappa = KappaNEURON.Kappa(membrane_species=[self.ca, self.na], kappa_file=self.__module__ + "/" + "napulse.ka", regions=self.r)
+        self.kappa = KappaNEURON.Kappa(membrane_species=[self.ca, self.na], kappa_file=os.path.dirname(KappaNEURON.__file__) + "/tests/" + "napulse.ka", regions=self.r)
         self.assertIsInstance(self.kappa._kappa_fluxes[0], KappaNEURON.KappaFlux)
         self.assertIsInstance(self.kappa._kappa_fluxes[1], KappaNEURON.KappaFlux)
         
@@ -354,7 +354,7 @@ class TestCaAccumulation(unittest.TestCase):
         self.sk(0.5).fghk_capulse = 1
         self.sk(0.5).gbar_capulse = 0.0001
         self.glu   = KappaNEURON.UnchargedSpecies(self.r, name='glu', initial=0)
-        self.kappa = KappaNEURON.Kappa(membrane_species=[self.ca, self.glu], kappa_file=self.__module__ + "/" + "nmda.ka", regions=self.r)
+        self.kappa = KappaNEURON.Kappa(membrane_species=[self.ca, self.glu], kappa_file=os.path.dirname(KappaNEURON.__file__) + "/tests/" + "nmda.ka", regions=self.r)
         self.assertIsInstance(self.kappa._kappa_fluxes[0], KappaNEURON.KappaFlux)
         # self.assertExists(self.kappa._kappa_fluxes[1])
         
@@ -544,9 +544,21 @@ class TestCaAccumulation(unittest.TestCase):
     def tearDown(self):
         self.kappa = None
 
-testSuite = unittest.TestSuite()
-#testSuite.addTest(TestCaAccumulation('test_injectCalcium'))
-testSuite.addTest(TestCaAccumulation('test_injectCalciumGHK'))
-        
+# testSuite = unittest.TestSuite()
+# testSuite.addTest(TestCaAccumulation('test_injectCalcium'))
+# testSuite.addTest(TestCaAccumulation('test_injectCalciumGHK'))
+# testSuite.addTest(TestCaAccumulation('test_injectCalciumPump'))
+# testSuite.addTest(TestCaAccumulation('test_injectCalciumPumpGHK'))
+# testSuite.addTest(TestCaAccumulation('test_injectCalciumPump2'))
+# testSuite.addTest(TestCaAccumulation('test_injectCalciumPump2k2'))
+# testSuite.addTest(TestCaAccumulation('test_twoMembraneSpecies'))
+# testSuite.addTest(TestCaAccumulation('test_twoMembraneSpeciesOneUncharged'))
+
+# unittest.TextTestRunner(verbosity=2).run(testSuite)
+
+# def quick():
+#     print ("hello")
+#     unittest.TextTestRunner(verbosity=2).run(testSuite)
+
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main()    

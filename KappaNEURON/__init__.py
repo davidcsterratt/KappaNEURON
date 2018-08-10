@@ -1,3 +1,5 @@
+name = "KappaNEURON"
+
 import neuron
 from neuron import h
 import neuron.rxd as nr

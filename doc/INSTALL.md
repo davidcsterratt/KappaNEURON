@@ -1,21 +1,20 @@
-KappaNEURON Installation
-========================
+KappaNEURON installation from source
+====================================
 
-1. Install NEURON from the trunk of its mercurial repository
-   2014-09-23 with python2.7. The script
-   [INSTALL-neuron](./INSTALL-neuron) for will do this on Ubuntu
-   14.04:
+1. Install NEURON 7.4 with Python enabled. The script
+   [INSTALL-neuron](./INSTALL-neuron) for will do this on Ubuntu 14.04
+   by pulling from the NEURON Mercurial repository.
 
         ./INSTALL-neuron
         ls
 
    By default the script installs NEURON in
-   `$HOME/nrn/trunk-2014-09-23/nrn/`. The script also installs
+   `$HOME/nrn/trunk-7.4/nrn/`. The script also installs
    required packages for installation of NEURON and for
    KappaNEURON. The script ends by suggesting a change to the
    `$PYTHONPATH` environment variable, e.g.:
 
-        export PYTHONPATH=$HOME/nrn/trunk-2014-09-23/nrn/lib/python/:$PYTHONPATH
+        export PYTHONPATH=$HOME/nrn/7.4/nrn/lib/python/:$PYTHONPATH
         
    This should be added to your shell configuration, e.g. `~/.profile`
    or `~/.bash_profile`.
