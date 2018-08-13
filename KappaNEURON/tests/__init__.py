@@ -1,5 +1,8 @@
-import KappaNEURON
 import os
+import pkgutil
+import tempfile
+import shutil
+import KappaNEURON
 import unittest
 import neuron
 from neuron import *
@@ -9,6 +12,19 @@ import matplotlib.pyplot as plt
 import re
 
 class TestCaAccumulation(unittest.TestCase):
+    ## Compile and load mechanisms - note that the version of
+    ## nrnivmodl must match NEURON dll - there is no way of checking
+    ## this at present
+    dirpath = tempfile.mkdtemp()
+    shutil.rmtree(dirpath)
+    shutil.copytree(os.path.join(pkgutil.get_loader("KappaNEURON").filename, 'tests'), dirpath)
+    os.chdir(dirpath)
+    cmd = "nrnivmodl"
+    os.system(cmd)
+    neuron.load_mechanisms(dirpath)
+    ## We can't delete the mechanisms
+    ## shutil.rmtree(dirpath)
+    
     ## Whether to plot
     plot = True
 
