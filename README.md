@@ -32,6 +32,28 @@ Installation & testing
 
 2. Run `pip install KappaNEURON`
 
+3. Run an inital test:
+   ```
+   python2.7 -i -m unittest KappaNEURON.tests.TestCaAccumulation.test_injectCalcium
+   ```
+   The test should return `OK` and the following figure window should
+   appear
+   ![KappNEURON result of test_injectCalcium](doc/figs/test_injectCalcium_2018-09-05.png)
+
+4. At present is not possible to run the entire test suite in one go,
+   because completely clean tear down of the test environoment is not
+   possible with the current version of KappaNEURON. Therefore
+   individual tests can be run as follows:
+   ```
+	python2.7 -m unittest KappaNEURON.tests.TestCaAccumulation.test_injectCalciumGHK
+	python2.7 -m unittest KappaNEURON.tests.TestCaAccumulation.test_injectCalciumPump
+	python2.7 -m unittest KappaNEURON.tests.TestCaAccumulation.test_injectCalciumPumpGHK
+	python2.7 -m unittest KappaNEURON.tests.TestCaAccumulation.test_injectCalciumPump2
+	python2.7 -m unittest KappaNEURON.tests.TestCaAccumulation.test_injectCalciumPump2k2
+	python2.7 -m unittest KappaNEURON.tests.TestCaAccumulation.test_twoMembraneSpecies
+	python2.7 -m unittest KappaNEURON.tests.TestCaAccumulation.test_twoMembraneSpeciesOneUncharged
+   ```
+
 KappaNEURON has been tested on the following combinations of software:
 
 | KappaNEURON | OS           |   gcc | Python | Java      |   py4j | NEURON                                              | 
