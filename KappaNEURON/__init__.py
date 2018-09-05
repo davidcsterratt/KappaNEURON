@@ -51,6 +51,7 @@ def _kn_init():
         if k is not None: k.re_init()
 
 def _run_kappa_continuous(states, b, dt):
+    global _kappa_schemes
     #############################################################################
     ## 1. Pass all relevant continous variables to the rule-based simulator
     ##
@@ -158,7 +159,8 @@ def _run_kappa_continuous(states, b, dt):
 def _kn_fixed_step_solve(raw_dt):
     nrr.initializer._do_init()
     global _kappa_schemes
-    
+
+    report("")
     report("---------------------------------------------------------------------------")
     report("FIXED STEP SOLVE. NEURON time %f" % nrr.h.t)
     report("states")
@@ -214,6 +216,7 @@ def _kn_fixed_step_solve(raw_dt):
 
 
 nrr._callbacks[4] = _kn_fixed_step_solve
+fih3 = neuron.h.FInitializeHandler(2, _kn_init)
 
 gateway = None
 
@@ -335,16 +338,19 @@ class Kappa(GeneralizedReaction):
         report("Kappa is initialized")
         # self._update_rates()
     
-    
     def __repr__(self):
         return 'Kappa(%r, kappa_file=%r, regions=%r, membrane_flux=%r)' % (self._involved_species, self._kappa_file, self._regions, self._membrane_flux)
-    
+
     def __del__(self):
         global gateway, _kappa_schemes
         ## A similar idiom to rxd._register_kappa_scheme() doesn't seem to work
         _unregister_kappa_scheme(self._weakref)
-        for kappa_sim in self._kappa_sims:
-            del(kappa_sim)
+        ## for kappa_sim in self._kappa_sims:
+        ##     kappa_sim.__del__()
+        ## FIXME: destroying fluxes does not work properly; they stick around even after trying to delete as below...
+        for kappa_flux in self._kappa_fluxes:
+            kappa_flux.__del__()
+
         ## Needed to ensure cleanup and no exit errors in python2.7
         if (len(_kappa_schemes) == 0):
             gateway = None
@@ -440,6 +446,7 @@ class Kappa(GeneralizedReaction):
         """
         report("KappaNEURON.re_init()")
         volumes = nrr.node._get_data()[0]
+        ## FIXME: There's a problem here, since it is picking up existing states...
         states = nrr.node._get_states()[:]
         for sptr in self._involved_species:
             s = sptr()
@@ -656,3 +663,7 @@ class KappaFlux(MultiCompartmentReaction):
                         local_mapped.append(uberlocal_map)
                 self._cur_ptrs.append(tuple(local_ptrs))
                 self._cur_mapped.append(tuple(local_mapped))
+
+    def __del__(self):
+        """KappaFlux destructor"""
+        print("Destroying KappaFlux")
