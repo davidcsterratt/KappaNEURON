@@ -10,6 +10,29 @@ from neuron import rxd
 import numpy as np
 import matplotlib.pyplot as plt
 import re
+import platform
+
+print("hello")
+def compile_modfiles(dirpath='.'):
+    cwd = os.getcwd()
+    print("CWD " + cwd)
+    os.chdir(dirpath)
+    print("CWD " + os.getcwd())
+    ## Find the version of nrnivmodl corresponding to this python module
+    neuron_root = os.path.realpath(os.path.join(os.path.realpath(pkgutil.get_loader('neuron').filename), '../../../'))
+    print(neuron_root)
+    ## os.chdir(dirpath)
+    ## Use it to compile files in the test directory
+    ## os.system(os.path.join(neuron_root, 'x86_64/bin/nrnivmodl test'))
+    if platform.system() == 'Windows':
+        cmd = 'sh ' + os.path.realpath(os.path.join(neuron_root, 'bin/mknrndll'))
+    else:
+        cmd = os.path.realpath(os.path.join(neuron_root, 'x86_64/bin/nrnivmodl'))
+    print(cmd)
+    os.system(cmd)
+    print('compiled')
+    os.chdir(cwd)
+    print("CWD " + cwd)
 
 class TestCaAccumulation(unittest.TestCase):
     ## Compile and load mechanisms - note that the version of
@@ -17,10 +40,10 @@ class TestCaAccumulation(unittest.TestCase):
     ## this at present
     dirpath = tempfile.mkdtemp()
     shutil.rmtree(dirpath)
-    shutil.copytree(os.path.join(pkgutil.get_loader("KappaNEURON").filename, 'tests'), dirpath)
-    os.chdir(dirpath)
-    cmd = "nrnivmodl"
-    os.system(cmd)
+    shutil.copytree(os.path.join(pkgutil.get_loader("KappaNEURON").filename, 'tests'), dirpath, ignore=shutil.ignore_patterns('*.py', '*.pyc', '*.ka'))
+    ## os.chdir(dirpath)
+    compile_modfiles(dirpath)
+    ## neuron.load_mechanisms(dirpath)
     neuron.load_mechanisms(dirpath)
     ## We can't delete the mechanisms
     ## shutil.rmtree(dirpath)
@@ -90,13 +113,16 @@ class TestCaAccumulation(unittest.TestCase):
         return(mode)
 
     def injectCalcium(self, ghk=0, mechanism='caPump1'):
-        
+        print(pkgutil.get_loader('KappaNEURON').filename)
+        print(os.path.realpath(KappaNEURON.__file__))
         ## Insert calcium pump into mod section
         self.sm.insert(mechanism)
         self.mechanism = mechanism
 
         ## Insert calcium pump into kappa section
         if mechanism == 'caPump1':
+            print(KappaNEURON.__file__)
+            print(KappaNEURON.__file__)            
             self.kappa = KappaNEURON.Kappa(membrane_species=[self.ca], kappa_file=os.path.dirname(KappaNEURON.__file__) + "/tests/" + mechanism + ".ka", regions=self.r)
         if mechanism == 'caPump2':
             self.kappa = KappaNEURON.Kappa(membrane_species=[self.ca], species=[self.P], kappa_file=os.path.dirname(KappaNEURON.__file__) + "/tests/" + mechanism + ".ka", regions=self.r)
