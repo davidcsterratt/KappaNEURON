@@ -34,7 +34,7 @@ Install NEURON 7.4 with Python enabled
    ```
    tar zxvf nrn-7.4.tar.gz
    cd nrn
-   CC=gcc-5 CXX=g++5 ./configure --prefix=$NRNPREFIX/iv --with-iv=$NRNPREFIX/iv --with-nrnpython=pyton2.7
+   CC=gcc-5 CXX=g++5 ./configure --prefix=$NRNPREFIX/iv --with-iv=$NRNPREFIX/iv --with-nrnpython=python2.7
    make
    make install
    cd ..
