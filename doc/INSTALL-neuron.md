@@ -53,10 +53,9 @@ Install NEURON 7.4 with Python enabled
    ```
    The output should be:
    ```
-   python -m neuron
-NEURON -- Release 7.4 (1370:16a7055d4a86) 2015-11-09
-Duke, Yale, and the BlueBrain Project -- Copyright 1984-2015
-See http://www.neuron.yale.edu/neuron/credits
+   NEURON -- Release 7.4 (1370:16a7055d4a86) 2015-11-09
+   Duke, Yale, and the BlueBrain Project -- Copyright 1984-2015
+   See http://www.neuron.yale.edu/neuron/credits
 
-/usr/bin/python: No module named neuron.__main__; 'neuron' is a package and cannot be directly executed
-```
+   /usr/bin/python: No module named neuron.__main__; 'neuron' is a package and cannot be directly executed
+   ```
