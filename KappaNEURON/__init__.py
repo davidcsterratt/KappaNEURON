@@ -216,7 +216,26 @@ def _kn_fixed_step_solve(raw_dt):
 
 
 nrr._callbacks[4] = _kn_fixed_step_solve
-fih3 = neuron.h.FInitializeHandler(2, _kn_init)
+_fih3 = neuron.h.FInitializeHandler(2, _kn_init)
+
+## FIXME: The next two lines are needed as a workaround, because of
+## bug in the production version of NEURON from 2015-11-09. The diff
+## below shows what the code should be.
+#
+# diff -u -x '*.pyc' -r 7.4-2015-11-09/lib64/python/neuron/rxd/rxd.py 7.4/lib64/python/neuron/rxd/rxd.py
+# --- 7.4-2015-11-09/lib64/python/neuron/rxd/rxd.py	2018-09-12 14:36:58.558292264 +0100
+# +++ 7.4/lib64/python/neuron/rxd/rxd.py	2018-08-14 16:27:53.828204184 +0100
+# @@ -899,7 +899,7 @@
+#  _has_nbs_registered = False
+#  _nbs = None
+#  def _do_nbs_register():
+# -    global _has_nbs_registered, _nbs
+# +    global _has_nbs_registered, _nbs, _fih, _fih2
+     
+#      if not _has_nbs_registered:
+#          from neuron import nonvint_block_supervisor as _nbs
+_fih = h.FInitializeHandler(nrr._init)
+_fih2 = h.FInitializeHandler(3, nrr.initializer._do_ion_register)
 
 gateway = None
 
