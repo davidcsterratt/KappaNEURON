@@ -11,16 +11,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 import re
 import platform
+import glob
 
 print("hello")
 def compile_modfiles(dirpath='.'):
     cwd = os.getcwd()
-    print("CWD " + cwd)
+    print("CWD: " + cwd)
     os.chdir(dirpath)
-    print("CWD " + os.getcwd())
+    print("CWD: " + os.getcwd())
     ## Find the version of nrnivmodl corresponding to this python module
     neuron_root = os.path.realpath(os.path.join(os.path.realpath(pkgutil.get_loader('neuron').filename), '../../../'))
-    print(neuron_root)
+    print("neuron_root: " + neuron_root)
     ## os.chdir(dirpath)
     ## Use it to compile files in the test directory
     ## os.system(os.path.join(neuron_root, 'x86_64/bin/nrnivmodl test'))
@@ -28,20 +29,20 @@ def compile_modfiles(dirpath='.'):
         cmd = 'sh ' + os.path.realpath(os.path.join(neuron_root, 'bin/mknrndll'))
     else:
         cmd = os.path.realpath(os.path.join(neuron_root, 'x86_64/bin/nrnivmodl'))
-    print(cmd)
+    print("Compiling: " + cmd + "...")
     os.system(cmd)
-    print('compiled')
+    print('...compiled')
     os.chdir(cwd)
-    print("CWD " + cwd)
+    print("CWD: " + cwd)
 
 class TestCaAccumulation(unittest.TestCase):
     ## Compile and load mechanisms - note that the version of
     ## nrnivmodl must match NEURON dll - there is no way of checking
     ## this at present
     dirpath = tempfile.mkdtemp()
-    shutil.rmtree(dirpath)
-    shutil.copytree(os.path.join(pkgutil.get_loader("KappaNEURON").filename, 'tests'), dirpath, ignore=shutil.ignore_patterns('*.py', '*.pyc', '*.ka'))
-    ## os.chdir(dirpath)
+    for file in glob.glob(os.path.join(pkgutil.get_loader("KappaNEURON").filename, 'tests', '*.mod')):
+        shutil.copy(file, dirpath)
+    
     compile_modfiles(dirpath)
     ## neuron.load_mechanisms(dirpath)
     neuron.load_mechanisms(dirpath)
