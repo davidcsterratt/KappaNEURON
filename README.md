@@ -27,8 +27,8 @@ Further details
 Installation & testing
 ------------------------
 
-1. Install NEURON v. 7.4 with python enabled, follow the instructions
-   in step 1 of [KappaNEURON installation from source][INSTALL]
+1. Install NEURON v. 7.4 with python enabled using (these instructions
+   for Ubuntu 18.04)[INSTALL-neuron]
 
 2. Run `pip install KappaNEURON`
 
@@ -91,9 +91,7 @@ agreement nos. 241498 (EUROSPIN project), 242167 (SynSys-project) and
 
 [NEURON]: http://neuron.yale.edu/neuron/ "NEURON"
 
-[INSTALL-neuron]: doc/INSTALL-neuron "NEURON installation instructions"
-
-[INSTALL]: doc/INSTALL.md "KappaNEURON installation instructions"
+[INSTALL-neuron]: doc/INSTALL-neuron.md "NEURON installation instructions"
 
 <!--  LocalWords:  KappaNEURON SpatialKappa KappNEURON Sterratt Danos
  -->
