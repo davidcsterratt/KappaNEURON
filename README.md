@@ -27,8 +27,8 @@ Further details
 Installation & testing
 ------------------------
 
-1. Install NEURON v. 7.4 with python enabled using (these instructions
-   for Ubuntu 18.04)[INSTALL-neuron]
+1. Install NEURON v. 7.4 with python enabled using [these instructions
+   for Ubuntu 18.04][INSTALL-neuron]
 
 2. Run `pip install KappaNEURON`
 
