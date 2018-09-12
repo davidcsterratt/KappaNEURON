@@ -30,9 +30,16 @@ Installation & testing
 1. Install NEURON v. 7.4 with python enabled using [these instructions
    for Ubuntu 18.04][INSTALL-neuron]
 
-2. Run `pip install KappaNEURON`
+2. Create a virtual environment:
+   ```
+   sudo apt install virtualenv
+   virtualenv --python=python2.7 /tmp/KappaNEURON
+   source /tmp/KappaNEURON/bin/activate
+   ```
 
-3. Run an inital test:
+3. Run `pip install KappaNEURON`
+
+4. Run an inital test:
    ```
    python2.7 -i -m unittest KappaNEURON.tests.TestCaAccumulation.test_injectCalcium
    ```
@@ -42,7 +49,7 @@ Installation & testing
    The figure will be saved in PNG format to the directory
    `test_figs`.
 
-4. At present is not possible to run the entire test suite in one go,
+5. At present is not possible to run the entire test suite in one go,
    because completely clean tear down of the test environoment is not
    possible with the current version of KappaNEURON. Therefore
    individual tests can be run as follows:
