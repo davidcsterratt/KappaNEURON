@@ -83,9 +83,8 @@ class TestCaAccumulation(unittest.TestCase):
     k1 = 0                      # Pump parameter
     k2 = False                  # Optional parameter
     ## P = False              # Pump species
-    P0 = 0 
-    P  = rxd.Species(r, name='P', charge=0, initial=P0)
-
+    P = None
+    P0 = 0
     
     tol = 0.01
     KappaNEURON.verbose = False
@@ -122,14 +121,15 @@ class TestCaAccumulation(unittest.TestCase):
 
         ## Insert calcium pump into kappa section
         if mechanism == 'caPump1':
-            print(KappaNEURON.__file__)
             print(KappaNEURON.__file__)            
             self.kappa = KappaNEURON.Kappa(membrane_species=[self.ca], kappa_file=os.path.dirname(KappaNEURON.__file__) + "/tests/" + mechanism + ".ka", regions=self.r)
         if mechanism == 'caPump2':
+            self.P  = rxd.Species(self.r, name='P', charge=0, initial=self.P0)
             self.kappa = KappaNEURON.Kappa(membrane_species=[self.ca], species=[self.P], kappa_file=os.path.dirname(KappaNEURON.__file__) + "/tests/" + mechanism + ".ka", regions=self.r)
             self.kappa.setVariable('vol', self.sk.L*(self.sk.diam**2)/4*np.pi)
             self.kappa.setVariable('k2', self.k2)
             setattr(self.sm(0.5), 'k2_' + mechanism, self.k2)
+            self.sm(0.5).P0_caPump2 = self.P0
 
         ## Set variables
         self.kappa.setVariable('k1', self.k1)
@@ -238,6 +238,8 @@ class TestCaAccumulation(unittest.TestCase):
             ax[2].plot(diffv[1:len(diffv)-1], self.caitonum*diffca[0:len(diffv)-2], 'o', color='br'[i])
             if (self.P0 > 0):
                 ax[3].plot(self.rec_t, self.rec_Pi[i], color='br'[i])
+                ax[3].set_xlabel("time (ms)")
+                ax[3].set_ylabel("P (mM)")
             fig.show()        
             i = i + 1
 
@@ -249,6 +251,12 @@ class TestCaAccumulation(unittest.TestCase):
         ax[1].set_ylabel("Ca (mM)")
         ax[2].set_xlabel("Delta V")
         ax[2].set_ylabel("Delta #Ca ions")
+        try:
+            os.mkdir('test_figs')
+        except:
+            print('dir exists')
+            
+        plt.savefig(os.path.join('test_figs', self._testMethodName))
 
             
     def get_Deltav_Deltaca_theo(self, sec, t, output=True, verbose=False):

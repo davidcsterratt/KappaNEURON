@@ -39,6 +39,8 @@ Installation & testing
    The test should return `OK` and the following figure window should
    appear
    ![KappNEURON result of test_injectCalcium](doc/figs/test_injectCalcium_2018-09-05.png)
+   The figure will be saved in PNG format to the directory
+   `test_figs`.
 
 4. At present is not possible to run the entire test suite in one go,
    because completely clean tear down of the test environoment is not
@@ -53,6 +55,11 @@ Installation & testing
 	python2.7 -m unittest KappaNEURON.tests.TestCaAccumulation.test_twoMembraneSpecies
 	python2.7 -m unittest KappaNEURON.tests.TestCaAccumulation.test_twoMembraneSpeciesOneUncharged
    ```
+
+   Most of these tests save figures to `test_figs`. The red ("mod")
+   and blue ("kappa") curves in these figures should more-or-less
+   overlap. The kappa curves will be more irregular, because of the
+   stochstic simulation.
 
 KappaNEURON has been tested on the following combinations of software:
 
