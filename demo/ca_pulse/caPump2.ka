@@ -23,6 +23,7 @@
 %init: 1000 ca(x)
 %init: 10000 P(x)
 
+# Observations
 %obs: 'ca' ca(x)
 %obs: 'P-Ca' ca(x!1), P(x!1)
 %obs: 'P' P(x)

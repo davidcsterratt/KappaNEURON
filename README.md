@@ -11,8 +11,10 @@ the postsynaptic proteome in the context of the spine head.
 ![KappNEURON demonstration simulation of postsynaptic proteome in context of spine head - first 6 seconds](doc/figs/neuron_kappa_Very_short_6000.png)
 ![KappNEURON demonstration simulation of postsynaptic proteome in context of spine head - first 65 seconds](doc/figs/neuron_kappa_Very_short_65000.png)
 
-Further details
----------------
+Publications
+------------
+
+Please cite Sterratt & al. (2015) when using KappaNEURON:
 
 * Sterratt, D. C., Sorokina, O. and Armstrong,
   J. D. (2015). ‘Integration of rule-based models and compartmental
@@ -75,6 +77,14 @@ KappaNEURON has been tested on the following combinations of software:
 |       0.1.0 | Ubuntu 14.04 | 4.8.4 |    2.7 | openjdk 7 | 0.10.4 | trunk of  NEURON mercurial repository on 2014-09-23 | 
 |       0.2.0 | Ubuntu 14.04 | 4.8.4 |    2.7 | openjdk 7 | 0.10.4 | 7.4 as of 2017-01-13                                | 
 |       0.2.0 | Ubuntu 16.04 | 5.4.0 |    2.7 | openjdk 7 | 0.10.4 | 7.4 as of 2017-01-13                                | 
+
+Getting started
+---------------
+
+Code for the two demo simulations in Sterratt & al. (2015) paper are
+the `demos` subdirectory:
+1. [Calcium pump in response to calcium pulse](demo/ca_pulse)
+2. [Ca-CaM-CaMKII pathway in the postsynaptic density](demo/psd)
 
 Authorship & License
 --------------------
