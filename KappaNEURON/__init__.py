@@ -480,8 +480,14 @@ class Kappa(GeneralizedReaction):
                         raise NameError('There is no observable or variable in %s called %s; add a line like this:\n%%obs: \'%s\' <complex definition> ' % (self._kappa_file, s.name, s.name))
                     if kappa_sim.isAgent(s.name):
                         try:
-                            report("Trying to set initial value of " + s.name)
+                            report("|" + s.name + "| = " + str(kappa_sim.getVariable(s.name)) + " ; [" + s.name + "] = " + str(kappa_sim.getVariable(s.name)/molecules_per_mM_um3/volumes[i]))
+                            report("Trying to set initial value of |" + s.name + "| = " + str(nions) + " ; [" + s.name + "] = " + str(nions/molecules_per_mM_um3/volumes[i]))
                             kappa_sim.setAgentInitialValue(s.name, nions)
+                            report("|" + s.name + "| = " + str(kappa_sim.getVariable(s.name)) + " ; [" + s.name + "] = " + str(kappa_sim.getVariable(s.name)/molecules_per_mM_um3/volumes[i]))
+                            states[i] = kappa_sim.getVariable(s.name)/molecules_per_mM_um3/volumes[i]
+                            s.initial = states[i]
+                            s._transfer_to_legacy()
+                            
                         except Py4JJavaError as e:
                             raise NameError('Error setting initial value of agent %s to %d\n%s' % (s.name, nions,  str(e.java_exception)))
 

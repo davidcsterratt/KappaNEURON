@@ -12,8 +12,8 @@ import matplotlib.pyplot as plt
 import re
 import platform
 import glob
+from neuron.rxd.generalizedReaction import molecules_per_mM_um3
 
-print("hello")
 def compile_modfiles(dirpath='.'):
     cwd = os.getcwd()
     print("CWD: " + cwd)
@@ -97,7 +97,7 @@ class TestCaAccumulation(unittest.TestCase):
 
     def setUp(self):
         ## This runs at the start of every test...
-        self.caitonum = self.NA*np.pi*(self.sk.diam**2)/4*self.sk.L*1e-18 
+        self.caitonum = molecules_per_mM_um3*np.pi*(self.sk.diam**2)/4*self.sk.L
         h.dt = 0.025/4
         print ""
         print "======================================================================"        
@@ -160,7 +160,9 @@ class TestCaAccumulation(unittest.TestCase):
         KappaNEURON.progress = False
 
         self.assertIsInstance(self.sk, nrn.Section)
-        self.assertEqual(self.ca.initial, 0.00005)
+        nions = round(0.00005*self.caitonum)
+        self.assertEqual(self.ca.initial, nions/self.caitonum)
+
         for sec in h.allsec():
             ## This forces eca to be a constant, rather than being
             ## computed from Nernst equation at every time step
@@ -190,7 +192,11 @@ class TestCaAccumulation(unittest.TestCase):
         self.v0 = self.sk(0.5).v
         self.cai0 = self.sk(0.5).cai
         self.assertEqual(h.t, 0.0)
-        self.assertEqual(self.sk(0.5).cai, 0.00005)
+
+        ## Initialisation ensures that the concentrations is converted
+        ## to a number of ions
+        nions = round(0.00005*self.caitonum)
+        self.assertEqual(self.sk(0.5).cai, nions/self.caitonum)
 
         ## FIXME: Should we need to run this *after* init()? Maybe
         ## this is an issue with the rxd.species code rather than
