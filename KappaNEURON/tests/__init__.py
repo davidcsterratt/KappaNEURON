@@ -500,8 +500,8 @@ class TestCaAccumulation(unittest.TestCase):
         self.assertAlmostEqual(Deltaca['mod'], Deltaca_theo['mod'], 2)
 
         ## Calcium and voltage should be in sync
-        for mode in ['mod', 'kappa']:
-            self.assertAlmostEqual(Deltav[mode], Deltaca[mode]/vtocai[mode], 0)
+        self.assertAlmostEqual(Deltav['mod'], Deltaca['mod']/vtocai['mod'], 0)
+        self.assertAlmostEqual(Deltav['kappa'], Deltaca['kappa']/vtocai['kappa'], 0)
 
         ## All calcium ion increments should be integers
         self.assertAlmostEqual(max(self.caitonum*diffca['kappa'] - np.round(self.caitonum*diffca['kappa'])), 0, 2)
