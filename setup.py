@@ -16,7 +16,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/davidcsterratt/KappaNEURON",
     packages=setuptools.find_packages(),
-    install_requires=['SpatialKappa >= 2.1.2', 'SciPy', 'matplotlib'],
+    install_requires=['SpatialKappa >= 2.1.2', 'SciPy', 'matplotlib < 3.0'],
     package_data={'KappaNEURON': ['tests/*.ka', 'tests/*.mod', 'tests/*.inc']},
     classifiers=(
         "Programming Language :: Python :: 2",
