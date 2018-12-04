@@ -4,31 +4,50 @@
 # By default, the working version is installed.
 
 NCPU=4
-version=$1
-DATE=$2
+version=
+DATE=
 PREFIX=${HOME}/nrn
+REPO=https://www.github.com/neuronsimulator
 
-## Defaults. Set version to version known to work.
-if [ "x$version" == "x" ] && [ "x$DATE" == "x" ]; then
-    version="7.4"
-fi
+OPTIND=1
 
-if [ "x$version" == "x" ] || [ "x$version" == "xtrunk"]; then 
-    branch=trunk
-    if [ "x${DATE}" == "x" ]; then
-        NRNPREFIX=${PREFIX}/${branch}
-    else
-        NRNPREFIX=${PREFIX}/${branch}-${DATE}
-    fi
+while getopts "d:c:v:" opt; do
+    case "$opt" in
+        v) version=$OPTARG
+           ;;
+        c) commitid=$OPTARG
+           ;;
+        d) DATE=$OPTARG
+           ;;
+    esac
+done
+
+if [ "x${commitid}" != "x" ]; then
+    NRNPREFIX=${PREFIX}/${commitid}
+    echo "Commit \"$commitid\" will be checked out.."
 else
-    branch="Release ${version}"
-    if [ "x${DATE}" == "x" ]; then
-        NRNPREFIX=${PREFIX}/${version}
-    else
-        NRNPREFIX=${PREFIX}/${version}-${DATE}
+    ## Defaults. Set version to version known to work.
+    if [ "x$version" == "x" ] && [ "x$DATE" == "x" ]; then
+        version="7.4"
     fi
+
+    if [ "x$version" == "x" ] || [ "x$version" == "xmaster"]; then 
+        branch=master
+        if [ "x${DATE}" == "x" ]; then
+            NRNPREFIX=${PREFIX}/${branch}
+        else
+            NRNPREFIX=${PREFIX}/${branch}-${DATE}
+        fi
+    else
+        branch="${version}"
+        if [ "x${DATE}" == "x" ]; then
+            NRNPREFIX=${PREFIX}/${version}
+        else
+            NRNPREFIX=${PREFIX}/${version}-${DATE}
+        fi
+    fi
+    echo "Branch \"$branch\" will be checked out.."
 fi
-echo "Branch \"$branch\" will be checked out.."
 echo "...and installed in ${NRNPREFIX}"
 
 function installpkg {
@@ -46,8 +65,9 @@ function installpkg {
 }
 installpkg /usr/bin/bison bison
 installpkg /usr/bin/flex flex
-installpkg /usr/bin/hg mercurial
-installpkg /usr/bin/gcc build-essential
+installpkg /usr/bin/git git
+installpkg /usr/bin/gcc-5 gcc-5 build-essential
+installpkg /usr/bin/g++-5 g++-5 
 installpkg /usr/bin/aclocal automake
 installpkg /usr/bin/libtoolize libtool
 installpkg /usr/include/X11/Xlib.h libx11-dev
@@ -55,24 +75,24 @@ installpkg /usr/include/X11/extensions/Xext.h libxext-dev
 installpkg /usr/include/python2.7/Python.h libpython2.7-dev
 installpkg /usr/include/ncurses.h ncurses-dev
 installpkg /usr/lib/python2.7/dist-packages/scipy/version.py python-scipy
-installpkg /usr/share/pyshared/matplotlib/__init__.py python-matplotlib
+installpkg /usr/lib/python2.7/dist-packages/matplotlib/__init__.py python-matplotlib
 
 mkdir neuron-build
 cd neuron-build
 # Install neuron
 if [ -d iv ] ; then
    cd iv
-   hg pull
+   git pull
    cd ..
 else
-   hg clone http://www.neuron.yale.edu/hg/neuron/iv # skip this if you don't want the GUI
+   git clone ${REPO}/iv # skip this if you don't want the GUI
 fi
 if [ -d nrn ] ; then
    cd nrn
-   hg pull
+   git pull
    cd ..
 else 
-   hg clone http://www.neuron.yale.edu/hg/neuron/nrn
+   git clone ${REPO}/nrn
 fi
 
 cd iv/
@@ -82,13 +102,27 @@ make -j ${NCPU}
 make install
 
 cd ../nrn
-if [ "x${DATE}" != "x" ]; then
-    hg update -d ${DATE}
+if [ "x${commitid}" != "x" ]; then
+    git checkout "${commitid}"
 else
-    hg update "${branch}"
+    if [ "x${DATE}" != "x" ]; then
+        git checkout \'${branch}@{${DATE} 00:00:00}\'
+    else
+        git checkout "${branch}"
+    fi
+fi
+if [ -x hg2nrnversion_h.sh ]; then
+    wget -p https://raw.githubusercontent.com/neuronsimulator/nrn/fc3ff7d10d62e537ab2e286066891e74dcfe51a8/git2nrnversion_h.sh
+    head -10 hg2nrnversion_h.sh > git-hg2nrnversion_h.sh
+    tail -21 git2nrnversion_h.sh >> git-hg2nrnversion_h.sh
+    perl -i -p -e 's/GIT_/HG_/;' git-hg2nrnversion_h.sh
+    chmod u+x git-hg2nrnversion_h.sh
+    ./git-hg2nrnversion_h.sh > src/nrnoc/nrnversion.h
+    echo "#define HG_LOCAL \"?\"" >> src/nrnoc/nrnversion.h
+    echo "#define HG_TAG \"\"" >> src/nrnoc/nrnversion.h
 fi
 ./build.sh
-./configure --prefix=$NRNPREFIX/nrn --with-iv=$NRNPREFIX/iv  --with-nrnpython=/usr/bin/python2.7
+CC=gcc-5 CXX=g++-5 CFLAGS="-DNPY_NO_DEPRECATED_API=1 -DNPY_1_7_API_VERSION=1" CXXFLAGS="-DNPY_NO_DEPRECATED_API=1 -DNPY_1_7_API_VERSION=1" ./configure --prefix=$NRNPREFIX/nrn --with-iv=$NRNPREFIX/iv  --with-nrnpython=/usr/bin/python2.7
 make -j ${NCPU}
 make install
 
