@@ -294,8 +294,13 @@ class Kappa(GeneralizedReaction):
         time_units = kwargs.get('time_units', 'ms')
         seed = kwargs.get('seed', None)
 
+        ## Gateway is link to Java instance, _kappa_sims will be list
+        ## of Java SpatialKappaSim objects
         global gateway
         self._kappa_sims = []
+        self._kappa_file = os.path.join(os.getcwd(), kappa_file)
+
+        ## Species
         self._species = []
         for s in membrane_species + species:
             self._species.append(weakref.ref(s))
@@ -306,11 +311,14 @@ class Kappa(GeneralizedReaction):
         self._membrane_species = membrane_species
         ## self._species = weakref.ref(species)
         self._involved_species = self._species
-        self._kappa_file = os.path.join(os.getcwd(), kappa_file)
+
+        ## Regions
         if not hasattr(regions, '__len__'):
             regions = [regions]
         self._regions = regions
         self._active_regions = []
+
+        ## Membrane fluxes
         self._trans_membrane = False
         self._membrane_flux = False
         self._time_units = time_units
@@ -318,7 +326,9 @@ class Kappa(GeneralizedReaction):
             raise Exception('membrane_flux must be either True or False')
         if membrane_flux and regions is None:
             raise Exception('if membrane_flux then must specify the (unique) membrane regions')
-        ## Create KappaFlux objects
+
+        ## Create KappaFlux objects which ensure that ions created in
+        ## Kappa contribute to the membrane flux
         self._kappa_fluxes = []
         for s in self._membrane_species:
             self._kappa_fluxes.append(KappaFlux(membrane_species=[s], 
