@@ -78,8 +78,11 @@ def _run_kappa_continuous(states, b, dt):
                 kappa_sim.setTransitionRateOrVariable('Create %s' % (s.name), flux)
                 report("Setting %s flux[%d] to b[%d]*NA*vol[%d] = %f*%f*%f = %f" % (s.name, i, i, i,  b[i], molecules_per_mM_um3, volumes[i], flux))
 
-            report("PASSING MEMBRANE POTENTIAL TO KAPPA")
-            ## TODO: pass membrane potential to kappa
+        report("PASSING MEMBRANE POTENTIAL TO KAPPA")
+        for kappa_sim, v_ptr in zip(k._kappa_sims, k._v_ptrs):
+            report("Setting V = %f" % (v_ptr[0]))
+            kappa_sim.setTransitionRateOrVariable("V", float(v_ptr[0]))
+
 
         #############################################################################
         ## 2. Run the rule-based simulator from t to t + dt
@@ -433,6 +436,22 @@ class Kappa(GeneralizedReaction):
             ## in the same place?
         self._mult = [1]
 
+    def _update_v_ptrs(self):
+        # TODO: make sure this is redone whenever nseg changes
+        self._v_ptrs = []
+        
+        # locate the regions containing all species (including the one that changes)
+        if all(sptr() for sptr in self._sources) and all(dptr() for dptr in self._dests):
+            active_regions = [r for r in self._regions if all(sptr().indices(r) for sptr in self._sources + self._dests)]
+        else:
+            active_regions = []
+        for r in active_regions:
+            for sec in r._secs:
+                for i in xrange(sec.nseg):
+                    name = '_ref_v'
+                    seg = sec((i + 0.5) / sec.nseg)
+                    self._v_ptrs.append(seg.__getattribute__(name))
+        
     def setVariable(self, variable, value):
         """Sets a variable in the Kappa simuluations.
 
@@ -504,6 +523,9 @@ class Kappa(GeneralizedReaction):
                             
                         except Py4JJavaError as e:
                             raise NameError('Error setting initial value of agent %s to %d\n%s' % (s.name, nions,  str(e.java_exception)))
+        self._update_v_ptrs()
+        for kappa_sim, v_ptr in zip(self._kappa_sims, self._v_ptrs):
+            kappa_sim.addVariable("V", v_ptr[0])
 
     def _evaluate(self, states):
         """This does nothing in the KappaNEURON class"""
