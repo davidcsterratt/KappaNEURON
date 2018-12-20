@@ -296,6 +296,7 @@ class Kappa(GeneralizedReaction):
         membrane_flux = kwargs.get('membrane_flux', True)
         time_units = kwargs.get('time_units', 'ms')
         seed = kwargs.get('seed', None)
+        self._sk_redirect_stdout = kwargs.get('sk_redirect_stdout', None)
 
         ## Gateway is link to Java instance, _kappa_sims will be list
         ## of Java SpatialKappaSim objects
@@ -397,7 +398,7 @@ class Kappa(GeneralizedReaction):
         ## Start Java and load the SpatialKappa class, if not already
         ## loaded
         if not gateway:
-            gateway = SpatialKappa.SpatialKappa()
+            gateway = SpatialKappa.SpatialKappa(redirect_stdout=self._sk_redirect_stdout)
 
         self._kappa_sims = []   # Will this destroy things properly?
         for index in self._indices_dict[self._involved_species[0]()]:
@@ -415,21 +416,21 @@ class Kappa(GeneralizedReaction):
             ## corresponding to the membrane species
             for s in self._membrane_species:
                 ## Get description of agent
-                agent = kappa_sim.getAgentMap(s.name)
-                link_names = agent[s.name].keys()
-                if (len(link_names) > 1):
+                agent_delcaration = kappa_sim.getAgentDeclaration(s.name)
+                site_names = agent_delcaration.keys()
+                if (len(site_names) > 1):
                     errstr = 'Error in kappa file %s: Agent %s has more than one site' % (self._kappa_file, s.name)
                     raise RuntimeError()
                 
-                link_name = link_names[0]
+                site_name = site_names[0]
                 
                 ## Add transition to create 
-                kappa_sim.addTransition('Create %s' % (s.name), {}, agent, 0.0)
+                kappa_sim.addTransition('Create %s' % (s.name), {}, {s.name: {site_name: {}}}, 0.0)
                 
                 ## Add variable to measure total species
-                kappa_sim.addVariable('Total %s' % (s.name), {s.name: {link_name: {'l': '?'}}})
+                kappa_sim.addVariable('Total %s' % (s.name), {s.name: {site_name: {'l': '?'}}})
                 ## Add observation variable
-                kappa_sim.addVariable('%s' % (s.name), {s.name: {}})
+                kappa_sim.addVariable('%s' % (s.name), {s.name: {site_name: {}}})
 
             self._kappa_sims.append(kappa_sim)
             ## TODO: Should we check if we are inserting two kappa schemes
@@ -463,7 +464,9 @@ class Kappa(GeneralizedReaction):
 
         """
         for kappa_sim in self._kappa_sims:
-            kappa_sim.setTransitionRateOrVariable(variable, float(value))
+            kappa_sim.addVariable(variable, float(value))
+            if kappa_sim.isInitialised():
+                kappa_sim.setTransitionRateOrVariable(variable, float(value))
 
     def run_free(self, t_run):
         """Run Kappa simulations free of NEURON
@@ -500,6 +503,8 @@ class Kappa(GeneralizedReaction):
         volumes = nrr.node._get_data()[0]
         ## FIXME: There's a problem here, since it is picking up existing states...
         states = nrr.node._get_states()[:]
+
+        ## Set initial values in Kappa 
         for sptr in self._involved_species:
             s = sptr()
             if s:
@@ -507,25 +512,46 @@ class Kappa(GeneralizedReaction):
                     nions = round(states[i] \
                                   * molecules_per_mM_um3 * volumes[i])
                     ## print "Species ", s.name, " conc ", states[i], " nions ", nions
-                    try:
-                        kappa_sim.getVariable(s.name)
-                    except:
+                    if (not kappa_sim.isVariable(s.name)):
                         raise NameError('There is no observable or variable in %s called %s; add a line like this:\n%%obs: \'%s\' <complex definition> ' % (self._kappa_file, s.name, s.name))
                     if kappa_sim.isAgent(s.name):
                         try:
-                            report("In Kappa: |" + s.name + "| = " + str(kappa_sim.getVariable(s.name)) + " ; [" + s.name + "] = " + str(kappa_sim.getVariable(s.name)/molecules_per_mM_um3/volumes[i]))
-                            report("Trying to set initial value of |" + s.name + "| = " + str(nions) + " ; [" + s.name + "] = " + str(nions/molecules_per_mM_um3/volumes[i]))
-                            kappa_sim.setAgentInitialValue(s.name, nions)
-                            report("In Kappa: |" + s.name + "| = " + str(kappa_sim.getVariable(s.name)) + " ; [" + s.name + "] = " + str(kappa_sim.getVariable(s.name)/molecules_per_mM_um3/volumes[i]))
-                            states[i] = kappa_sim.getVariable(s.name)/molecules_per_mM_um3/volumes[i]
-                            s.initial = states[i]
-                            s._transfer_to_legacy()
+                            agent_delcaration = kappa_sim.getAgentDeclaration(s.name)
+                            agent_default_state = {}
+                            for site, site_states in agent_delcaration.iteritems():
+                                if (len(site_states) == 0):
+                                    agent_default_state[site] = {}
+                                else:
+                                    agent_default_state[site] = {'s': site_states[0]}
+                            kappa_sim.overrideInitialValue({s.name: agent_default_state}, nions)
                             
                         except Py4JJavaError as e:
                             raise NameError('Error setting initial value of agent %s to %d\n%s' % (s.name, nions,  str(e.java_exception)))
+
+        ## Create variables for voltage in Kappa
         self._update_v_ptrs()
         for kappa_sim, v_ptr in zip(self._kappa_sims, self._v_ptrs):
             kappa_sim.addVariable("V", v_ptr[0])
+
+        ## Initialise sims
+        for kappa_sim in self._kappa_sims:
+            kappa_sim.initialiseSim()
+
+        ## Read numbers of species in Kappa back into NEURON
+        for sptr in self._involved_species:
+            s = sptr()
+            if s:
+                for kappa_sim, i in zip(self._kappa_sims, self._indices_dict[s]):
+                    try:
+                        # report("In Kappa: |" + s.name + "| = " + str(kappa_sim.getVariable(s.name)) + " ; [" + s.name + "] = " + str(kappa_sim.getVariable(s.name)/molecules_per_mM_um3/volumes[i]))
+                        # report("Trying to set initial value of |" + s.name + "| = " + str(nions) + " ; [" + s.name + "] = " + str(nions/molecules_per_mM_um3/volumes[i]))
+                        # report("In Kappa: |" + s.name + "| = " + str(kappa_sim.getVariable(s.name)) + " ; [" + s.name + "] = " + str(kappa_sim.getVariable(s.name)/molecules_per_mM_um3/volumes[i]))
+                        ## FIXME: Check that variable is set in SpatialKappa
+                        states[i] = kappa_sim.getVariable(s.name)/molecules_per_mM_um3/volumes[i]
+                        s.initial = states[i]
+                        s._transfer_to_legacy()
+                    except Py4JJavaError as e:
+                        raise NameError('Error getting Variable of agent %s\n%s' % (s.name, str(e.java_exception)))
 
     def _evaluate(self, states):
         """This does nothing in the KappaNEURON class"""
