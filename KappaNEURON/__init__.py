@@ -509,7 +509,7 @@ class Kappa(GeneralizedReaction):
             s = sptr()
             if s:
                 for kappa_sim, i in zip(self._kappa_sims, self._indices_dict[s]):
-                    nions = round(states[i] \
+                    nions = round(s.initial \
                                   * molecules_per_mM_um3 * volumes[i])
                     ## print "Species ", s.name, " conc ", states[i], " nions ", nions
                     if (not kappa_sim.isVariable(s.name)):
@@ -527,6 +527,13 @@ class Kappa(GeneralizedReaction):
                             
                         except Py4JJavaError as e:
                             raise NameError('Error setting initial value of agent %s to %d\n%s' % (s.name, nions,  str(e.java_exception)))
+                    else:
+                        if kappa_sim.isVariable(s.name) & (nions > 0):
+                            try:
+                                kappa_sim.overrideInitialValue(kappa_sim.agentList(kappa_sim.getVariableComplex(s.name)), nions)
+                                
+                            except Py4JJavaError as e:
+                                raise NameError('Error setting initial value of complex assigned to variable %s to %d\n%s' % (s.name, nions,  str(e.java_exception)))
 
         ## Create variables for voltage in Kappa
         self._update_v_ptrs()
@@ -548,7 +555,7 @@ class Kappa(GeneralizedReaction):
                         # report("In Kappa: |" + s.name + "| = " + str(kappa_sim.getVariable(s.name)) + " ; [" + s.name + "] = " + str(kappa_sim.getVariable(s.name)/molecules_per_mM_um3/volumes[i]))
                         ## FIXME: Check that variable is set in SpatialKappa
                         states[i] = kappa_sim.getVariable(s.name)/molecules_per_mM_um3/volumes[i]
-                        s.initial = states[i]
+                        ## s.initial = states[i]
                         s._transfer_to_legacy()
                     except Py4JJavaError as e:
                         raise NameError('Error getting Variable of agent %s\n%s' % (s.name, str(e.java_exception)))
