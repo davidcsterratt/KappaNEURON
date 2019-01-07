@@ -160,8 +160,6 @@ class TestCaAccumulation(unittest.TestCase):
         KappaNEURON.progress = False
 
         self.assertIsInstance(self.sk, nrn.Section)
-        nions = round(0.00005*self.caitonum)
-        self.assertEqual(self.ca.initial, nions/self.caitonum)
 
         for sec in h.allsec():
             ## This forces eca to be a constant, rather than being
