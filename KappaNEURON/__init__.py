@@ -491,6 +491,16 @@ class Kappa(GeneralizedReaction):
             for kappa_sim in k._kappa_sims:
                 kappa_sim.runForTime(float(t_run), True)
 
+    def get_debug_output(self):
+        """Get debug output from the SpatialKappa sims. Returns a string.
+        """
+        out = ''
+        for kptr in _kappa_schemes:
+            k = kptr()
+            for kappa_sim in k._kappa_sims:
+                out = out +  kappa_sim.getDebugOutput() + "\n========================================================================\n"
+        return(out)
+                
     ## Overridden functions
     def re_init(self):
         """Sets the initial concentration/number of kappa variables.  
