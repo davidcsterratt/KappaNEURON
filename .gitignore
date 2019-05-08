@@ -11,3 +11,5 @@ build
 doc/notes.tex
 figs
 debug
+KappaNEURON.egg-info
+dist

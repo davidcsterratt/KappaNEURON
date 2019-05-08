@@ -1,6 +1,6 @@
 import setuptools
 
-VERSION = '0.3.1'
+VERSION = '0.3.2'
 POSTVERSION = '' # rc2
 
 with open("README.md", "r") as fh:
@@ -16,7 +16,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/davidcsterratt/KappaNEURON",
     packages=setuptools.find_packages(),
-    install_requires=['SpatialKappa >= 2.1.4', 'SciPy', 'matplotlib < 3.0'],
+    install_requires=['SpatialKappa >= 2.1.5', 'SciPy', 'matplotlib < 3.0'],
     package_data={'KappaNEURON': ['tests/*.ka', 'tests/*.mod', 'tests/*.inc', 'README.md']},
     classifiers=(
         "Programming Language :: Python :: 2",
