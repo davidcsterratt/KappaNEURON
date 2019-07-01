@@ -1,4 +1,4 @@
-git commit -m "EU acknowledgementKappaNEURON
+KappaNEURON
 ===========
 
 KappaNEURON integrates the [SpatialKappa][SpatialKappa] simulator with
