@@ -100,10 +100,15 @@ Danos for helpful discussions.
 Acknowledgements
 ----------------
 
-The research leading to these results has received funding from the
+<img alt="EU flag" src="doc/figs/flag_yellow_low.jpg"/>
+
+This open source software code was developed with funding from the
 European Union Seventh Framework Programme (FP7/2007-2013) under grant
 agreement nos. 241498 (EUROSPIN project), 242167 (SynSys-project) and
-604102 (Human Brain Project). 
+604102 (Human Brain Project), and in the Human Brain Project, funded
+from the European Union’s Horizon 2020 Framework Programme for
+Research and Innovation under Specific Grant Agreements No. 720270 and
+No. 785907 (Human Brain Project SGA1 and SGA2).
 
 [SpatialKappa]: https://github.com/davidcsterratt/SpatialKappa "SpatialKappa"
 
