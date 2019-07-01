@@ -100,7 +100,7 @@ Danos for helpful discussions.
 Acknowledgements
 ----------------
 
-<img alt="EU flag" src="doc/figs/flag_yellow_low.jpg"/>
+<img style="width: 200px; float:left" alt="EU flag" src="doc/figs/flag_yellow_low.jpg"/>
 
 This open source software code was developed with funding from the
 European Union Seventh Framework Programme (FP7/2007-2013) under grant
