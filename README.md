@@ -1,4 +1,4 @@
-KappaNEURON
+git commit -m "EU acknowledgementKappaNEURON
 ===========
 
 KappaNEURON integrates the [SpatialKappa][SpatialKappa] simulator with
@@ -43,7 +43,7 @@ Installation & testing
 
 4. Run an inital test:
    ```
-   python2.7 -i -m unittest KappaNEURON.tests.TestCaAccumulation.test_injectCalcium
+   python2.7 -i -m unittest KappaNEURON.tests.TestCaAccumulation.test_injectCalciumgit commit -m "EU acknowledgement
    ```
    The test should return `OK` and the following figure window should
    appear
@@ -63,7 +63,7 @@ Installation & testing
 	python2.7 -m unittest KappaNEURON.tests.TestCaAccumulation.test_injectCalciumPump2k2
 	python2.7 -m unittest KappaNEURON.tests.TestCaAccumulation.test_twoMembraneSpecies
 	python2.7 -m unittest KappaNEURON.tests.TestCaAccumulation.test_twoMembraneSpeciesOneUncharged
-   ```
+   ```git commit -m "EU acknowledgement
 
    Most of these tests save figures to `test_figs`. The red ("mod")
    and blue ("kappa") curves in these figures should more-or-less
@@ -100,8 +100,7 @@ Danos for helpful discussions.
 Acknowledgements
 ----------------
 
-<img style="width: 200px; float:left" alt="EU flag" src="doc/figs/flag_yellow_low.jpg"/>
-
+<img width=200px align="left" alt="EU flag" src="/doc/figs/flag_yellow_low.jpg"/>
 This open source software code was developed with funding from the
 European Union Seventh Framework Programme (FP7/2007-2013) under grant
 agreement nos. 241498 (EUROSPIN project), 242167 (SynSys-project) and
