@@ -63,7 +63,7 @@ Installation & testing
 	python2.7 -m unittest KappaNEURON.tests.TestCaAccumulation.test_injectCalciumPump2k2
 	python2.7 -m unittest KappaNEURON.tests.TestCaAccumulation.test_twoMembraneSpecies
 	python2.7 -m unittest KappaNEURON.tests.TestCaAccumulation.test_twoMembraneSpeciesOneUncharged
-   ```git commit -m "EU acknowledgement
+   ```
 
    Most of these tests save figures to `test_figs`. The red ("mod")
    and blue ("kappa") curves in these figures should more-or-less
