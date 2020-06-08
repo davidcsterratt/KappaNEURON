@@ -43,7 +43,7 @@ Installation & testing
 
 4. Run an inital test:
    ```
-   python2.7 -i -m unittest KappaNEURON.tests.TestCaAccumulation.test_injectCalciumgit commit -m "EU acknowledgement
+   python2.7 -i -m unittest KappaNEURON.tests.TestCaAccumulation.test_injectCalcium
    ```
    The test should return `OK` and the following figure window should
    appear
