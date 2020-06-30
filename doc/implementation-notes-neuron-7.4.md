@@ -66,23 +66,35 @@ functions have to be overridden.
 
 The KappaNEURON module overwrites the fourth callback function
 (`rxd._fixed_step_solve()`) defined by `rxd._callbacks` by replacing it
-with a funtion `_kn_fixed_step_solve()`. This is called at each
-timestep of the deterministic solver. After reading the `states` of
-variables and any fluxes across the membrane `b` from NEURON, it calls
-`_run_kappa_continuous()`. This function sets the transition rates in
-the creation rules of each Kappa simulation (stored in a `Kappa`
-object), and passes the voltage to Kappa. Then Kappa is run. The Kappa
-variables are mapped back to `states`, and then passed back to
-NEURON. The transmembrane fluxes induced by any Kappa rules that
-control ionic flow through the membrane are stored in the `_memb_flux`
-variable of `KappaFlux` objects which are members of the associated
-`Kappa` object.
+with a funtion `_kn_fixed_step_solve()`. At each
+timestep of the deterministic solver `_kn_fixed_step_solve()` is called,
+and carries out the following:
 
+1. Use `states = rxd._node_get_states()` to get a reference to the state variables
+   (concentrations and voltages) in the NEURON solver. The length of `states` is
+   the product of the number of segments and the number of state
+   variables in the model.
+2. Use `b = rxd._rxd_reaction(states)` to get fluxes across the membrane
+3. Call `states = _run_kappa_continuous(states, b, dt)`. This function:
+   1. Converts the units of `b` into absolute  transition rates, which 
+      are passed to the creation rules of each Kappa simulation (stored in
+      a `Kappa` object)
+   2. Passes the voltage to Kappa
+   3. Runs Kappa for one timestep `dt`
+   4. To each `KappaFlux` appends the differences between the flux specified
+      by `b` and the actual average flux generated over the time step by the
+      random Kappa process. The transmembrane fluxes induced by any Kappa rules that
+      control ionic flow through the membrane are stored in the `_memb_flux`
+      variable of `KappaFlux` objects which are members of the associated
+      `Kappa` object.
+   5. Updates the continuous variables using `rxd._reaction_matrix_solve()`
+   6. Ensures that concentration states are the same as the simulated ones.
+4. Call `rxd._section1d_transfer_to_legacy()` to ensure states in rxd module are
+   returned to NEURON legacy solver.
+   
 To achieve the model specification, and mapping of variables the
 module defines two classes `Kappa`, derived from `GeneralizedReaction`
 and `KappaFlux`, derived from `MultiCompartmentalReaction`.
-
-
 <a id="orgee9ea18"></a>
 
 ### `Kappa` class
@@ -137,7 +149,7 @@ Set in `generalizedReaction._update_indices()`, its value depends on the value o
     
     `areas / volumes / molecules_per_mM_um3` for `dest_indices`
     
-    Units are mol/mM/µm<sup>3</sup>, which are dimensionless
+    Units are mol/mM/Âµm<sup>3</sup>, which are dimensionless
 
 -   **if** `self._trans_membrane` is `True` and `self.scale_by_area` is
     `False`
@@ -211,7 +223,7 @@ Set in `generalizedReaction._update_indices()`, its value depends on the value o
 
 -   Gets flux across the membrane due to univalent ion in mA/cm<sup>2</sup>
 -   **Returns**: `self._memb_scales*rates` where `rates` comes from
-    `_evaluate()` and is in molecules/µm<sup>2</sup>/ms and `self._memb_scales`
+    `_evaluate()` and is in molecules/Âµm<sup>2</sup>/ms and `self._memb_scales`
     gives the charge per molecule.
 -   Thus the units returned by `get_memb_flux()` are 
     
