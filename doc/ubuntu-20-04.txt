@@ -15,7 +15,7 @@ cd nrn-7.4
 patch -p1 < ../neuron7-4-cython.patch
 patch -p1 < ../neuron7-4-abs.patch
 
-CC=gcc-7 CXX=g++-7 CXXFLAGS=-Wno-narrowing ./configure --prefix=$NRNPREFIX/nrn --without-iv  --with-nrnpython=python2.7 --without-memacs
+CC=gcc-9 CXX=g++-9 CXXFLAGS=-Wno-narrowing ./configure --prefix=$NRNPREFIX/nrn --without-iv  --with-nrnpython=python2.7 --without-memacs
 make -j 8
 make install
 python2.7 -i -m unittest KappaNEURON.tests.TestCaAccumulation.test_injectCalcium
