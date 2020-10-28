@@ -1,0 +1,34 @@
+--- nrn-7.4/src/gnu/neuron_gnu_builtin.h	2015-11-12 20:42:45.000000000 +0000
++++ nrn-7.4-mod/src/gnu/neuron_gnu_builtin.h	2020-10-28 13:41:35.805121700 +0000
+@@ -74,10 +74,10 @@
+ 
+ // sunpro CC v4 complains about the following being both extern and inline
+ #if !defined(__SUNPRO_CC)
+-double abs(double arg);
+-float abs(float arg);
++// double abs(double arg);
++// float abs(float arg);
+ short abs(short arg);
+-long abs(long arg);
++// long abs(long arg);
+ int sign(long arg);
+ int sign(double arg);
+ long sqr(long arg);
+@@ -108,7 +108,7 @@
+ #endif
+ 
+ #if INLINE_FLOAT_ABS
+-inline float abs(float arg) 
++inline double abs(double arg) 
+ {
+   return (arg < 0.0)? -arg : arg;
+ }
+@@ -120,7 +120,7 @@
+ }
+ 
+ #if INLINE_LONG_ABS
+-inline long abs(long arg) 
++inline long int abs(long int arg) 
+ {
+   return (arg < 0)? -arg : arg;
+ }
