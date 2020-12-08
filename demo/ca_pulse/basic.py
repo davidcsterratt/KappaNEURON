@@ -2,6 +2,10 @@ from neuron import *
 import KappaNEURON
 from neuron import rxd
 import matplotlib.pyplot as plt
+# Set to False to prevent the progress indicator
+# KappaNEURON.progress = False
+# Set to a number to indicate the number of milliseconds at which to report
+KappaNEURON.progress = 0.5
 
 ## Create a compartment with a passive channel
 sh = h.Section()

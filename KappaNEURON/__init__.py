@@ -24,7 +24,6 @@ import os, sys
 import warnings
 
 FARADAY = h.FARADAY
-
 verbose = False
 def report(mess):
     global verbose
@@ -32,7 +31,8 @@ def report(mess):
         print(mess)
 _kappa_schemes = []
 
-progress = True
+progress = 1.0
+t_next_progress = 0.0
 
 def _register_kappa_scheme(r):
     # TODO: should we search to make sure that (a weakref to) r hasn't already been added?
@@ -45,15 +45,17 @@ def _unregister_kappa_scheme(weakref_r):
 
 def _kn_init():
     global _kappa_schemes
+    global t_next_progress
     # update Kappa schemes
     for kptr in _kappa_schemes:
         k = kptr()
         if k is not None: k.re_init()
+    t_next_progress = 0
 
 def _run_kappa_continuous(states, b, dt):
     global _kappa_schemes
     #############################################################################
-    ## 1. Pass all relevant continous variables to the rule-based simulator
+    ## 1. Pass all relevant continuous variables to the rule-based simulator
     ##
     ## Relevant variables might be
     ## * Calcium current (for deterministic channels)
@@ -134,7 +136,7 @@ def _run_kappa_continuous(states, b, dt):
         report(states)
         
         #############################################################################
-        ## 5. Update the continous variables according to the update step
+        ## 5. Update the continuous variables according to the update step
         #############################################################################
         states[:] += nrr._reaction_matrix_solve(dt, states, nrr._diffusion_matrix_solve(dt, dt * b))
         report("States after continuous update")
@@ -162,6 +164,7 @@ def _run_kappa_continuous(states, b, dt):
 def _kn_fixed_step_solve(raw_dt):
     nrr.initializer._do_init()
     global _kappa_schemes
+    global progress, t_next_progress
 
     report("")
     report("---------------------------------------------------------------------------")
@@ -178,6 +181,7 @@ def _kn_fixed_step_solve(raw_dt):
     # TODO: this probably shouldn't be here
     if nrr._diffusion_matrix is None and nrr._euler_matrix is None: nrr._setup_matrices()
 
+    ## states is a reference to rxd.node._states
     states = nrr._node_get_states()[:]
     report(states)
 
@@ -196,7 +200,11 @@ def _kn_fixed_step_solve(raw_dt):
         # clear the zero-volume "nodes"
         states[nrr._zero_volume_indices] = 0
 
-        # TODO: refactor so this isn't in section1d... probably belongs in node
+        # This function references node._states, thus passing the
+        # values modified by _run_kappa_continuous() back to the
+        # NEURON solver
+        # TODO: refactor so this isn't in section1d...
+        # probably belongs in node
         nrr._section1d_transfer_to_legacy()
     else:
         # the actual advance via implicit euler
@@ -212,7 +220,12 @@ def _kn_fixed_step_solve(raw_dt):
             if s is not None: s._transfer_to_legacy()
     
     t = nrr.h.t + dt
-    sys.stdout.write("\rTime = %12.5f/%5.5f [%3.3f%%]" % (t, neuron.h.tstop, t/neuron.h.tstop*100))
+
+    if progress:
+        if t + dt >= t_next_progress:
+            sys.stdout.write("\rTime = %12.5f/%5.5f [%3.3f%%]" % (t, neuron.h.tstop, t/neuron.h.tstop*100))
+            t_next_progress += progress
+    
     if (abs(t - neuron.h.tstop) < 1E-6):
         sys.stdout.write("\n")
     sys.stdout.flush()
